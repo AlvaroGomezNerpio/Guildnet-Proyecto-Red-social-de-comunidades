@@ -1,0 +1,41 @@
+# ===================
+# 🔙 BACKEND (Spring Boot)
+# ===================
+/backend/target/
+/backend/.classpath
+/backend/.project
+/backend/.settings/
+/backend/.idea/
+/backend/.vscode/
+/backend/*.iml
+
+# Logs
+/backend/*.log
+
+# System
+/backend/.DS_Store
+/backend/.env
+
+# ===================
+# 🔮 FRONTEND (Angular)
+# ===================
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.angular
+/frontend/.vscode/
+/frontend/.idea/
+/frontend/.env
+/frontend/.DS_Store
+
+# ===================
+# 💻 GLOBAL
+# ===================
+*.swp
+*.bak
+*.tmp
+*.log
+*.env
+*.orig
+Thumbs.db
+ehthumbs.db
+.DS_Store
