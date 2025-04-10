@@ -15,8 +15,8 @@ Los objetivos concretos del proyecto son:
 - O3: Facilitar la publicación de contenido enriquecido (tipo blog) dentro de cada comunidad.
 - O4: Permitir comentar publicaciones y reaccionar con likes.
 - O5: Gestionar roles dentro de las comunidades, permitiendo definir permisos personalizados.
-- O6: Implementar un sistema de reportes para publicaciones y comentarios.
-- O7: Ofrecer un sistema de notificaciones para interacciones y eventos importantes.
+- O6: Ofrecer un sistema de notificaciones para interacciones y eventos importantes.
+- O7: Ofrecer un sistema de chat grupal dentro de cada comunidad.
 - O8: Proporcionar un entorno visual atractivo, funcional y responsive mediante Angular y Quill.js.
 
 ## Módulos principales
@@ -44,26 +44,19 @@ A continuación se describen los módulos clave de la aplicación:
 - Inclusión de imágenes, texto formateado, enlaces, títulos, etc.
 - Likes y comentarios.
 - Posibilidad de edición/eliminación por parte del autor.
-- Reportes por contenido indebido.
 
 ### 5. Comentarios
 - Comentarios en publicaciones y perfiles dentro de las comunidades.
-- Reportes y sistema de moderación.
 - Comentarios con formato enriquecido limitado.
 
-### 6. Reportes y moderación
-- Sistema de reporte con motivos predefinidos.
-- Moderadores y líderes reciben notificaciones para gestionar contenido reportado.
-- Permite actuar sobre publicaciones o comentarios denunciados.
-
-### 7. Notificaciones
+### 6. Notificaciones
 - Notificación automática al recibir:
   - Un comentario o like en tu publicación.
   - Un nuevo título asignado.
   - Un reporte sobre tu contenido.
   - Un aviso de contenido pendiente si eres moderador/líder.
 
-### 8. Chat en comunidades (tiempo real con WebSockets)
+### 7. Chat en comunidades (tiempo real con WebSockets)
 - Cada comunidad tendrá un único canal de chat disponible para todos sus miembros.
 - El chat se crea automáticamente al crear la comunidad.
 - Los mensajes se transmiten en tiempo real mediante **WebSockets**.
@@ -203,26 +196,7 @@ A continuación se describen los módulos clave de la aplicación:
 3. El sistema registra o elimina el like.
 **Resultado esperado:** La publicación muestra el número actualizado de likes.
 
-### CU12 – Reportar una publicación o comentario
-**Descripción:** El usuario puede reportar contenido inadecuado.
-**Actor principal:** Usuario autenticado y miembro de la comunidad
-**Flujo principal:**
-1. Visualiza una publicación o comentario.
-2. Pulsa en "Reportar".
-3. Selecciona un motivo de una lista.
-**Resultado esperado:** El contenido queda marcado y se notifica a los moderadores/líderes.
-
-### CU13 – Gestionar publicaciones y comentarios reportados
-**Descripción:** Moderadores y líderes pueden revisar y actuar sobre contenido reportado.
-**Actor principal:** Moderador o líder
-**Flujo principal:**
-1. Accede al panel de moderación.
-2. Visualiza reportes.
-3. Revisa el contenido.
-4. Decide eliminarlo o mantenerlo.
-**Resultado esperado:** El contenido reportado se gestiona correctamente.
-
-### CU14 – Recibir y consultar notificaciones
+### CU12 – Recibir y consultar notificaciones
 **Descripción:** El usuario recibe alertas por interacciones importantes.
 **Actor principal:** Usuario autenticado
 **Flujo principal:**
@@ -231,7 +205,7 @@ A continuación se describen los módulos clave de la aplicación:
 3. Visualiza o marca como leídas.
 **Resultado esperado:** El usuario está informado sobre eventos importantes.
 
-### CU15 – Usar el chat en tiempo real de una comunidad
+### CU13 – Usar el chat en tiempo real de una comunidad
 **Descripción:** Permite a los miembros comunicarse mediante un chat general en tiempo real.
 **Actor principal:** Usuario autenticado y miembro de la comunidad
 **Flujo principal:**
@@ -240,7 +214,7 @@ A continuación se describen los módulos clave de la aplicación:
 3. Escribe y envía mensajes.
 **Resultado esperado:** Los mensajes se envían y reciben en tiempo real mediante WebSockets.
 
-### CU16 – Eliminar o editar comentarios del perfil de comunidad
+### CU14 – Eliminar o editar comentarios del perfil de comunidad
 **Descripción:** Permite a los usuarios eliminar comentarios recibidos o editar los propios dentro de su perfil de comunidad.
 **Actor principal:** Usuario autenticado
 **Flujo principal:**
@@ -265,12 +239,10 @@ A continuación se listan los requisitos funcionales derivados de los casos de u
 10. El sistema debe permitir editar o eliminar las publicaciones propias.
 11. Los usuarios deben poder comentar publicaciones dentro de las comunidades.
 12. Los usuarios deben poder dar like a publicaciones dentro de comunidades.
-13. Los usuarios deben poder reportar publicaciones o comentarios por motivos predefinidos.
-14. Moderadores y líderes deben poder gestionar el contenido reportado (ver, revisar, eliminar o mantener).
-15. El sistema debe generar notificaciones ante likes, comentarios, asignación de títulos o reportes.
-16. El sistema debe permitir comunicarse en tiempo real en el chat general de cada comunidad mediante WebSockets.
-17. El sistema debe permitir eliminar o editar los comentarios en el perfil de comunidad del usuario.
-18. El sistema debe restringir las acciones según el rol y permisos del usuario dentro de cada comunidad.
+13. El sistema debe generar notificaciones ante likes, comentarios, asignación de títulos.
+14. El sistema debe permitir comunicarse en tiempo real en el chat general de cada comunidad mediante WebSockets.
+15. El sistema debe permitir eliminar o editar los comentarios en el perfil de comunidad del usuario.
+16. El sistema debe restringir las acciones según el rol y permisos del usuario dentro de cada comunidad.
 
 ### Entidades principales
 
@@ -441,7 +413,6 @@ Todas las URIs tendrán el prefijo común `/api/v1`.
 | Likes                        | `/publicaciones/{id}/likes`          |
 | Roles                        | `/comunidades/{id}/roles`            |
 | Títulos                      | `/comunidades/{id}/titulos`          |
-| Reportes                     | `/reportes`                          |
 | Notificaciones               | `/notificaciones`                    |
 | Chat de comunidad            | `/comunidades/{id}/chat`             |
 
