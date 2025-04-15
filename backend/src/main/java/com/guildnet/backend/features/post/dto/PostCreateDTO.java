@@ -15,5 +15,6 @@ public class PostCreateDTO {
     private String title;
     private String content;
     private List<String> tags;
-    private Long profileId; // ID del perfil que crea la publicación
+    private Long profileId;
+    private Long communityId;
 }

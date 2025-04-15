@@ -1,5 +1,7 @@
 package com.guildnet.backend.features.post;
 
+import com.guildnet.backend.features.Community.Community;
+import com.guildnet.backend.features.Community.CommunityRepository;
 import com.guildnet.backend.features.communityProfile.CommunityProfile;
 import com.guildnet.backend.features.communityProfile.CommunityProfileRepository;
 import com.guildnet.backend.features.communityProfile.dto.CommunityProfileDTO;
@@ -25,96 +27,96 @@ import java.util.stream.Collectors;
 public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
-    private final CommunityProfileRepository communityProfileRepository;
-    private final PostCommentRepository postCommentRepository;
+    private final CommunityProfileRepository profileRepository;
+    private final CommunityRepository communityRepository;
 
     @Override
-    public PostDTO createPost(PostCreateDTO postCreateDTO) {
-        CommunityProfile profile = communityProfileRepository.findById(postCreateDTO.getProfileId())
+    public PostDTO createPost(PostCreateDTO dto) {
+        CommunityProfile profile = profileRepository.findById(dto.getProfileId())
                 .orElseThrow(() -> new RuntimeException("Perfil no encontrado"));
+        Community community = communityRepository.findById(dto.getCommunityId())
+                .orElseThrow(() -> new RuntimeException("Comunidad no encontrada"));
 
         Post post = new Post();
-        post.setTitle(postCreateDTO.getTitle());
-        post.setContent(postCreateDTO.getContent());
-        post.setTags(postCreateDTO.getTags());
+        post.setTitle(dto.getTitle());
+        post.setContent(dto.getContent());
+        post.setTags(dto.getTags());
         post.setProfile(profile);
+        post.setCommunity(community);
 
         Post saved = postRepository.save(post);
-        return mapToPostDTO(saved);
+        return mapToDTO(saved);
     }
 
     @Override
-    public List<PostDTO> getAllPosts() {
-        return postRepository.findAll().stream()
-                .map(this::mapToPostDTO)
-                .collect(Collectors.toList());
+    public PostDTO updatePost(Long id, PostCreateDTO dto) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post no encontrado"));
+        post.setTitle(dto.getTitle());
+        post.setContent(dto.getContent());
+        post.setTags(dto.getTags());
+
+        return mapToDTO(postRepository.save(post));
+    }
+
+    @Override
+    public void deletePost(Long id) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Post no encontrado"));
+
+        post.getComments().clear(); // Elimina comentarios
+        postRepository.delete(post);
     }
 
     @Override
     public PostDetailDTO getPostById(Long id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post no encontrado"));
-
-        return mapToPostDetailDTO(post);
+        return mapToDetailDTO(post);
     }
 
     @Override
-    public PostDTO updatePost(Long postId, PostUpdateDTO updateDTO) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found with ID: " + postId));
-
-        if (updateDTO.getTitle() != null) {
-            post.setTitle(updateDTO.getTitle());
-        }
-
-        if (updateDTO.getContent() != null) {
-            post.setContent(updateDTO.getContent());
-        }
-
-        if (updateDTO.getTags() != null) {
-            post.setTags(updateDTO.getTags());
-        }
-
-        Post updatedPost = postRepository.save(post);
-        return mapToPostDTO(updatedPost);
+    public List<PostDTO> getPostsByProfileId(Long profileId) {
+        return postRepository.findByProfileId(profileId).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
-
 
     @Override
-    public void deletePost(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found with ID: " + postId));
-
-        // Primero eliminamos los comentarios asociados al post
-        postCommentRepository.deleteByPostId(postId);
-
-        // Luego eliminamos el post
-        postRepository.delete(post);
+    public List<PostDTO> getPostsByCommunityId(Long communityId) {
+        return postRepository.findByCommunityId(communityId).stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
-
-    private PostDTO mapToPostDTO(Post post) {
+    // Métodos de mapeo aquí...
+    private PostDTO mapToDTO(Post post) {
         PostDTO dto = new PostDTO();
         dto.setId(post.getId());
         dto.setTitle(post.getTitle());
         dto.setContent(post.getContent());
         dto.setTags(post.getTags());
         dto.setLikes(post.getLikes() != null ? post.getLikes().size() : 0);
+        dto.setCommunityId(post.getCommunity().getId());
         dto.setCommunityProfile(mapToCommunityProfileDTO(post.getProfile()));
         return dto;
     }
 
-    private PostDetailDTO mapToPostDetailDTO(Post post) {
+    private PostDetailDTO mapToDetailDTO(Post post) {
         PostDetailDTO dto = new PostDetailDTO();
         dto.setId(post.getId());
         dto.setTitle(post.getTitle());
         dto.setContent(post.getContent());
         dto.setTags(post.getTags());
+        dto.setCommunityId(post.getCommunity().getId());
 
-        // Si quieres pasar todos los comentarios en vez de uno, puedes adaptar el DTO
         if (!post.getComments().isEmpty()) {
             PostComment comment = post.getComments().get(0);
-            dto.setPostComment(mapToPostCommentDTO(comment));
+            PostComentDTO comentDTO = new PostComentDTO();
+            comentDTO.setId(comment.getId());
+            comentDTO.setContent(comment.getContent());
+            comentDTO.setCommunityProfile(mapToCommunityProfileDTO(comment.getProfile()));
+            dto.setPostComment(comentDTO);
         }
 
         dto.setCommunityProfile(mapToCommunityProfileDTO(post.getProfile()));
@@ -129,30 +131,15 @@ public class PostServiceImpl implements PostService {
         dto.setProfileImage(profile.getProfileImage());
         dto.setUserId(profile.getUser().getId());
         dto.setCommunityId(profile.getCommunity().getId());
-
         dto.setFeaturedTitle(profile.getFeaturedTitle() != null ? new TitleDTO(
                 profile.getFeaturedTitle().getId(),
                 profile.getFeaturedTitle().getTitle(),
                 profile.getFeaturedTitle().getTextColor(),
                 profile.getFeaturedTitle().getBackgroundColor(),
                 profile.getFeaturedTitle().getCommunity().getId()) : null);
-
-        dto.setRoles(profile.getRoles().stream()
-                .map(Role::getName)
-                .collect(Collectors.toList()));
-
-        dto.setTitles(profile.getTitles().stream()
-                .map(Title::getTitle)
-                .collect(Collectors.toList()));
-
-        return dto;
-    }
-
-    private PostComentDTO mapToPostCommentDTO(PostComment comment) {
-        PostComentDTO dto = new PostComentDTO();
-        dto.setId(comment.getId());
-        dto.setContent(comment.getContent());
-        dto.setCommunityProfile(mapToCommunityProfileDTO(comment.getProfile()));
+        dto.setRoles(profile.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
+        dto.setTitles(profile.getTitles().stream().map(Title::getTitle).collect(Collectors.toList()));
         return dto;
     }
 }
+

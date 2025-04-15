@@ -2,6 +2,7 @@ package com.guildnet.backend.features.Community;
 
 import com.guildnet.backend.features.chatMessage.ChatMessage;
 import com.guildnet.backend.features.communityProfile.CommunityProfile;
+import com.guildnet.backend.features.post.Post;
 import com.guildnet.backend.features.role.Role;
 import com.guildnet.backend.features.title.Title;
 import com.guildnet.backend.features.user.User;
@@ -44,6 +45,10 @@ public class Community {
     // Lista de perfiles asociados a esta comunidad (usuarios que forman parte de ella)
     @OneToMany(mappedBy = "community")
     private List<CommunityProfile> communityProfiles;
+
+    // Lista de publicaciones realizadas en esta comunidad
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Post> posts;
 
     // Lista de roles definidos dentro de esta comunidad
     @OneToMany(mappedBy = "community")

@@ -9,8 +9,10 @@ import java.util.List;
 
 public interface PostService {
     PostDTO createPost(PostCreateDTO postCreateDTO);
-    List<PostDTO> getAllPosts();
-    PostDetailDTO getPostById(Long id);
-    PostDTO updatePost(Long postId, PostUpdateDTO updateDTO);
+    PostDTO updatePost(Long id, PostCreateDTO postCreateDTO);
     void deletePost(Long id);
+    PostDetailDTO getPostById(Long id);
+    List<PostDTO> getPostsByProfileId(Long profileId);
+    List<PostDTO> getPostsByCommunityId(Long communityId); // Nuevo
 }
+
