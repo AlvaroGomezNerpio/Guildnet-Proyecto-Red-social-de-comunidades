@@ -20,4 +20,5 @@ public class PostDetailDTO {
     private List<String> tags;
     private PostComentDTO postComment;
     private CommunityProfileDTO communityProfile;
+    private Long communityId;
 }

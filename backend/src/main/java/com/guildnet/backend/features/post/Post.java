@@ -1,5 +1,6 @@
 package com.guildnet.backend.features.post;
 
+import com.guildnet.backend.features.Community.Community;
 import com.guildnet.backend.features.communityProfile.CommunityProfile;
 import com.guildnet.backend.features.like.Like;
 import com.guildnet.backend.features.postComment.PostComment;
@@ -32,6 +33,11 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "profile_id")
     private CommunityProfile profile;
+
+    @ManyToOne
+    @JoinColumn(name = "community_id")
+    private Community community;
+
 
     // Lista de comentarios asociados a esta publicación
     @OneToMany(mappedBy = "post")

@@ -21,4 +21,5 @@ public class PostDTO {
     private List<String> tags;
     private int likes;
     private CommunityProfileDTO communityProfile;
+    private Long communityId;
 }
