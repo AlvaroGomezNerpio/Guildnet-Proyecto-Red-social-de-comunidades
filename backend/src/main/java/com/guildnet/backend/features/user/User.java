@@ -48,10 +48,6 @@ public class User implements org.springframework.security.core.userdetails.UserD
     @OneToMany(mappedBy = "user")
     private List<CommunityProfile> communityProfiles;
 
-    // Relación uno a muchos con las notificaciones que ha recibido el usuario
-    @OneToMany(mappedBy = "user")
-    private List<Notification> notifications;
-
     // Métodos obligatorios para UserDetails, devolvemos true por defecto
     @Override public boolean isAccountNonExpired()     { return true; }
     @Override public boolean isAccountNonLocked()      { return true; }
