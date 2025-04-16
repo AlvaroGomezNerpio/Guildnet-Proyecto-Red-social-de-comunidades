@@ -1,5 +1,6 @@
 package com.guildnet.backend.features.notification;
 
+import com.guildnet.backend.features.communityProfile.CommunityProfile;
 import com.guildnet.backend.features.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,20 +15,28 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Notification {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String content;
+    private String message;
 
-    // Indicador de si el usuario ha leído la notificación (true = leída)
-    private boolean isRead;
+    @Enumerated(EnumType.STRING)
+    private NotificationType type;
 
-    // Fecha y hora en que se creó la notificación
+    @Column(name = "is_read", nullable = false)
+    private boolean itIsRead;
+
     private LocalDateTime createdAt;
 
-    // Usuario al que va dirigida la notificación
+    // Perfil que recibe la notificación
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "receiver_profile_id", nullable = false)
+    private CommunityProfile receiver;
+
+    // Perfil que genera la notificación (opcional)
+    @ManyToOne
+    @JoinColumn(name = "sender_profile_id")
+    private CommunityProfile sender;
 }

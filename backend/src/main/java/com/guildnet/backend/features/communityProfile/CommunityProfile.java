@@ -3,6 +3,7 @@ package com.guildnet.backend.features.communityProfile;
 import com.guildnet.backend.features.Community.Community;
 import com.guildnet.backend.features.chatMessage.ChatMessage;
 import com.guildnet.backend.features.like.Like;
+import com.guildnet.backend.features.notification.Notification;
 import com.guildnet.backend.features.post.Post;
 import com.guildnet.backend.features.postComment.PostComment;
 import com.guildnet.backend.features.profileComment.ProfileComment;
@@ -12,6 +13,7 @@ import com.guildnet.backend.features.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -84,4 +86,10 @@ public class CommunityProfile {
             joinColumns = @JoinColumn(name = "profile_id"),
             inverseJoinColumns = @JoinColumn(name = "title_id"))
     private List<Title> titles;
+
+    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> receivedNotifications = new ArrayList<>();
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
+    private List<Notification> sentNotifications = new ArrayList<>();
 }
