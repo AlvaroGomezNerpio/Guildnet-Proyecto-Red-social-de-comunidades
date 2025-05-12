@@ -171,18 +171,21 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
     }
 
     private CommunityProfileDTO mapToDTO(CommunityProfile profile) {
+        Title featuredTitle = profile.getFeaturedTitle();
+
         return new CommunityProfileDTO(
                 profile.getId(),
                 profile.getUsername(),
                 profile.getDescription(),
                 profile.getProfileImage(),
-                mapToDTO(profile.getFeaturedTitle()),
+                featuredTitle != null ? mapToDTO(featuredTitle) : null,
                 profile.getUser().getId(),
                 profile.getCommunity().getId(),
                 profile.getRoles() != null ? profile.getRoles().stream().map(Role::getName).toList() : List.of(),
                 profile.getTitles() != null ? profile.getTitles().stream().map(Title::getTitle).toList() : List.of()
         );
     }
+
 
     private TitleDTO mapToDTO(Title title) {
         return new TitleDTO(
