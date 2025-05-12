@@ -9,26 +9,36 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "chat_messages")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class ChatMessage {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
-    private LocalDateTime sentAt; // Fecha y hora en que se envió el mensaje
 
-    // Comunidad en la que se ha enviado el mensaje
-    @ManyToOne
-    @JoinColumn(name = "community_id")
+    @Column(nullable = false)
+    private LocalDateTime sentAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "community_id", nullable = false)
     private Community community;
 
-    // Perfil de comunidad del usuario que envió el mensaje
-    @ManyToOne
-    @JoinColumn(name = "profile_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_id", nullable = false)
     private CommunityProfile profile;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.sentAt == null) {
+            this.sentAt = LocalDateTime.now();
+        }
+    }
 }
+
+
