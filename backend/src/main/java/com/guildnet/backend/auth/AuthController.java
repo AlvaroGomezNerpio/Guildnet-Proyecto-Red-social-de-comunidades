@@ -1,5 +1,6 @@
 package com.guildnet.backend.auth;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.guildnet.backend.security.jwt.JwtUtils;
 import com.guildnet.backend.features.user.User;
 import com.guildnet.backend.features.user.UserRepository;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -34,39 +36,44 @@ public class AuthController {
 
     @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> register(
-            @RequestPart("user") RegisterRequest request,
+            @RequestPart("user") String userJson, // <- Recibe como String
             @RequestPart(value = "image", required = false) MultipartFile imageFile
     ) {
+        // Parsear el JSON manualmente
+        ObjectMapper mapper = new ObjectMapper();
+        RegisterRequest request;
+        try {
+            request = mapper.readValue(userJson, RegisterRequest.class);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("JSON inválido en 'user'");
+        }
+
+        // Comprobación de correo ya registrado
         if (userRepository.existsByEmail(request.getEmail())) {
             return ResponseEntity.status(409).body("El correo ya está en uso.");
         }
 
+        // Guardar imagen de perfil si existe
         String imageUrl = null;
-
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
-                // Ruta de la carpeta de usuarios
                 Path uploadPath = Paths.get("uploads/users/");
                 if (!Files.exists(uploadPath)) {
                     Files.createDirectories(uploadPath);
                 }
 
-                // Nombre único
                 String uniqueName = UUID.randomUUID() + "_" +
                         LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) + ".png";
-
-                // Ruta final del archivo
                 Path filePath = uploadPath.resolve(uniqueName);
                 Files.copy(imageFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-                // Generamos URL pública para guardarla en la base de datos
                 imageUrl = "http://localhost:8080/uploads/users/" + uniqueName;
-
             } catch (IOException e) {
                 return ResponseEntity.status(500).body("Error al guardar la imagen");
             }
         }
 
+        // Crear nuevo usuario
         User newUser = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
@@ -75,10 +82,11 @@ public class AuthController {
                 .build();
 
         userRepository.save(newUser);
-        String token = jwtUtils.generateToken(newUser);
 
+        String token = jwtUtils.generateToken(newUser);
         return ResponseEntity.status(201).body(new AuthResponse(token));
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {

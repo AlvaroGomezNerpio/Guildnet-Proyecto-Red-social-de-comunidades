@@ -1,0 +1,31 @@
+<div class="container mt-5" style="max-width: 500px;">
+  <h2 class="mb-4">Registro</h2>
+
+  <form (ngSubmit)="onSubmit()" #registerForm="ngForm">
+    <div class="mb-3">
+      <label for="username" class="form-label">Nombre de usuario</label>
+      <input type="text" class="form-control" id="username" name="username" [(ngModel)]="username" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="email" class="form-label">Correo electrónico</label>
+      <input type="email" class="form-control" id="email" name="email" [(ngModel)]="email" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="password" class="form-label">Contraseña</label>
+      <input type="password" class="form-control" id="password" name="password" [(ngModel)]="password" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="image" class="form-label">Imagen de perfil (opcional)</label>
+      <input type="file" class="form-control" id="image" (change)="onFileSelected($event)">
+    </div>
+
+    <button type="submit" class="btn btn-success w-100" [disabled]="registerForm.invalid">
+      Registrarse
+    </button>
+  </form>
+
+  <div *ngIf="error" class="alert alert-danger mt-3">{{ error }}</div>
+</div>
