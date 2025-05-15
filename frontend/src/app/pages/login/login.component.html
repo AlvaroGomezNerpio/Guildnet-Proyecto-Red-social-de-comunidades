@@ -1,0 +1,24 @@
+<div class="container mt-5" style="max-width: 400px;">
+  <h2 class="mb-4">Iniciar sesión</h2>
+
+  <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+    <div class="mb-3">
+      <label for="email" class="form-label">Correo electrónico</label>
+      <input type="email" class="form-control" id="email" [(ngModel)]="email" name="email" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="password" class="form-label">Contraseña</label>
+      <input type="password" class="form-control" id="password" [(ngModel)]="password" name="password" required>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100" [disabled]="loginForm.invalid">
+      Iniciar sesión
+    </button>
+  </form>
+
+  <div *ngIf="error" class="alert alert-danger mt-3">
+    {{ error }}
+  </div>
+</div>
+
