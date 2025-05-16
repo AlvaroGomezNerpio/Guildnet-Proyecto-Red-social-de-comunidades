@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/v1/communities")
 @RequiredArgsConstructor
@@ -34,6 +35,62 @@ public class CommunityController {
                         c.getTags()
                 ))
                 .toList();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/subscribed")
+    public ResponseEntity<List<CommunityResponseDTO>> getSubscribedCommunities(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        List<Community> subscribed = communityService.getCommunitiesByUser(user);
+
+        List<CommunityResponseDTO> response = subscribed.stream()
+                .map(c -> new CommunityResponseDTO(
+                        c.getId(),
+                        c.getName(),
+                        c.getDescription(),
+                        c.getImage(),
+                        c.getBanner(),
+                        c.getTags()
+                ))
+                .toList();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/suggested")
+    public ResponseEntity<List<CommunityResponseDTO>> getSuggestedCommunities(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        List<Community> suggested = communityService.getSuggestedCommunities(user);
+
+        List<CommunityResponseDTO> response = suggested.stream()
+                .map(c -> new CommunityResponseDTO(
+                        c.getId(),
+                        c.getName(),
+                        c.getDescription(),
+                        c.getImage(),
+                        c.getBanner(),
+                        c.getTags()
+                ))
+                .toList();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<List<CommunityResponseDTO>> getMostPopularCommunities() {
+        List<Community> popular = communityService.getMostPopularCommunities();
+
+        List<CommunityResponseDTO> response = popular.stream()
+                .map(c -> new CommunityResponseDTO(
+                        c.getId(),
+                        c.getName(),
+                        c.getDescription(),
+                        c.getImage(),
+                        c.getBanner(),
+                        c.getTags()
+                ))
+                .toList();
+
         return ResponseEntity.ok(response);
     }
 

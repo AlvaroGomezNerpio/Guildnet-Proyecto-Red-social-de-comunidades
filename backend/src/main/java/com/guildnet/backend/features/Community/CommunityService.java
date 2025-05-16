@@ -41,6 +41,14 @@ public interface CommunityService {
 
     // Guardar imagen en disco y devolver la URL
     String saveImage(MultipartFile file) throws IOException;
+
+    List<Community> getCommunitiesByUser(User user);
+
+    List<Community> getSuggestedCommunities(User user);
+
+    List<Community> getMostPopularCommunities();
+
+
 }
 
 

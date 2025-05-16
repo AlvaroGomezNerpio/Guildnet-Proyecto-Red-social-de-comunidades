@@ -1,4 +1,80 @@
-<div class="container mt-5">
-  <h2 class="text-success">¡Bienvenido a Guildnet!</h2>
-  <p>El login ha sido exitoso y ya estás en la pantalla de comunidades.</p>
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Tus comunidades</h2>
+    <button class="btn btn-primary" (click)="onCreateCommunity()">Crear comunidad</button>
+  </div>
+
+  <!-- Sección de comunidades suscritas -->
+  <div *ngIf="subscribedCommunities.length > 0; else noSubscribed">
+    <div class="row">
+      <div *ngFor="let community of subscribedCommunities" class="col-md-4 mb-3">
+        <div class="card h-100">
+          <img [src]="community.banner" class="card-img-top" alt="Banner" *ngIf="community.banner">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-2">
+              <img [src]="community.image" alt="Avatar" class="rounded-circle me-2" width="40" height="40" *ngIf="community.image">
+              <h5 class="card-title mb-0">{{ community.name }}</h5>
+            </div>
+            <p class="card-text">{{ community.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noSubscribed>
+    <p>No estás suscrito a ninguna comunidad aún.</p>
+  </ng-template>
+
+  <hr class="my-5">
+
+  <!-- Sección de comunidades sugeridas -->
+  <h3>Comunidades sugeridas</h3>
+  <div *ngIf="suggestedCommunities.length > 0; else noSuggestions">
+    <div class="row">
+      <div *ngFor="let community of suggestedCommunities" class="col-md-4 mb-3">
+        <div class="card h-100">
+          <img [src]="community.banner" class="card-img-top" alt="Banner" *ngIf="community.banner">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-2">
+              <img [src]="community.image" alt="Avatar" class="rounded-circle me-2" width="40" height="40" *ngIf="community.image">
+              <h5 class="card-title mb-0">{{ community.name }}</h5>
+            </div>
+            <p class="card-text">{{ community.description }}</p>
+            <button class="btn btn-outline-success w-100 mt-2" (click)="onJoinCommunity(community.id)">Unirse</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noSuggestions>
+    <p>No hay sugerencias disponibles por ahora.</p>
+  </ng-template>
+
+  <hr class="my-5">
+
+  <!-- Sección de comunidades populares -->
+  <h3>Comunidades populares</h3>
+  <div *ngIf="popularCommunities.length > 0; else noPopular">
+    <div class="row">
+      <div *ngFor="let community of popularCommunities" class="col-md-4 mb-3">
+        <div class="card h-100">
+          <img [src]="community.banner" class="card-img-top" alt="Banner" *ngIf="community.banner">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-2">
+              <img [src]="community.image" alt="Avatar" class="rounded-circle me-2" width="40" height="40" *ngIf="community.image">
+              <h5 class="card-title mb-0">{{ community.name }}</h5>
+            </div>
+            <p class="card-text">{{ community.description }}</p>
+            <button class="btn btn-outline-success w-100 mt-2" (click)="onJoinCommunity(community.id)">Unirse</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noPopular>
+    <p>No hay comunidades populares disponibles por ahora.</p>
+  </ng-template>
 </div>

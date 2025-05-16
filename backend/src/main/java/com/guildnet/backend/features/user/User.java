@@ -29,6 +29,10 @@ public class User implements org.springframework.security.core.userdetails.UserD
 
     private String profileImage;
 
+    @ElementCollection
+    private List<String> tags;
+
+
     @Override
     public String getUsername() {
         return email;
