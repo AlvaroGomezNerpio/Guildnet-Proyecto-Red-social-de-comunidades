@@ -8,6 +8,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { LoginComponent } from './pages/login/login.component';
 import { CommunityListComponent } from './pages/communities/community-list/community-list.component';
 import { RegisterComponent } from './pages/register/register.component';
+import { CreateCommunityComponent } from './pages/communities/create-community/create-community.component';
 
 
 @NgModule({
@@ -15,7 +16,8 @@ import { RegisterComponent } from './pages/register/register.component';
     AppComponent,
     LoginComponent,
     CommunityListComponent,
-    RegisterComponent
+    RegisterComponent,
+    CreateCommunityComponent
   ],
   imports: [
     BrowserModule,

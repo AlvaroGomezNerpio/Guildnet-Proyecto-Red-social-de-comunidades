@@ -15,8 +15,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -66,6 +64,11 @@ public class UserServiceImpl implements UserDetailsService {
                 user.getEmail(),
                 user.getProfileImage()
         );
+    }
+
+    public void updateUserTags(User user, List<String> tags) {
+        user.setTags(tags);
+        userRepository.save(user);
     }
 
     public void deleteUser(Long id) {

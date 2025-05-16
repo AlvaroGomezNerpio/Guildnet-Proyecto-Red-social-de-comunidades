@@ -1,0 +1,38 @@
+<div class="container mt-4">
+  <h2>Crear nueva comunidad</h2>
+
+  <form (ngSubmit)="onSubmit()" #form="ngForm">
+
+    <div class="mb-3">
+      <label>Nombre</label>
+      <input type="text" class="form-control" [(ngModel)]="community.name" name="name" required>
+    </div>
+
+    <div class="mb-3">
+      <label>Descripción</label>
+      <textarea class="form-control" [(ngModel)]="community.description" name="description" required></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label>Reglas</label>
+      <textarea class="form-control" [(ngModel)]="community.rules" name="rules" required></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label>Etiquetas (separadas por comas)</label>
+      <input type="text" class="form-control" [(ngModel)]="tagsInput" name="tags">
+    </div>
+
+    <div class="mb-3">
+      <label>Imagen de perfil</label>
+      <input type="file" (change)="onImageSelected($event)" class="form-control">
+    </div>
+
+    <div class="mb-3">
+      <label>Banner</label>
+      <input type="file" (change)="onBannerSelected($event)" class="form-control">
+    </div>
+
+    <button type="submit" class="btn btn-success">Crear comunidad</button>
+  </form>
+</div>

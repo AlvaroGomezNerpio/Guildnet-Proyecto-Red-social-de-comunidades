@@ -1,6 +1,7 @@
 package com.guildnet.backend.features.user;
 
 import com.guildnet.backend.features.user.dto.UpdateUserRequest;
+import com.guildnet.backend.features.user.dto.UpdateUserTagsRequest;
 import com.guildnet.backend.features.user.dto.UserDTO;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +47,17 @@ public class UserController {
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
+
+    @PutMapping("/tags")
+    public ResponseEntity<?> updateTags(
+            @RequestBody UpdateUserTagsRequest request,
+            Authentication authentication
+    ) {
+        User user = (User) authentication.getPrincipal();
+        userService.updateUserTags(user, request.getTags());
+        return ResponseEntity.ok("Tags actualizados");
+    }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {

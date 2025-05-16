@@ -154,6 +154,27 @@ public class CommunityServiceImpl implements CommunityService {
 
         return "http://localhost:8080/uploads/communities/" + uniqueName;
     }
+
+    @Override
+    public List<Community> getCommunitiesByUser(User user) {
+        return communityRepository.findCommunitiesByUserId(user.getId());
+    }
+
+    @Override
+    public List<Community> getSuggestedCommunities(User user) {
+        if (user.getTags() == null || user.getTags().isEmpty()) {
+            return List.of();
+        }
+        return communityRepository.findSuggestedCommunities(user.getTags(), user.getId());
+    }
+
+    @Override
+    public List<Community> getMostPopularCommunities() {
+        return communityRepository.findCommunitiesOrderBySubscribersDesc();
+    }
+
+
+
 }
 
 
