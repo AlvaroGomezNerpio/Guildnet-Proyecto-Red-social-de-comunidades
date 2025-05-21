@@ -26,11 +26,11 @@ public interface CommunityRepository extends JpaRepository<Community, Long> {
     List<Community> findCommunitiesByUserId(@Param("userId") Long userId);
 
     @Query(value = """
-                SELECT DISTINCT c.* FROM community c
+                SELECT DISTINCT c.* FROM communities c
                 JOIN community_tags ct ON c.id = ct.community_id
                 WHERE ct.tags IN (:tags)
                 AND c.id NOT IN (
-                    SELECT cp.community_id FROM community_profile cp WHERE cp.user_id = :userId
+                    SELECT cp.community_id FROM community_profiles cp WHERE cp.user_id = :userId
                 )
             """, nativeQuery = true)
     List<Community> findSuggestedCommunities(@Param("tags") List<String> tags, @Param("userId") Long userId);

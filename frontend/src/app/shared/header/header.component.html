@@ -1,0 +1,61 @@
+<header
+  class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom px-4"
+>
+  <div class="col-md-3 mb-2 mb-md-0">
+    <a routerLink="/" class="d-inline-flex link-body-emphasis text-decoration-none">
+      <span class="fs-4">Guildnet</span>
+      </a>
+  </div>
+
+  <nav class="col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+    <ul class="nav nav-pills">
+      <li class="nav-item">
+        <a routerLink="/communities" class="nav-link px-2 link-secondary" aria-current="page"
+          >Inicio</a
+        >
+      </li>
+      <li class="nav-item">
+        <a routerLink="/communities/search" class="nav-link px-2"
+          >Buscar Comunidad</a
+        >
+      </li>
+      <li class="nav-item" *ngIf="currentUser">
+        <a class="btn btn-primary" [routerLink]="['/communities/create']"
+          >Crear comunidad</a
+        >
+        </li>
+    </ul>
+  </nav>
+
+  <div class="col-md-3 text-end">
+    <ng-container *ngIf="!currentUser; else loggedIn">
+      <button type="button" class="btn btn-outline-primary me-2" routerLink="/login">
+        Login
+      </button>
+      <button type="button" class="btn btn-primary" routerLink="/register">
+        Registrarse
+      </button>
+    </ng-container>
+
+    <ng-template #loggedIn>
+      <div class="d-flex align-items-center justify-content-end">
+        <a
+          routerLink="/profile"
+          class="btn btn-outline-secondary me-2 d-inline-flex align-items-center"
+          style="text-decoration: none;"
+        >
+          <img
+            *ngIf="currentUser?.profileImage"
+            [src]="currentUser?.profileImage"
+            alt="Imagen de perfil"
+            class="rounded-circle me-2"
+            width="30"
+            height="30"
+          />
+          <span *ngIf="currentUser?.username">{{ currentUser?.username }}</span>
+          <span *ngIf="!currentUser?.username">Perfil</span> </a>
+        <button type="button" class="btn btn-danger" (click)="logout()">Cerrar sesión</button>
+      </div>
+    </ng-template>
+  </div>
+</header>

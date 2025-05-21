@@ -37,7 +37,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Preflight CORS
                         .requestMatchers(
                                 "/api/v1/auth/**",
-                                "/uploads/**"
+                                "/uploads/**",
+                                "/api/v1/communities/popular",
+                                "/api/v1/communities/search"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

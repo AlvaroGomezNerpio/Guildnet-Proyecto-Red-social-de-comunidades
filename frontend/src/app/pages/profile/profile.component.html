@@ -1,0 +1,109 @@
+<div class="container mt-5 text-center">
+  <!-- Imagen de perfil -->
+  <div class="mb-4">
+    <img
+      [src]="user?.profileImage || 'assets/default-avatar.png'"
+      alt="Imagen de perfil"
+      class="rounded-circle"
+      width="150"
+      height="150"
+    />
+  </div>
+
+  <!-- Nombre de usuario sin editar -->
+  <h4 class="mb-4">{{ user?.username }}</h4>
+
+  <!-- Botón para abrir el modal -->
+  <button
+    type="button"
+    class="btn btn-outline-primary mb-5"
+    data-bs-toggle="modal"
+    data-bs-target="#editProfileModal"
+  >
+    Editar perfil
+  </button>
+
+  <!-- Modal de edición de perfil -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editProfileModalLabel">Editar perfil</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <form [formGroup]="editForm" (ngSubmit)="onUpdateProfile()">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="username" class="form-label">Nombre de usuario</label>
+              <input
+                type="text"
+                id="username"
+                class="form-control"
+                formControlName="username"
+              />
+            </div>
+
+
+          <div class="mb-3">
+            <label for="email" class="form-label">Correo electrónico</label>
+            <input
+              type="email"
+              id="email"
+              class="form-control"
+              formControlName="email"
+            />
+          </div>
+
+            <div class="mb-3">
+              <label for="image" class="form-label">Cambiar imagen</label>
+              <input type="file" id="image" class="form-control" (change)="onImageSelected($event)" />
+            </div>
+
+            <div *ngIf="successMessage" class="alert alert-success mt-3">
+              {{ successMessage }}
+            </div>
+            <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+              {{ errorMessage }}
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <hr class="my-5" />
+
+  <!-- Comunidades suscritas -->
+  <h3>Tus comunidades</h3>
+  <div *ngIf="subscribedCommunities.length > 0; else noCommunities" class="row mt-4">
+    <div *ngFor="let community of subscribedCommunities" class="col-md-4 mb-3">
+      <div class="card h-100">
+        <img [src]="community.banner" class="card-img-top" *ngIf="community.banner" alt="Banner" />
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-2">
+            <img
+              [src]="community.image"
+              alt="Avatar"
+              class="rounded-circle me-2"
+              width="40"
+              height="40"
+              *ngIf="community.image"
+            />
+            <h5 class="card-title mb-0">{{ community.name }}</h5>
+          </div>
+          <p class="card-text">{{ community.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noCommunities>
+    <p>No estás suscrito a ninguna comunidad.</p>
+  </ng-template>
+</div>

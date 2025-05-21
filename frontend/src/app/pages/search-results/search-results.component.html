@@ -1,0 +1,38 @@
+<div class="container mt-4">
+  <div class="card p-3 mb-4">
+    <h5 class="mb-3">Buscar comunidades</h5>
+    <div class="row g-2">
+      <div class="col-md-5">
+        <input type="text" class="form-control" placeholder="Buscar por nombre"
+               [formControl]="searchNameControl">
+      </div>
+      <div class="col-md-5">
+        <input type="text" class="form-control" placeholder="Buscar por tags (separados por coma)"
+               [formControl]="searchTagsControl">
+      </div>
+    </div>
+  </div>
+
+  <!-- Resultados -->
+  <div *ngIf="results.length > 0">
+    <h3 class="mb-3">Resultados de búsqueda</h3>
+    <div class="row">
+      <div *ngFor="let community of results" class="col-md-4 mb-3">
+        <div class="card h-100">
+          <img [src]="community.banner" class="card-img-top" alt="Banner" *ngIf="community.banner">
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-2">
+              <img [src]="community.image" alt="Avatar" class="rounded-circle me-2" width="40" height="40" *ngIf="community.image">
+              <h5 class="card-title mb-0">{{ community.name }}</h5>
+            </div>
+            <p class="card-text">{{ community.description }}</p>
+            <button class="btn btn-outline-success w-100 mt-2" (click)="onJoinCommunity(community.id)">Unirse</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p *ngIf="results.length === 0 && !error">No se encontraron comunidades.</p>
+  <p *ngIf="error" class="text-danger">{{ error }}</p>
+</div>
