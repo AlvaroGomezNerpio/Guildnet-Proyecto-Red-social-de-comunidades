@@ -1,11 +1,12 @@
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Tus comunidades</h2>
-    <button class="btn btn-primary" (click)="onCreateCommunity()">Crear comunidad</button>
+    <button *ngIf="isLoggedIn" class="btn btn-primary" (click)="onCreateCommunity()">Crear comunidad</button>
   </div>
 
   <!-- Sección de comunidades suscritas -->
-  <div *ngIf="subscribedCommunities.length > 0; else noSubscribed">
+  <div *ngIf="isLoggedIn && subscribedCommunities.length > 0; else noSubscribed">
+    <h3>Tus comunidades</h3>
     <div class="row">
       <div *ngFor="let community of subscribedCommunities" class="col-md-4 mb-3">
         <div class="card h-100">
@@ -23,14 +24,14 @@
   </div>
 
   <ng-template #noSubscribed>
-    <p>No estás suscrito a ninguna comunidad aún.</p>
+    <p *ngIf="isLoggedIn">No estás suscrito a ninguna comunidad aún.</p>
   </ng-template>
 
-  <hr class="my-5">
+  <hr class="my-5" *ngIf="isLoggedIn">
 
   <!-- Sección de comunidades sugeridas -->
-  <h3>Comunidades sugeridas</h3>
-  <div *ngIf="suggestedCommunities.length > 0; else noSuggestions">
+  <h3 *ngIf="isLoggedIn">Comunidades sugeridas</h3>
+  <div *ngIf="isLoggedIn && suggestedCommunities.length > 0; else noSuggestions">
     <div class="row">
       <div *ngFor="let community of suggestedCommunities" class="col-md-4 mb-3">
         <div class="card h-100">
@@ -41,7 +42,7 @@
               <h5 class="card-title mb-0">{{ community.name }}</h5>
             </div>
             <p class="card-text">{{ community.description }}</p>
-            <button class="btn btn-outline-success w-100 mt-2" (click)="onJoinCommunity(community.id)">Unirse</button>
+            <button class="btn btn-outline-success w-100 mt-2" *ngIf="isLoggedIn" (click)="onJoinCommunity(community.id)">Unirse</button>
           </div>
         </div>
       </div>
@@ -49,7 +50,7 @@
   </div>
 
   <ng-template #noSuggestions>
-    <p>No hay sugerencias disponibles por ahora.</p>
+    <p *ngIf="isLoggedIn">No hay sugerencias disponibles por ahora.</p>
   </ng-template>
 
   <hr class="my-5">
@@ -67,7 +68,7 @@
               <h5 class="card-title mb-0">{{ community.name }}</h5>
             </div>
             <p class="card-text">{{ community.description }}</p>
-            <button class="btn btn-outline-success w-100 mt-2" (click)="onJoinCommunity(community.id)">Unirse</button>
+            <button class="btn btn-outline-success w-100 mt-2" *ngIf="isLoggedIn" (click)="onJoinCommunity(community.id)">Unirse</button>
           </div>
         </div>
       </div>

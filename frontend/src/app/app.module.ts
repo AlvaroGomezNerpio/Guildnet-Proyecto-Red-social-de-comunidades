@@ -9,7 +9,11 @@ import { LoginComponent } from './pages/login/login.component';
 import { CommunityListComponent } from './pages/communities/community-list/community-list.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { CreateCommunityComponent } from './pages/communities/create-community/create-community.component';
-
+import { SearchResultsComponent } from './pages/search-results/search-results.component';
+import { ReactiveFormsModule } from '@angular/forms';
+import { HeaderComponent } from './shared/header/header.component';
+import { FooterComponent } from './shared/footer/footer.component';
+import { ProfileComponent } from './pages/profile/profile.component';
 
 @NgModule({
   declarations: [
@@ -17,13 +21,18 @@ import { CreateCommunityComponent } from './pages/communities/create-community/c
     LoginComponent,
     CommunityListComponent,
     RegisterComponent,
-    CreateCommunityComponent
+    CreateCommunityComponent,
+    SearchResultsComponent,
+    HeaderComponent,
+    FooterComponent,
+    ProfileComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -4,6 +4,7 @@ import com.guildnet.backend.features.Community.dto.CommunityResponse;
 import com.guildnet.backend.features.Community.dto.CreateCommunityRequest;
 import com.guildnet.backend.features.Community.dto.UpdateCommunityRequest;
 import com.guildnet.backend.features.user.User;
+import com.guildnet.backend.features.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +25,8 @@ import java.util.UUID;
 public class CommunityServiceImpl implements CommunityService {
 
     private final CommunityRepository communityRepository;
+
+    private final UserRepository userRepository;
 
     @Override
     public List<Community> getAllCommunities() {
@@ -161,12 +164,17 @@ public class CommunityServiceImpl implements CommunityService {
     }
 
     @Override
-    public List<Community> getSuggestedCommunities(User user) {
+    public List<Community> getSuggestedCommunities(User authUser) {
+        User user = userRepository.findByIdWithTags(authUser.getId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
         if (user.getTags() == null || user.getTags().isEmpty()) {
             return List.of();
         }
+
         return communityRepository.findSuggestedCommunities(user.getTags(), user.getId());
     }
+
 
     @Override
     public List<Community> getMostPopularCommunities() {

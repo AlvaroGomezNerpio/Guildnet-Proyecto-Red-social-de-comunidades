@@ -13,11 +13,15 @@ export class CommunityService {
   constructor(private http: HttpClient) {}
 
   private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token');
+  if (token) {
     return new HttpHeaders({
       Authorization: `Bearer ${token}`,
     });
   }
+  return new HttpHeaders(); // sin cabecera Authorization
+}
+
 
   getSubscribedCommunities(): Observable<CommunityResponseDTO[]> {
     return this.http.get<CommunityResponseDTO[]>(`${this.apiUrl}/subscribed`, {
@@ -44,28 +48,42 @@ export class CommunityService {
   }
 
   createCommunity(
-  data: CreateCommunityRequest,
-  image?: File,
-  banner?: File
-): Observable<any> {
-  const formData = new FormData();
+    data: CreateCommunityRequest,
+    image?: File,
+    banner?: File
+  ): Observable<any> {
+    const formData = new FormData();
 
-  formData.append('community', new Blob(
-    [JSON.stringify(data)],
-    { type: 'application/json' }
-  ));
+    formData.append(
+      'community',
+      new Blob([JSON.stringify(data)], { type: 'application/json' })
+    );
 
-  if (image) {
-    formData.append('image', image);
+    if (image) {
+      formData.append('image', image);
+    }
+
+    if (banner) {
+      formData.append('banner', banner);
+    }
+
+    return this.http.post(`${this.apiUrl}/create`, formData, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
-  if (banner) {
-    formData.append('banner', banner);
-  }
+  searchCommunities(
+    name?: string,
+    tags?: string[]
+  ): Observable<CommunityResponseDTO[]> {
+    let params: any = {};
+    if (name) params.name = name;
+    if (tags && tags.length > 0) params.tag = tags;
 
-  return this.http.post(`${this.apiUrl}/create`, formData, {
-    headers: this.getAuthHeaders()
-  });
-}
+    return this.http.get<CommunityResponseDTO[]>(`${this.apiUrl}/search`, {
+      headers: this.getAuthHeaders(),
+      params: params,
+    });
+  }
 
 }
