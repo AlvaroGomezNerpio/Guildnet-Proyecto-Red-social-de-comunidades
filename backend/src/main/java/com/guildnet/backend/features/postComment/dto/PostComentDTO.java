@@ -11,9 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostComentDTO {
-
     private Long id;
     private String content;
     private CommunityProfileDTO communityProfile;
-
 }

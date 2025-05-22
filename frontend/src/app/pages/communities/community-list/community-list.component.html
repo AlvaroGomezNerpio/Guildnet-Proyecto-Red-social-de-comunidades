@@ -1,11 +1,11 @@
 <div class="container mt-4">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Tus comunidades</h2>
+    <h2>Comunidades</h2>
     <button *ngIf="isLoggedIn" class="btn btn-primary" (click)="onCreateCommunity()">Crear comunidad</button>
   </div>
 
-  <!-- Sección de comunidades suscritas -->
-  <div *ngIf="isLoggedIn && subscribedCommunities.length > 0; else noSubscribed">
+  <!-- 🔒 Sección de comunidades suscritas (solo si está logueado) -->
+  <div *ngIf="isLoggedIn && subscribedCommunities.length > 0">
     <h3>Tus comunidades</h3>
     <div class="row">
       <div *ngFor="let community of subscribedCommunities" class="col-md-4 mb-3">
@@ -17,21 +17,23 @@
               <h5 class="card-title mb-0">{{ community.name }}</h5>
             </div>
             <p class="card-text">{{ community.description }}</p>
+            <button
+              class="btn btn-outline-primary w-100 mt-2"
+              (click)="enterCommunity(community.id)"
+            >
+              Entrar a la comunidad
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <ng-template #noSubscribed>
-    <p *ngIf="isLoggedIn">No estás suscrito a ninguna comunidad aún.</p>
-  </ng-template>
+  <hr class="my-5" *ngIf="isLoggedIn" />
 
-  <hr class="my-5" *ngIf="isLoggedIn">
-
-  <!-- Sección de comunidades sugeridas -->
+  <!-- 🎯 Sección de comunidades sugeridas -->
   <h3 *ngIf="isLoggedIn">Comunidades sugeridas</h3>
-  <div *ngIf="isLoggedIn && suggestedCommunities.length > 0; else noSuggestions">
+  <div *ngIf="isLoggedIn && suggestedCommunities.length > 0">
     <div class="row">
       <div *ngFor="let community of suggestedCommunities" class="col-md-4 mb-3">
         <div class="card h-100">
@@ -42,24 +44,27 @@
               <h5 class="card-title mb-0">{{ community.name }}</h5>
             </div>
             <p class="card-text">{{ community.description }}</p>
-            <button class="btn btn-outline-success w-100 mt-2" *ngIf="isLoggedIn" (click)="onJoinCommunity(community.id)">Unirse</button>
+            <button
+              class="btn btn-outline-primary w-100 mt-2"
+              data-bs-toggle="modal"
+              data-bs-target="#communityModal"
+              (click)="openCommunityModal(community)"
+            >
+              Ver más
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <ng-template #noSuggestions>
-    <p *ngIf="isLoggedIn">No hay sugerencias disponibles por ahora.</p>
-  </ng-template>
+  <hr class="my-5" />
 
-  <hr class="my-5">
-
-  <!-- Sección de comunidades populares -->
+  <!-- 🔥 Comunidades populares (siempre visibles) -->
   <h3>Comunidades populares</h3>
-  <div *ngIf="popularCommunities.length > 0; else noPopular">
+  <div *ngIf="filteredPopularCommunities.length > 0; else noPopular">
     <div class="row">
-      <div *ngFor="let community of popularCommunities" class="col-md-4 mb-3">
+      <div *ngFor="let community of filteredPopularCommunities" class="col-md-4 mb-3">
         <div class="card h-100">
           <img [src]="community.banner" class="card-img-top" alt="Banner" *ngIf="community.banner">
           <div class="card-body">
@@ -68,7 +73,14 @@
               <h5 class="card-title mb-0">{{ community.name }}</h5>
             </div>
             <p class="card-text">{{ community.description }}</p>
-            <button class="btn btn-outline-success w-100 mt-2" *ngIf="isLoggedIn" (click)="onJoinCommunity(community.id)">Unirse</button>
+            <button
+              class="btn btn-outline-primary w-100 mt-2"
+              data-bs-toggle="modal"
+              data-bs-target="#communityModal"
+              (click)="openCommunityModal(community)"
+            >
+              Ver más
+            </button>
           </div>
         </div>
       </div>
@@ -78,4 +90,49 @@
   <ng-template #noPopular>
     <p>No hay comunidades populares disponibles por ahora.</p>
   </ng-template>
+
+  <!-- 🪟 Modal de detalles de comunidad -->
+  <div class="modal fade" id="communityModal" tabindex="-1" aria-labelledby="communityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content" *ngIf="selectedCommunity">
+        <div class="modal-header">
+          <h5 class="modal-title" id="communityModalLabel">{{ selectedCommunity.name }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <img *ngIf="selectedCommunity.banner" [src]="selectedCommunity.banner" class="img-fluid mb-3 rounded" alt="Banner" />
+
+          <div class="d-flex align-items-center mb-3">
+            <img
+              *ngIf="selectedCommunity.image"
+              [src]="selectedCommunity.image"
+              alt="Avatar"
+              class="rounded-circle me-3"
+              width="60"
+              height="60"
+            />
+            <div>
+              <h4 class="mb-0">{{ selectedCommunity.name }}</h4>
+              <small class="text-muted">#{{ selectedCommunity.tags.join(', ') }}</small>
+            </div>
+          </div>
+
+          <p class="mb-3"><strong>Descripción:</strong> {{ selectedCommunity.description }}</p>
+
+          <p><strong>Reglas:</strong> {{ selectedCommunity.rules }}</p>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-success"
+            *ngIf="isLoggedIn"
+            (click)="onJoinCommunity(selectedCommunity.id)"
+            data-bs-dismiss="modal"
+          >
+            Unirse a la comunidad
+          </button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

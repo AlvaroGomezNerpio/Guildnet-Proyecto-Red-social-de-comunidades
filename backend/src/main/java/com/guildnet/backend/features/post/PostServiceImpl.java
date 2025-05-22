@@ -89,7 +89,6 @@ public class PostServiceImpl implements PostService {
                 .collect(Collectors.toList());
     }
 
-    // Métodos de mapeo aquí...
     private PostDTO mapToDTO(Post post) {
         PostDTO dto = new PostDTO();
         dto.setId(post.getId());
@@ -97,6 +96,7 @@ public class PostServiceImpl implements PostService {
         dto.setContent(post.getContent());
         dto.setTags(post.getTags());
         dto.setLikes(post.getLikes() != null ? post.getLikes().size() : 0);
+        dto.setComents(post.getComments() != null ? post.getComments().size() : 0);
         dto.setCommunityId(post.getCommunity().getId());
         dto.setCommunityProfile(mapToCommunityProfileDTO(post.getProfile()));
         return dto;

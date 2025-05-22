@@ -13,6 +13,7 @@ public class CommunityResponseDTO {
     private Long id;
     private String name;
     private String description;
+    private String rules;
     private String image;
     private String banner;
     private List<String> tags;

@@ -5,6 +5,7 @@ import com.guildnet.backend.features.profileComment.dto.ProfileCommentDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +21,8 @@ public class ProfileCommentController {
     public ResponseEntity<ProfileCommentDTO> createComment(
             @PathVariable Long authorProfileId,
             @PathVariable Long targetProfileId,
-            @RequestBody ProfileCommentCreateUpdateDTO dto) {
+            @RequestBody ProfileCommentCreateUpdateDTO dto
+    ) {
         return new ResponseEntity<>(
                 profileCommentService.createProfileComment(authorProfileId, targetProfileId, dto),
                 HttpStatus.CREATED
