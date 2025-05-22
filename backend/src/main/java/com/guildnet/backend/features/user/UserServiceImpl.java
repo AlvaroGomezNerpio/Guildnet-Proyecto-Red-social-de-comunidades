@@ -2,6 +2,7 @@ package com.guildnet.backend.features.user;
 
 import com.guildnet.backend.features.user.dto.UpdateUserRequest;
 import com.guildnet.backend.features.user.dto.UserDTO;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -33,17 +34,33 @@ public class UserServiceImpl implements UserDetailsService {
 
     public List<UserDTO> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(user -> new UserDTO(user.getId(), user.getUsername(), user.getEmail(), user.getProfileImage()))
+                .map(user -> new UserDTO(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getProfileImage(),
+                        user.getTags()
+                ))
                 .toList();
     }
 
     public UserDTO getUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
-        return new UserDTO(user.getId(), user.getUsername(), user.getEmail(), user.getProfileImage());
+        return new UserDTO(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getProfileImage(),
+                user.getTags());
     }
 
-    public UserDTO updateUserProfile(UpdateUserRequest request, MultipartFile imageFile, User user) {
+    @Transactional
+    public UserDTO updateUserProfile(UpdateUserRequest request, MultipartFile imageFile, User authUser) {
+        // Recuperar desde DB por ID → así Hibernate lo gestiona correctamente
+        User user = userRepository.findById(authUser.getId())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
         if (request.getUsername() != null) {
             user.setUsername(request.getUsername());
         }
@@ -52,19 +69,28 @@ public class UserServiceImpl implements UserDetailsService {
             user.setEmail(request.getEmail());
         }
 
+        if (request.getTags() != null) {
+            user.setTags(request.getTags());
+        }
+
         if (imageFile != null && !imageFile.isEmpty()) {
             user.setProfileImage(saveUserProfileImage(imageFile));
         }
 
-        userRepository.save(user);
+        user = userRepository.save(user);
+
+        // Forzar carga de tags dentro de la sesión activa
+        user.getTags().size();
 
         return new UserDTO(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getProfileImage()
+                user.getProfileImage(),
+                user.getTags()
         );
     }
+
 
     public void updateUserTags(User user, List<String> tags) {
         user.setTags(tags);

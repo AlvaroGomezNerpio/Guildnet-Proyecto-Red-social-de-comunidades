@@ -1,0 +1,48 @@
+<div class="container mt-5">
+  <h2 class="mb-4">Crear nueva publicación</h2>
+
+  <form [formGroup]="postForm" (ngSubmit)="onSubmit()">
+    <!-- Título -->
+    <div class="mb-3">
+      <label for="title" class="form-label">Título</label>
+      <input
+        type="text"
+        id="title"
+        class="form-control"
+        formControlName="title"
+        placeholder="Escribe el título del post"
+        required
+      />
+    </div>
+
+    <!-- Contenido enriquecido con Quill -->
+    <div class="mb-3">
+      <label for="content" class="form-label">Contenido</label>
+      <quill-editor
+        formControlName="content"
+        [style]="{ height: '250px' }"
+      ></quill-editor>
+    </div>
+
+    <!-- Etiquetas -->
+    <div class="mb-3">
+      <label for="tags" class="form-label">Etiquetas (separadas por coma)</label>
+      <input
+        type="text"
+        id="tags"
+        class="form-control"
+        formControlName="tags"
+        placeholder="Ejemplo: videojuegos, noticias, opinión"
+      />
+      <div class="form-text">Presiona enter o separa con comas.</div>
+    </div>
+
+    <!-- Botón -->
+    <div class="text-end">
+      <button type="submit" class="btn btn-primary">
+        Publicar
+      </button>
+    </div>
+  </form>
+</div>
+

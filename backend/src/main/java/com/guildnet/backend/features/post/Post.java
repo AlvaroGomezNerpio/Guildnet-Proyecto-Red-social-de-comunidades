@@ -23,6 +23,8 @@ public class Post {
 
     private String title;
 
+    @Lob
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String content;
 
     // Lista de etiquetas asociadas a la publicación (guardada como colección embebida)

@@ -3,4 +3,5 @@ export interface UserDTO {
   username: string;
   email: string;
   profileImage: string;
+  tags: string[];
 }

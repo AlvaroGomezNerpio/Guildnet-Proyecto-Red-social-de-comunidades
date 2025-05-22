@@ -30,6 +30,8 @@ public class CommunityProfile {
 
     private String username;
 
+    @Lob
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String description;
 
     private String profileImage;

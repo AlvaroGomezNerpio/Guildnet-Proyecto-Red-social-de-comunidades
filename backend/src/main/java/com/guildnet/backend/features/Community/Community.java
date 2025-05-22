@@ -26,8 +26,12 @@ public class Community {
 
     private String name;
 
+    @Lob
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String description;
 
+    @Lob
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String rules;
 
     private String image;
