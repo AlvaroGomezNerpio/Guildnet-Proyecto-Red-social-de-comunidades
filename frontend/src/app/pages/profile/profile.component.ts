@@ -29,17 +29,28 @@ export class ProfileComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.initForm();
     this.loadUser();
     this.loadCommunities();
-    this.initForm();
+  }
+
+  initForm(): void {
+    this.editForm = this.fb.group({
+      username: [''],
+      email: [''],
+      tags: ['']
+    });
   }
 
   loadUser(): void {
     this.userService.getCurrentUser().subscribe({
       next: (data) => {
         this.user = data;
-        this.editForm.patchValue({ username: data.username });
-        this.editForm.patchValue({ email: data.email });
+        this.editForm.patchValue({
+          username: data.username,
+          email: data.email,
+          tags: data.tags?.join(', ') || ''
+        });
       },
       error: () => this.errorMessage = 'No se pudo cargar el perfil.'
     });
@@ -52,14 +63,6 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  initForm(): void {
-  this.editForm = this.fb.group({
-    username: [this.user?.username || ''],
-    email: [this.user?.email || '']
-  });
-}
-
-
   onImageSelected(event: any): void {
     const file = event.target.files[0];
     this.selectedImage = file ?? undefined;
@@ -68,9 +71,16 @@ export class ProfileComponent implements OnInit {
   onUpdateProfile(): void {
     if (!this.editForm.valid) return;
 
+    const rawTags: string = this.editForm.value.tags;
+    const tagsArray = rawTags
+      ?.split(',')
+      .map((tag: string) => tag.trim())
+      .filter((tag: string) => tag.length > 0);
+
     const request: UpdateUserRequest = {
       username: this.editForm.value.username,
-      email: this.editForm.value.email
+      email: this.editForm.value.email,
+      tags: tagsArray
     };
 
     this.userService.updateUser(request, this.selectedImage).subscribe({
@@ -85,5 +95,4 @@ export class ProfileComponent implements OnInit {
       }
     });
   }
-
 }

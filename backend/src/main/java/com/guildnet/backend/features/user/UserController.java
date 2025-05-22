@@ -3,9 +3,11 @@ package com.guildnet.backend.features.user;
 import com.guildnet.backend.features.user.dto.UpdateUserRequest;
 import com.guildnet.backend.features.user.dto.UpdateUserTagsRequest;
 import com.guildnet.backend.features.user.dto.UserDTO;
+import jakarta.transaction.Transactional;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,13 +22,30 @@ import java.util.List;
 public class UserController {
 
     private final UserServiceImpl userService;
+    private final UserRepository userRepository;
 
     @GetMapping("/me")
+    @Transactional
     public ResponseEntity<UserDTO> getCurrentUser(Authentication authentication) {
-        User user = (User) authentication.getPrincipal();
-        UserDTO dto = new UserDTO(user.getId(), user.getTrueUsername(), user.getEmail(), user.getProfileImage());
+        User authUser = (User) authentication.getPrincipal();
+
+        // Reobtener el usuario desde base de datos para que esté en sesión activa
+        User user = userRepository.findByEmail(authUser.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
+        // Forzar la carga de los tags
+        user.getTags().size();
+
+        UserDTO dto = new UserDTO(
+                user.getId(),
+                user.getTrueUsername(),
+                user.getEmail(),
+                user.getProfileImage(),
+                user.getTags()
+        );
         return ResponseEntity.ok(dto);
     }
+
 
     @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserDTO> updateUser(

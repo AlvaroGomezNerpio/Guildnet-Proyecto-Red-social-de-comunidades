@@ -16,6 +16,8 @@ import { FooterComponent } from './shared/footer/footer.component';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { CommunityDetailComponent } from './pages/communities/community-detail/community-detail.component';
 import { CommunityProfileDetailComponent } from './pages/community-profile-detail/community-profile-detail.component';
+import { QuillModule } from 'ngx-quill';
+import { PostCreateComponent } from './pages/posts/post-create/post-create.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +31,8 @@ import { CommunityProfileDetailComponent } from './pages/community-profile-detai
     FooterComponent,
     ProfileComponent,
     CommunityDetailComponent,
-    CommunityProfileDetailComponent
+    CommunityProfileDetailComponent,
+    PostCreateComponent
   ],
   imports: [
     BrowserModule,
@@ -37,6 +40,7 @@ import { CommunityProfileDetailComponent } from './pages/community-profile-detai
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
+    QuillModule.forRoot()
   ],
   providers: [],
   bootstrap: [AppComponent]

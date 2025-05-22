@@ -10,8 +10,13 @@
     />
   </div>
 
-  <!-- Nombre de usuario sin editar -->
-  <h4 class="mb-4">{{ user?.username }}</h4>
+  <!-- Nombre de usuario -->
+  <h4 class="mb-2">{{ user?.username }}</h4>
+
+  <!-- Lista de tags/intereses del usuario -->
+  <div *ngIf="user?.tags?.length" class="mb-4">
+    <small class="text-muted">#{{ user?.tags?.join(", ") }}</small>
+  </div>
 
   <!-- Botón para abrir el modal -->
   <button
@@ -23,13 +28,24 @@
     Editar perfil
   </button>
 
-  <!-- Modal de edición de perfil -->
-  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+  <!-- Modal de edición -->
+  <div
+    class="modal fade"
+    id="editProfileModal"
+    tabindex="-1"
+    aria-labelledby="editProfileModalLabel"
+    aria-hidden="true"
+  >
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="editProfileModalLabel">Editar perfil</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
         </div>
 
         <form [formGroup]="editForm" (ngSubmit)="onUpdateProfile()">
@@ -44,20 +60,36 @@
               />
             </div>
 
+            <div class="mb-3">
+              <label for="email" class="form-label">Correo electrónico</label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                formControlName="email"
+              />
+            </div>
 
-          <div class="mb-3">
-            <label for="email" class="form-label">Correo electrónico</label>
-            <input
-              type="email"
-              id="email"
-              class="form-control"
-              formControlName="email"
-            />
-          </div>
+            <div class="mb-3">
+              <label for="tags" class="form-label">Etiquetas de interés</label>
+              <input
+                type="text"
+                id="tags"
+                class="form-control"
+                formControlName="tags"
+                placeholder="Ej. videojuegos, anime, música"
+              />
+              <div class="form-text">Separa las etiquetas con comas</div>
+            </div>
 
             <div class="mb-3">
               <label for="image" class="form-label">Cambiar imagen</label>
-              <input type="file" id="image" class="form-control" (change)="onImageSelected($event)" />
+              <input
+                type="file"
+                id="image"
+                class="form-control"
+                (change)="onImageSelected($event)"
+              />
             </div>
 
             <div *ngIf="successMessage" class="alert alert-success mt-3">
@@ -69,8 +101,16 @@
           </div>
 
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cerrar
+            </button>
+            <button type="submit" class="btn btn-primary">
+              Guardar cambios
+            </button>
           </div>
         </form>
       </div>
@@ -81,10 +121,18 @@
 
   <!-- Comunidades suscritas -->
   <h3>Tus comunidades</h3>
-  <div *ngIf="subscribedCommunities.length > 0; else noCommunities" class="row mt-4">
+  <div
+    *ngIf="subscribedCommunities.length > 0; else noCommunities"
+    class="row mt-4"
+  >
     <div *ngFor="let community of subscribedCommunities" class="col-md-4 mb-3">
       <div class="card h-100">
-        <img [src]="community.banner" class="card-img-top" *ngIf="community.banner" alt="Banner" />
+        <img
+          [src]="community.banner"
+          class="card-img-top"
+          *ngIf="community.banner"
+          alt="Banner"
+        />
         <div class="card-body">
           <div class="d-flex align-items-center mb-2">
             <img
