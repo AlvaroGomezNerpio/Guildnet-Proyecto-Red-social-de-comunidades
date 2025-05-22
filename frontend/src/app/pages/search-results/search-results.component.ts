@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
-import { CommunityService } from '../../services/community.service';
-import { CommunityResponseDTO } from '../../models/community/CommunityResponse.dto';
+import { ActivatedRoute, Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { CommunityService } from '../../services/community.service';
+import { CommunityProfileService } from '../../services/community-profile.service';
+import { CommunityResponseDTO } from '../../models/community/CommunityResponse.dto';
 
 @Component({
   selector: 'app-search-results',
@@ -12,29 +13,42 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
   styleUrls: ['./search-results.component.css']
 })
 export class SearchResultsComponent implements OnInit {
-
   searchNameControl = new FormControl('');
   searchTagsControl = new FormControl('');
 
   results: CommunityResponseDTO[] = [];
+  selectedCommunity: CommunityResponseDTO | null = null;
+  subscribedCommunities: CommunityResponseDTO[] = [];
+
+  isLoggedIn: boolean = false;
   error: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
-    private communityService: CommunityService
+    private router: Router,
+    private communityService: CommunityService,
+    private communityProfileService: CommunityProfileService
   ) {}
 
   ngOnInit(): void {
-    // Cargar valores iniciales desde queryParams si existen
+    this.isLoggedIn = !!localStorage.getItem('token');
+
+    if (this.isLoggedIn) {
+      this.communityService.getSubscribedCommunities().subscribe({
+        next: data => this.subscribedCommunities = data,
+        error: () => this.subscribedCommunities = []
+      });
+    }
+
     this.route.queryParams.subscribe((params) => {
       const name = params['name'];
       const tag = params['tag'];
 
       this.searchNameControl.setValue(name || '');
       this.searchTagsControl.setValue(Array.isArray(tag) ? tag.join(', ') : tag || '');
+      this.performSearch();
     });
 
-    // Escucha cambios y busca automáticamente
     this.searchNameControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe(() => this.performSearch());
@@ -52,20 +66,32 @@ export class SearchResultsComponent implements OnInit {
       .filter((t: string) => t.length > 0);
 
     this.communityService.searchCommunities(name, tags).subscribe({
-      next: (data) => this.results = data,
+      next: (data) => {
+        this.results = data;
+        this.error = null;
+      },
       error: () => this.error = 'Error al buscar comunidades.'
     });
   }
 
-  onJoinCommunity(id: number): void {
-    this.communityService.joinCommunity(id).subscribe({
+  onJoinCommunity(communityId: number): void {
+    this.communityProfileService.joinCommunity(communityId).subscribe({
       next: () => {
-        alert('Te has unido correctamente.');
-        this.results = this.results.filter(c => c.id !== id);
+        this.router.navigate(['/communities', communityId]);
       },
-      error: () => {
-        alert('No se pudo unir a la comunidad.');
-      }
+      error: () => alert('No se pudo unir a la comunidad.')
     });
+  }
+
+  enterCommunity(communityId: number): void {
+    this.router.navigate(['/communities', communityId]);
+  }
+
+  openCommunityModal(community: CommunityResponseDTO): void {
+    this.selectedCommunity = community;
+  }
+
+  isSubscribed(communityId: number): boolean {
+    return this.subscribedCommunities.some(c => c.id === communityId);
   }
 }

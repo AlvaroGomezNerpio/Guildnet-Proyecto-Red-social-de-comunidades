@@ -30,6 +30,7 @@ public class CommunityController {
                         c.getId(),
                         c.getName(),
                         c.getDescription(),
+                        c.getRules(),
                         c.getImage(),
                         c.getBanner(),
                         c.getTags()
@@ -48,6 +49,7 @@ public class CommunityController {
                         c.getId(),
                         c.getName(),
                         c.getDescription(),
+                        c.getRules(),
                         c.getImage(),
                         c.getBanner(),
                         c.getTags()
@@ -67,6 +69,7 @@ public class CommunityController {
                         c.getId(),
                         c.getName(),
                         c.getDescription(),
+                        c.getRules(),
                         c.getImage(),
                         c.getBanner(),
                         c.getTags()
@@ -85,6 +88,7 @@ public class CommunityController {
                         c.getId(),
                         c.getName(),
                         c.getDescription(),
+                        c.getRules(),
                         c.getImage(),
                         c.getBanner(),
                         c.getTags()
@@ -101,6 +105,7 @@ public class CommunityController {
                         c.getId(),
                         c.getName(),
                         c.getDescription(),
+                        c.getRules(),
                         c.getImage(),
                         c.getBanner(),
                         c.getTags()
@@ -131,6 +136,7 @@ public class CommunityController {
                         c.getId(),
                         c.getName(),
                         c.getDescription(),
+                        c.getRules(),
                         c.getImage(),
                         c.getBanner(),
                         c.getTags()

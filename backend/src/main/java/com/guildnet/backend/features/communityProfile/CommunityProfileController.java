@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/v1/profiles")
 @RequiredArgsConstructor
@@ -27,12 +28,13 @@ public class CommunityProfileController {
         return ResponseEntity.ok(profileService.getProfilesByCommunity(communityId));
     }
 
-    @GetMapping("/user/{userId}/community/{communityId}")
-    public ResponseEntity<CommunityProfileDTO> getUserProfile(
-            @PathVariable Long userId,
-            @PathVariable Long communityId
+    @GetMapping("/me/community/{communityId}")
+    public ResponseEntity<CommunityProfileDTO> getMyProfileInCommunity(
+            @PathVariable Long communityId,
+            Authentication authentication
     ) {
-        return profileService.getProfile(userId, communityId)
+        User user = (User) authentication.getPrincipal();
+        return profileService.getProfile(user.getId(), communityId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

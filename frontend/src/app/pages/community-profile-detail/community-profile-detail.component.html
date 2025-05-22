@@ -1,0 +1,144 @@
+<div class="container mt-5 text-center">
+  <!-- Imagen de perfil -->
+  <div class="mb-4">
+    <img
+      [src]="profile?.profileImage || 'assets/default-avatar.png'"
+      alt="Imagen de perfil"
+      class="rounded-circle"
+      width="150"
+      height="150"
+    />
+  </div>
+
+  <!-- Nombre de usuario sin editar -->
+  <h4 class="mb-2">{{ profile?.username }}</h4>
+
+  <!-- Roles -->
+  <div *ngIf="profile?.roles?.length" class="mb-2">
+    <span class="badge bg-secondary me-1" *ngFor="let role of profile?.roles">{{ role }}</span>
+  </div>
+
+  <!-- Títulos -->
+  <div *ngIf="profile?.titles?.length" class="mb-4">
+    <span class="badge bg-info text-dark me-1" *ngFor="let title of profile?.titles">{{ title }}</span>
+  </div>
+
+  <!-- Botón para abrir el modal -->
+  <button
+    type="button"
+    class="btn btn-outline-primary mb-5"
+    data-bs-toggle="modal"
+    data-bs-target="#editProfileModal"
+  >
+    Editar perfil
+  </button>
+
+  <!-- Descripción del perfil -->
+  <div class="mb-4">
+    <p class="text-muted">{{ profile?.description || 'No hay descripción disponible.' }}</p>
+  </div>
+
+  <!-- Modal de edición de perfil -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editProfileModalLabel">Editar perfil</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <form [formGroup]="editForm" (ngSubmit)="onUpdateProfile()">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="username" class="form-label">Nombre de usuario</label>
+              <input
+                type="text"
+                id="username"
+                class="form-control"
+                formControlName="username"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Descripción</label>
+              <textarea id="description" class="form-control" formControlName="description"></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="image" class="form-label">Cambiar imagen</label>
+              <input type="file" id="image" class="form-control" (change)="onImageSelected($event)" />
+            </div>
+
+            <div *ngIf="successMessage" class="alert alert-success mt-3">
+              {{ successMessage }}
+            </div>
+            <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+              {{ errorMessage }}
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <hr class="my-5" />
+
+  <!-- Tabs de publicaciones y comentarios -->
+  <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button" role="tab">Publicaciones</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="comments-tab" data-bs-toggle="tab" data-bs-target="#comments" type="button" role="tab">Comentarios</button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <!-- Publicaciones -->
+    <div class="tab-pane fade show active" id="posts" role="tabpanel">
+      <div *ngIf="posts.length > 0; else noPosts">
+        <div *ngFor="let post of posts" class="card mb-3 text-start">
+          <div class="card-body">
+            <h5 class="card-title">{{ post.title }}</h5>
+            <p class="card-text">{{ post.content }}</p>
+            <div class="text-muted">Etiquetas: {{ post.tags.join(', ') }}</div>
+            <div class="mt-2">❤️ {{ post.likes }} · 💬 {{ post.coments }}</div>
+          </div>
+        </div>
+      </div>
+      <ng-template #noPosts>
+        <p>No hay publicaciones de este usuario aún.</p>
+      </ng-template>
+    </div>
+
+    <!-- Comentarios -->
+    <div class="tab-pane fade" id="comments" role="tabpanel">
+      <form class="mb-4" (ngSubmit)="onSubmitComment()">
+        <div class="input-group">
+          <input type="text" class="form-control" [(ngModel)]="newComment" name="comment" placeholder="Escribe un comentario...">
+          <button class="btn btn-primary" type="submit">Enviar</button>
+        </div>
+      </form>
+
+      <div *ngIf="comments.length > 0; else noComments">
+        <div *ngFor="let comment of comments" class="card mb-3 text-start">
+          <div class="card-body d-flex">
+            <img [src]="comment.authorProfile.profileImage || 'assets/default-avatar.png'" class="rounded-circle me-3" width="50" height="50" alt="avatar" />
+            <div>
+              <h6 class="mb-1">{{ comment.authorProfile.username }}</h6>
+              <p class="mb-0">{{ comment.content }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ng-template #noComments>
+        <p>Este perfil no tiene comentarios aún.</p>
+      </ng-template>
+    </div>
+  </div>
+</div>

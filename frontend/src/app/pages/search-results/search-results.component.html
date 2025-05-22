@@ -1,14 +1,23 @@
 <div class="container mt-4">
+  <!-- Filtro de búsqueda -->
   <div class="card p-3 mb-4">
     <h5 class="mb-3">Buscar comunidades</h5>
     <div class="row g-2">
       <div class="col-md-5">
-        <input type="text" class="form-control" placeholder="Buscar por nombre"
-               [formControl]="searchNameControl">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Buscar por nombre"
+          [formControl]="searchNameControl"
+        />
       </div>
       <div class="col-md-5">
-        <input type="text" class="form-control" placeholder="Buscar por tags (separados por coma)"
-               [formControl]="searchTagsControl">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Buscar por tags (separados por coma)"
+          [formControl]="searchTagsControl"
+        />
       </div>
     </div>
   </div>
@@ -19,14 +28,33 @@
     <div class="row">
       <div *ngFor="let community of results" class="col-md-4 mb-3">
         <div class="card h-100">
-          <img [src]="community.banner" class="card-img-top" alt="Banner" *ngIf="community.banner">
+          <img
+            [src]="community.banner"
+            class="card-img-top"
+            alt="Banner"
+            *ngIf="community.banner"
+          />
           <div class="card-body">
             <div class="d-flex align-items-center mb-2">
-              <img [src]="community.image" alt="Avatar" class="rounded-circle me-2" width="40" height="40" *ngIf="community.image">
+              <img
+                [src]="community.image"
+                alt="Avatar"
+                class="rounded-circle me-2"
+                width="40"
+                height="40"
+                *ngIf="community.image"
+              />
               <h5 class="card-title mb-0">{{ community.name }}</h5>
             </div>
             <p class="card-text">{{ community.description }}</p>
-            <button class="btn btn-outline-success w-100 mt-2" (click)="onJoinCommunity(community.id)">Unirse</button>
+            <button
+              class="btn btn-outline-success w-100 mt-2"
+              data-bs-toggle="modal"
+              data-bs-target="#communityModal"
+              (click)="openCommunityModal(community)"
+            >
+              Ver más
+            </button>
           </div>
         </div>
       </div>
@@ -35,4 +63,90 @@
 
   <p *ngIf="results.length === 0 && !error">No se encontraron comunidades.</p>
   <p *ngIf="error" class="text-danger">{{ error }}</p>
+
+  <!-- Modal de comunidad -->
+  <!-- ... hasta aquí sin cambios ... -->
+
+  <!-- Modal de comunidad -->
+  <div
+    class="modal fade"
+    id="communityModal"
+    tabindex="-1"
+    aria-labelledby="communityModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content" *ngIf="selectedCommunity">
+        <div class="modal-header">
+          <h5 class="modal-title" id="communityModalLabel">
+            {{ selectedCommunity.name }}
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Cerrar"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <img
+            *ngIf="selectedCommunity.banner"
+            [src]="selectedCommunity.banner"
+            class="img-fluid mb-3 rounded"
+            alt="Banner"
+          />
+
+          <div class="d-flex align-items-center mb-3">
+            <img
+              *ngIf="selectedCommunity.image"
+              [src]="selectedCommunity.image"
+              alt="Avatar"
+              class="rounded-circle me-3"
+              width="60"
+              height="60"
+            />
+            <div>
+              <h4 class="mb-0">{{ selectedCommunity.name }}</h4>
+              <small class="text-muted"
+                >#{{ selectedCommunity.tags.join(", ") }}</small
+              >
+            </div>
+          </div>
+
+          <p class="mb-3">{{ selectedCommunity.description }}</p>
+          <p>
+            <strong>Reglas:</strong>
+            {{
+              selectedCommunity.rules ||
+                "Esta comunidad aún no tiene reglas públicas."
+            }}
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            class="btn btn-primary"
+            *ngIf="isLoggedIn && isSubscribed(selectedCommunity.id)"
+            (click)="enterCommunity(selectedCommunity.id)"
+            data-bs-dismiss="modal"
+          >
+            Entrar a la comunidad
+          </button>
+
+          <button
+            class="btn btn-success"
+            *ngIf="isLoggedIn && !isSubscribed(selectedCommunity.id)"
+            (click)="onJoinCommunity(selectedCommunity.id)"
+            data-bs-dismiss="modal"
+          >
+            Unirse a la comunidad
+          </button>
+
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

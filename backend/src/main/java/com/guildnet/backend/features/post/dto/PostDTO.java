@@ -20,6 +20,7 @@ public class PostDTO {
     private String content;
     private List<String> tags;
     private int likes;
+    private int coments;
     private CommunityProfileDTO communityProfile;
     private Long communityId;
 }

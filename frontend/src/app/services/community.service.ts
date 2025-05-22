@@ -41,12 +41,6 @@ export class CommunityService {
     });
   }
 
-  joinCommunity(id: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${id}/join`, null, {
-      headers: this.getAuthHeaders(),
-    });
-  }
-
   createCommunity(
     data: CreateCommunityRequest,
     image?: File,
@@ -85,5 +79,12 @@ export class CommunityService {
       params: params,
     });
   }
+
+  getCommunityById(id: number): Observable<CommunityResponseDTO> {
+  return this.http.get<CommunityResponseDTO>(`${this.apiUrl}/${id}`, {
+    headers: this.getAuthHeaders()
+  });
+}
+
 
 }
