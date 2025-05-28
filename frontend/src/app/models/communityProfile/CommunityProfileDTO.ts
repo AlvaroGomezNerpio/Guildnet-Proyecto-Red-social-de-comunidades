@@ -1,3 +1,4 @@
+import { RoleDTO } from '../role/RoleDTO';
 import { TitleDTO } from '../title/TitleDTO';
 
 export interface CommunityProfileDTO {
@@ -8,6 +9,6 @@ export interface CommunityProfileDTO {
   featuredTitle: TitleDTO | null;
   userId: number;
   communityId: number;
-  roles: string[];
-  titles: string[];
+  roles: RoleDTO[];
+  titles: TitleDTO[];
 }

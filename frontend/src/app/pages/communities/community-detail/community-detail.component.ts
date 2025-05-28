@@ -71,8 +71,16 @@ export class CommunityDetailComponent {
 
   goToProfile(): void {
     if (this.profile) {
-      this.router.navigate(['/communities/profile', this.profile.id]);
+      this.router.navigate(['/communities/profile', this.communityId]);
     }
   }
+
+  goToCreatePost(): void {
+  if (this.profile) {
+    this.router.navigate(['/communities', this.communityId, 'create-post', this.profile.id]);
+  }
+}
+
+
 
 }

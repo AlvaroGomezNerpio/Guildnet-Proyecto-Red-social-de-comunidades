@@ -13,6 +13,7 @@ import com.guildnet.backend.features.postComment.PostComment;
 import com.guildnet.backend.features.postComment.PostCommentRepository;
 import com.guildnet.backend.features.postComment.dto.PostComentDTO;
 import com.guildnet.backend.features.role.Role;
+import com.guildnet.backend.features.role.dto.RoleDTO;
 import com.guildnet.backend.features.title.Title;
 import com.guildnet.backend.features.title.dto.TitleDTO;
 import jakarta.transaction.Transactional;
@@ -125,21 +126,60 @@ public class PostServiceImpl implements PostService {
 
     private CommunityProfileDTO mapToCommunityProfileDTO(CommunityProfile profile) {
         CommunityProfileDTO dto = new CommunityProfileDTO();
+
         dto.setId(profile.getId());
         dto.setUsername(profile.getUsername());
         dto.setDescription(profile.getDescription());
         dto.setProfileImage(profile.getProfileImage());
         dto.setUserId(profile.getUser().getId());
         dto.setCommunityId(profile.getCommunity().getId());
-        dto.setFeaturedTitle(profile.getFeaturedTitle() != null ? new TitleDTO(
-                profile.getFeaturedTitle().getId(),
-                profile.getFeaturedTitle().getTitle(),
-                profile.getFeaturedTitle().getTextColor(),
-                profile.getFeaturedTitle().getBackgroundColor(),
-                profile.getFeaturedTitle().getCommunity().getId()) : null);
-        dto.setRoles(profile.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
-        dto.setTitles(profile.getTitles().stream().map(Title::getTitle).collect(Collectors.toList()));
+
+        // Título destacado
+        if (profile.getFeaturedTitle() != null) {
+            dto.setFeaturedTitle(mapToDTO(profile.getFeaturedTitle()));
+        }
+
+        // Roles
+        if (profile.getRoles() != null) {
+            dto.setRoles(profile.getRoles().stream()
+                    .map(this::mapToDTO)
+                    .toList());
+        } else {
+            dto.setRoles(List.of());
+        }
+
+        // Títulos
+        if (profile.getTitles() != null) {
+            dto.setTitles(profile.getTitles().stream()
+                    .map(this::mapToDTO)
+                    .toList());
+        } else {
+            dto.setTitles(List.of());
+        }
+
         return dto;
     }
+
+    private RoleDTO mapToDTO(Role role) {
+        return new RoleDTO(
+                role.getId(),
+                role.getName(),
+                role.getTextColor(),
+                role.getBackgroundColor(),
+                role.getCommunity().getId()
+        );
+    }
+
+    private TitleDTO mapToDTO(Title title) {
+        return new TitleDTO(
+                title.getId(),
+                title.getTitle(),
+                title.getTextColor(),
+                title.getBackgroundColor(),
+                title.getCommunity().getId()
+        );
+    }
+
+
 }
 

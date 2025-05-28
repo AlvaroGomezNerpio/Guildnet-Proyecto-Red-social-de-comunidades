@@ -10,7 +10,6 @@ import { CreateCommunityRequest } from '../../../models/community/CreateCommunit
   styleUrl: './create-community.component.css',
 })
 export class CreateCommunityComponent {
-
   community: CreateCommunityRequest = {
     name: '',
     description: '',
@@ -42,21 +41,21 @@ export class CreateCommunityComponent {
   }
 
   onSubmit(): void {
-  this.community.tags = this.tagsInput
-    .split(',')
-    .map((tag) => tag.trim())
-    .filter((tag) => tag.length > 0);
+    this.community.tags = this.tagsInput
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter((tag) => tag.length > 0);
 
-  this.communityService.createCommunity(this.community, this.image!, this.banner!).subscribe({
-    next: () => {
-      alert('Comunidad creada correctamente');
-      this.router.navigate(['/communities']);
-    },
-    error: () => {
-      alert('No se pudo crear la comunidad');
-    }
-  });
-}
-
-
+    this.communityService
+      .createCommunity(this.community, this.image!, this.banner!)
+      .subscribe({
+        next: () => {
+          alert('Comunidad creada correctamente');
+          this.router.navigate(['/communities']);
+        },
+        error: () => {
+          alert('No se pudo crear la comunidad');
+        },
+      });
+  }
 }

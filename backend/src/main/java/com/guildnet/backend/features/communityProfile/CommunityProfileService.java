@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface CommunityProfileService {
     CommunityProfileDTO createProfile(CreateCommunityProfileRequest request, Long userId, Long communityId);
     List<CommunityProfileDTO> getProfilesByCommunity(Long communityId);
+    CommunityProfileDTO getProfileDtoById(Long profileId);
     Optional<CommunityProfileDTO> getProfile(Long userId, Long communityId);
     CommunityProfileDTO createProfileAutomatically(User user, Long communityId);
     CommunityProfileDTO updateProfile(Long profileId, UpdateCommunityProfileRequest request, MultipartFile imageFile);
