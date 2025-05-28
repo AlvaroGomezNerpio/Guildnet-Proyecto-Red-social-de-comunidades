@@ -6,6 +6,7 @@ import com.guildnet.backend.features.communityProfile.dto.CommunityProfileDTO;
 import com.guildnet.backend.features.profileComment.dto.ProfileCommentCreateUpdateDTO;
 import com.guildnet.backend.features.profileComment.dto.ProfileCommentDTO;
 import com.guildnet.backend.features.role.Role;
+import com.guildnet.backend.features.role.dto.RoleDTO;
 import com.guildnet.backend.features.title.Title;
 import com.guildnet.backend.features.title.dto.TitleDTO;
 import jakarta.transaction.Transactional;
@@ -67,23 +68,51 @@ public class ProfileCommentServiceImpl implements ProfileCommentService {
     }
 
     private CommunityProfileDTO mapToCommunityProfileDTO(CommunityProfile profile) {
+        List<RoleDTO> roleDTOs = profile.getRoles() != null
+                ? profile.getRoles().stream().map(this::mapToDTO).toList()
+                : List.of();
+
+        List<TitleDTO> titleDTOs = profile.getTitles() != null
+                ? profile.getTitles().stream().map(this::mapToDTO).toList()
+                : List.of();
+
+        TitleDTO featuredTitleDTO = profile.getFeaturedTitle() != null
+                ? mapToDTO(profile.getFeaturedTitle())
+                : null;
+
         return new CommunityProfileDTO(
                 profile.getId(),
                 profile.getUsername(),
                 profile.getDescription(),
                 profile.getProfileImage(),
-                profile.getFeaturedTitle() != null ? new TitleDTO(
-                        profile.getFeaturedTitle().getId(),
-                        profile.getFeaturedTitle().getTitle(),
-                        profile.getFeaturedTitle().getTextColor(),
-                        profile.getFeaturedTitle().getBackgroundColor(),
-                        profile.getFeaturedTitle().getCommunity().getId()
-                ) : null,
+                featuredTitleDTO,
                 profile.getUser().getId(),
                 profile.getCommunity().getId(),
-                profile.getRoles().stream().map(Role::getName).collect(Collectors.toList()),
-                profile.getTitles().stream().map(Title::getTitle).collect(Collectors.toList())
+                roleDTOs,
+                titleDTOs
         );
     }
+
+    private RoleDTO mapToDTO(Role role) {
+        return new RoleDTO(
+                role.getId(),
+                role.getName(),
+                role.getTextColor(),
+                role.getBackgroundColor(),
+                role.getCommunity().getId()
+        );
+    }
+
+    private TitleDTO mapToDTO(Title title) {
+        return new TitleDTO(
+                title.getId(),
+                title.getTitle(),
+                title.getTextColor(),
+                title.getBackgroundColor(),
+                title.getCommunity().getId()
+        );
+    }
+
+
 }
 

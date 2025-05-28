@@ -7,6 +7,7 @@ import com.guildnet.backend.features.post.PostRepository;
 import com.guildnet.backend.features.postComment.dto.PostComentDTO;
 import com.guildnet.backend.features.postComment.dto.PostCommentCreateDTO;
 import com.guildnet.backend.features.postComment.dto.PostCommentUpdateDTO;
+import com.guildnet.backend.features.role.dto.RoleDTO;
 import com.guildnet.backend.features.title.Title;
 import com.guildnet.backend.features.title.dto.TitleDTO;
 import jakarta.transaction.Transactional;
@@ -79,6 +80,26 @@ public class PostCommentServiceImpl implements PostCommentService {
         )
                 : null;
 
+        List<RoleDTO> roleDTOs = profile.getRoles().stream()
+                .map(role -> new RoleDTO(
+                        role.getId(),
+                        role.getName(),
+                        role.getTextColor(),
+                        role.getBackgroundColor(),
+                        role.getCommunity().getId()
+                ))
+                .collect(Collectors.toList());
+
+        List<TitleDTO> titleDTOs = profile.getTitles().stream()
+                .map(title -> new TitleDTO(
+                        title.getId(),
+                        title.getTitle(),
+                        title.getTextColor(),
+                        title.getBackgroundColor(),
+                        title.getCommunity().getId()
+                ))
+                .collect(Collectors.toList());
+
         return new CommunityProfileDTO(
                 profile.getId(),
                 profile.getUsername(),
@@ -87,8 +108,9 @@ public class PostCommentServiceImpl implements PostCommentService {
                 featuredTitle,
                 profile.getUser().getId(),
                 profile.getCommunity().getId(),
-                profile.getRoles().stream().map(r -> r.getName()).collect(Collectors.toList()),
-                profile.getTitles().stream().map(t -> t.getTitle()).collect(Collectors.toList())
+                roleDTOs,
+                titleDTOs
         );
     }
+
 }

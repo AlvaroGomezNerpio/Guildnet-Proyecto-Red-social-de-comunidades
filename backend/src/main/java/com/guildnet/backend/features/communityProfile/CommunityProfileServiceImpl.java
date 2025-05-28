@@ -90,7 +90,6 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
         return mapToDTO(saved);
     }
 
-
     @Override
     public CommunityProfileDTO updateProfile(Long profileId, UpdateCommunityProfileRequest request, MultipartFile imageFile) {
         CommunityProfile profile = getProfileById(profileId);
@@ -111,6 +110,13 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
         CommunityProfile updated = profileRepository.save(profile);
         return mapToDTO(updated);
     }
+
+    @Override
+    public CommunityProfileDTO getProfileDtoById(Long profileId) {
+        CommunityProfile profile = getProfileById(profileId); // ya lo tienes definido internamente
+        return mapToDTO(profile);
+    }
+
 
     @Override
     public List<CommunityProfileDTO> getProfilesByCommunity(Long communityId) {
@@ -173,6 +179,14 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
     private CommunityProfileDTO mapToDTO(CommunityProfile profile) {
         Title featuredTitle = profile.getFeaturedTitle();
 
+        List<RoleDTO> roleDTOs = profile.getRoles() != null
+                ? profile.getRoles().stream().map(this::mapToDTO).toList()
+                : List.of();
+
+        List<TitleDTO> titleDTOs = profile.getTitles() != null
+                ? profile.getTitles().stream().map(this::mapToDTO).toList()
+                : List.of();
+
         return new CommunityProfileDTO(
                 profile.getId(),
                 profile.getUsername(),
@@ -181,11 +195,10 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
                 featuredTitle != null ? mapToDTO(featuredTitle) : null,
                 profile.getUser().getId(),
                 profile.getCommunity().getId(),
-                profile.getRoles() != null ? profile.getRoles().stream().map(Role::getName).toList() : List.of(),
-                profile.getTitles() != null ? profile.getTitles().stream().map(Title::getTitle).toList() : List.of()
+                roleDTOs,
+                titleDTOs
         );
     }
-
 
     private TitleDTO mapToDTO(Title title) {
         return new TitleDTO(
@@ -287,8 +300,6 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
         return titleRepository.findById(titleId)
                 .orElseThrow(() -> new RuntimeException("Título no encontrado"));
     }
-
-
 
 }
 

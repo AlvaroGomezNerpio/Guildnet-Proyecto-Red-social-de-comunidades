@@ -13,6 +13,7 @@ import { CommunityProfileService } from '../../../services/community-profile.ser
   styleUrls: ['./community-list.component.css']
 })
 export class CommunityListComponent implements OnInit {
+  communityId!: number;
   subscribedCommunities: CommunityResponseDTO[] = [];
   suggestedCommunities: CommunityResponseDTO[] = [];
   popularCommunities: CommunityResponseDTO[] = [];

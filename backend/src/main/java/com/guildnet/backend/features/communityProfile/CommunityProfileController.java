@@ -28,6 +28,12 @@ public class CommunityProfileController {
         return ResponseEntity.ok(profileService.getProfilesByCommunity(communityId));
     }
 
+    @GetMapping("/{profileId}")
+    public ResponseEntity<CommunityProfileDTO> getProfileById(@PathVariable Long profileId) {
+        CommunityProfileDTO profile = profileService.getProfileDtoById(profileId);
+        return ResponseEntity.ok(profile);
+    }
+
     @GetMapping("/me/community/{communityId}")
     public ResponseEntity<CommunityProfileDTO> getMyProfileInCommunity(
             @PathVariable Long communityId,

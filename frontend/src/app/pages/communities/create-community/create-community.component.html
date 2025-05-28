@@ -10,12 +10,12 @@
 
     <div class="mb-3">
       <label>Descripción</label>
-      <textarea class="form-control" [(ngModel)]="community.description" name="description" required></textarea>
+      <quill-editor [(ngModel)]="community.description" name="description" [style]="{ height: '200px' }"></quill-editor>
     </div>
 
     <div class="mb-3">
       <label>Reglas</label>
-      <textarea class="form-control" [(ngModel)]="community.rules" name="rules" required></textarea>
+      <quill-editor [(ngModel)]="community.rules" name="rules" [style]="{ height: '200px' }"></quill-editor>
     </div>
 
     <div class="mb-3">
@@ -36,3 +36,4 @@
     <button type="submit" class="btn btn-success">Crear comunidad</button>
   </form>
 </div>
+

@@ -23,106 +23,156 @@
       </div>
     </div>
 
-    <div class="mt-3">
-      <button
-        class="btn btn-outline-secondary"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#rulesCollapse"
-      >
-        Ver reglas
-      </button>
-      <div class="collapse mt-3" id="rulesCollapse">
-        <div class="card card-body">
-          {{ community?.rules || "Esta comunidad no tiene reglas públicas." }}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row">
-    <!-- Columna lateral con perfil del usuario en esta comunidad -->
-    <div class="col-md-3 mb-4">
-      <div class="card text-center">
-        <div class="card-body">
-          <img
-            *ngIf="profile?.profileImage"
-            [src]="profile?.profileImage"
-            alt="Perfil"
-            class="rounded-circle mb-2"
-            width="70"
-            height="70"
-          />
-          <h5 class="card-title">{{ profile?.username }}</h5>
+    <!-- Botones para ver reglas y descripción -->
+    <div class="mt-3 accordion" id="communityAccordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
           <button
-            class="btn btn-outline-primary w-100 mt-2"
-            (click)="goToProfile()"
+            class="accordion-button collapsed"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#rulesCollapse"
+            aria-expanded="false"
+            aria-controls="rulesCollapse"
           >
-            Ver perfil
+            Ver reglas
           </button>
-        </div>
-      </div>
-
-      <!-- Opciones de la comunidad -->
-      <div class="card mt-4">
-        <div class="card-body">
-          <h6>Opciones</h6>
-          <ul class="list-unstyled">
-            <li><a href="#" class="d-block py-1">Crear publicación</a></li>
-            <li><a href="#" class="d-block py-1">Ver miembros</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- Columna principal con los posts -->
-    <div class="col-md-9">
-      <!-- Formulario para crear una publicación (solo si hay perfil) -->
-      <div *ngIf="profile" class="mb-4">
-        <app-post-create
-          *ngIf="profile"
-          [communityId]="communityId"
-          [profileId]="profile.id"
-          (postCreated)="loadPosts()"
-        ></app-post-create>
-      </div>
-      <h4>Publicaciones recientes</h4>
-      <div *ngIf="posts.length > 0; else noPosts">
-        <div *ngFor="let post of posts" class="card mb-3">
-          <div class="card-body">
-            <!-- Perfil del autor -->
-            <div class="d-flex align-items-center mb-2">
-              <img
-                *ngIf="post.communityProfile?.profileImage"
-                [src]="post.communityProfile.profileImage"
-                alt="Avatar"
-                class="rounded-circle me-2"
-                width="40"
-                height="40"
-              />
-              <h6 class="mb-0">{{ post.communityProfile.username }}</h6>
-            </div>
-
-            <!-- Título y contenido -->
-            <h5 class="card-title">{{ post.title }}</h5>
-            <div class="quill-content card-text" [innerHTML]="post.content"></div>
-
-            <div class="text-muted mb-2">
-              Etiquetas: {{ post.tags.join(", ") }}
-            </div>
-
-            <!-- Likes -->
-            <div class="text-end">
-              <small class="text-muted">{{ post.likes }} 👍</small> |
-              <small class="text-muted">{{ post.coments }} 💬</small>
-            </div>
+        </h2>
+        <div
+          id="rulesCollapse"
+          class="accordion-collapse collapse"
+          data-bs-parent="#communityAccordion"
+        >
+          <div class="accordion-body">
+            <div
+              class="quill-content"
+              [innerHTML]="
+                community?.rules || 'Esta comunidad no tiene reglas públicas.'
+              "
+            ></div>
           </div>
         </div>
       </div>
 
-      <ng-template #noPosts>
-        <p>No hay publicaciones en esta comunidad todavía.</p>
-      </ng-template>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button
+            class="accordion-button collapsed"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#descriptionCollapse"
+            aria-expanded="false"
+            aria-controls="descriptionCollapse"
+          >
+            Ver descripción
+          </button>
+        </h2>
+        <div
+          id="descriptionCollapse"
+          class="accordion-collapse collapse"
+          data-bs-parent="#communityAccordion"
+        >
+          <div class="accordion-body">
+            <div
+              class="quill-content"
+              [innerHTML]="
+                community?.description ||
+                'Esta comunidad no tiene descripción pública.'
+              "
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="row">
+      <!-- Columna lateral con perfil del usuario en esta comunidad -->
+      <div class="col-md-3 mb-4">
+        <div class="card text-center">
+          <div class="card-body">
+            <img
+              *ngIf="profile?.profileImage"
+              [src]="profile?.profileImage"
+              alt="Perfil"
+              class="rounded-circle mb-2"
+              width="70"
+              height="70"
+            />
+            <h5 class="card-title">{{ profile?.username }}</h5>
+            <button
+              class="btn btn-outline-primary w-100 mt-2"
+              (click)="goToProfile()"
+            >
+              Ver perfil
+            </button>
+          </div>
+        </div>
+
+        <!-- Opciones de la comunidad -->
+        <div class="card mt-4">
+          <div class="card-body">
+            <h6>Opciones</h6>
+            <ul class="list-unstyled">
+              <li>
+                <button type="button"
+                  class="btn btn-primary d-block py-1 w-100"
+                  (click)="goToCreatePost()"
+                >
+                  Crear publicación
+                </button>
+              </li>
+
+              <li><a href="#" class="d-block py-1">Ver miembros</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna principal con los posts -->
+      <div class="col-md-9">
+        <h4>Publicaciones recientes</h4>
+        <div *ngIf="posts.length > 0; else noPosts">
+          <div *ngFor="let post of posts.slice().reverse()" class="card mb-3">
+            <div class="card-body">
+              <!-- Perfil del autor -->
+              <div class="d-flex align-items-center mb-2">
+                <img
+                  *ngIf="post.communityProfile?.profileImage"
+                  [src]="post.communityProfile.profileImage"
+                  alt="Avatar"
+                  class="rounded-circle me-2"
+                  width="40"
+                  height="40"
+                />
+                <h6 class="mb-0">{{ post.communityProfile.username }}</h6>
+              </div>
+
+              <!-- Título y contenido -->
+              <h5 class="card-title">{{ post.title }}</h5>
+              <div
+                class="quill-content card-text"
+                [innerHTML]="post.content"
+              ></div>
+
+              <div class="text-muted mb-2">
+                Etiquetas: {{ post.tags.join(", ") }}
+              </div>
+
+              <!-- Likes -->
+              <div class="text-end">
+                <small class="text-muted">{{ post.likes }} 👍</small> |
+                <small class="text-muted">{{ post.coments }} 💬</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noPosts>
+          <p>No hay publicaciones en esta comunidad todavía.</p>
+        </ng-template>
+      </div>
     </div>
   </div>
 </div>

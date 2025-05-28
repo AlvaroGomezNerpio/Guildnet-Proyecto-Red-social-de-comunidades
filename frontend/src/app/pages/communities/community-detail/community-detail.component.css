@@ -5,4 +5,8 @@
   margin: 0 auto;
 }
 
+::ng-deep .accordion-button {
+  background-color: #f8f9fa;
+}
+
 

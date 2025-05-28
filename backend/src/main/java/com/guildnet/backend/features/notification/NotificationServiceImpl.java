@@ -5,6 +5,10 @@ import com.guildnet.backend.features.communityProfile.CommunityProfileRepository
 import com.guildnet.backend.features.communityProfile.dto.CommunityProfileDTO;
 import com.guildnet.backend.features.notification.dto.NotificationCreateDTO;
 import com.guildnet.backend.features.notification.dto.NotificationDTO;
+import com.guildnet.backend.features.role.Role;
+import com.guildnet.backend.features.role.dto.RoleDTO;
+import com.guildnet.backend.features.title.Title;
+import com.guildnet.backend.features.title.dto.TitleDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -99,16 +103,36 @@ public class NotificationServiceImpl implements NotificationService {
                 profile.getUsername(),
                 profile.getDescription(),
                 profile.getProfileImage(),
-                profile.getFeaturedTitle() != null ? new com.guildnet.backend.features.title.dto.TitleDTO(
-                        profile.getFeaturedTitle().getId(),
-                        profile.getFeaturedTitle().getTitle(),
-                        profile.getFeaturedTitle().getTextColor(),
-                        profile.getFeaturedTitle().getBackgroundColor(),
-                        profile.getFeaturedTitle().getCommunity().getId()) : null,
+                profile.getFeaturedTitle() != null ? mapToDTO(profile.getFeaturedTitle()) : null,
                 profile.getUser().getId(),
                 profile.getCommunity().getId(),
-                profile.getRoles().stream().map(r -> r.getName()).collect(Collectors.toList()),
-                profile.getTitles().stream().map(t -> t.getTitle()).collect(Collectors.toList())
+                profile.getRoles() != null
+                        ? profile.getRoles().stream().map(this::mapToDTO).collect(Collectors.toList())
+                        : List.of(),
+                profile.getTitles() != null
+                        ? profile.getTitles().stream().map(this::mapToDTO).collect(Collectors.toList())
+                        : List.of()
+        );
+    }
+
+
+    private RoleDTO mapToDTO(Role role) {
+        return new RoleDTO(
+                role.getId(),
+                role.getName(),
+                role.getTextColor(),
+                role.getBackgroundColor(),
+                role.getCommunity().getId()
+        );
+    }
+
+    private TitleDTO mapToDTO(Title title) {
+        return new TitleDTO(
+                title.getId(),
+                title.getTitle(),
+                title.getTextColor(),
+                title.getBackgroundColor(),
+                title.getCommunity().getId()
         );
     }
 }
