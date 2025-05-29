@@ -85,7 +85,7 @@
       </div>
     </div>
 
-    <hr>
+    <hr />
 
     <div class="row">
       <!-- Columna lateral con perfil del usuario en esta comunidad -->
@@ -116,7 +116,8 @@
             <h6>Opciones</h6>
             <ul class="list-unstyled">
               <li>
-                <button type="button"
+                <button
+                  type="button"
                   class="btn btn-primary d-block py-1 w-100"
                   (click)="goToCreatePost()"
                 >
@@ -124,7 +125,16 @@
                 </button>
               </li>
 
-              <li><a href="#" class="d-block py-1">Ver miembros</a></li>
+              <br />
+
+              <li>
+                <button
+                  class="btn btn-outline-primary"
+                  (click)="loadCommunityMembers()"
+                >
+                  Ver miembros
+                </button>
+              </li>
             </ul>
           </div>
         </div>
@@ -134,10 +144,22 @@
       <div class="col-md-9">
         <h4>Publicaciones recientes</h4>
         <div *ngIf="posts.length > 0; else noPosts">
-          <div *ngFor="let post of posts.slice().reverse()" class="card mb-3">
+          <div
+            *ngFor="let post of posts.slice().reverse()"
+            class="card mb-3"
+            style="cursor: pointer"
+            (click)="goToPostDetail(post.id)"
+          >
             <div class="card-body">
               <!-- Perfil del autor -->
-              <div class="d-flex align-items-center mb-2">
+              <div
+                class="d-flex align-items-center mb-2"
+                style="cursor: pointer"
+                (click)="
+                  viewProfile(post.communityProfile.id);
+                  $event.stopPropagation()
+                "
+              >
                 <img
                   *ngIf="post.communityProfile?.profileImage"
                   [src]="post.communityProfile.profileImage"
@@ -149,18 +171,21 @@
                 <h6 class="mb-0">{{ post.communityProfile.username }}</h6>
               </div>
 
-              <!-- Título y contenido -->
+              <!-- Título -->
               <h5 class="card-title">{{ post.title }}</h5>
+
+              <!-- Contenido del post (resumen) -->
               <div
-                class="quill-content card-text"
-                [innerHTML]="post.content"
+                class="quill-content card-text mb-2"
+                [innerHTML]="post.content | slice : 0 : 300"
               ></div>
 
+              <!-- Tags -->
               <div class="text-muted mb-2">
                 Etiquetas: {{ post.tags.join(", ") }}
               </div>
 
-              <!-- Likes -->
+              <!-- Likes y comentarios -->
               <div class="text-end">
                 <small class="text-muted">{{ post.likes }} 👍</small> |
                 <small class="text-muted">{{ post.coments }} 💬</small>
@@ -168,11 +193,61 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <ng-template #noPosts>
-          <p>No hay publicaciones en esta comunidad todavía.</p>
-        </ng-template>
+      <ng-template #noPosts>
+        <p>No hay publicaciones en esta comunidad todavía.</p>
+      </ng-template>
+    </div>
+
+    <div class="modal fade show d-block" tabindex="-1" *ngIf="showMembersModal">
+      <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Miembros de la comunidad</h5>
+            <button
+              type="button"
+              class="btn-close"
+              (click)="showMembersModal = false"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input
+              type="text"
+              class="form-control mb-3"
+              placeholder="Buscar por nombre..."
+              [(ngModel)]="searchTerm"
+              (input)="filterMembers()"
+            />
+            <div *ngIf="filteredMembers.length === 0">
+              No se encontraron miembros.
+            </div>
+            <div *ngFor="let member of filteredMembers">
+              <img
+                [src]="member.profileImage"
+                width="40"
+                class="rounded-circle me-2"
+              />
+              {{ member.username }}
+              <button
+                class="btn btn-sm btn-link"
+                (click)="viewProfile(member.id)"
+              >
+                Ver perfil
+              </button>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              class="btn btn-secondary"
+              (click)="showMembersModal = false"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
       </div>
     </div>
+    <div class="modal-backdrop fade show" *ngIf="showMembersModal"></div>
   </div>
 </div>

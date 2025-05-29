@@ -1,0 +1,56 @@
+<div *ngIf="post" class="container mt-4">
+  <!-- Título del post -->
+  <h1 class="text-3xl font-bold mb-3">{{ post.title }}</h1>
+
+  <!-- Autor -->
+  <div class="d-flex align-items-center mb-4">
+    <img
+      *ngIf="post.communityProfile.profileImage"
+      [src]="post.communityProfile.profileImage"
+      alt="Avatar"
+      class="rounded-circle me-2"
+      width="50"
+      height="50"
+    />
+    <h5 class="mb-0">{{ post.communityProfile.username }}</h5>
+  </div>
+
+  <!-- Contenido del post -->
+  <div
+    class="quill-content mb-4"
+    [innerHTML]="post.content"
+  ></div>
+
+  <!-- Etiquetas -->
+  <div class="text-muted mb-4">
+    <strong>Etiquetas:</strong> {{ post.tags.join(', ') }}
+  </div>
+
+  <!-- Comentarios -->
+  <div class="mt-5">
+    <h2 class="text-xl font-semibold mb-3">Comentarios</h2>
+    <ul class="list-unstyled">
+      <li
+        *ngFor="let comment of post.postComment"
+        class="border-top py-3 d-flex align-items-start gap-3"
+      >
+        <img
+          *ngIf="comment.communityProfile.profileImage"
+          [src]="comment.communityProfile.profileImage"
+          alt="Avatar"
+          class="rounded-circle me-2"
+          width="40"
+          height="40"
+        />
+        <div>
+          <strong>{{ comment.communityProfile.username }}</strong><br />
+          <span>{{ comment.content }}</span>
+        </div>
+      </li>
+    </ul>
+
+    <div *ngIf="post.postComment.length === 0" class="text-muted mt-2">
+      No hay comentarios aún.
+    </div>
+  </div>
+</div>

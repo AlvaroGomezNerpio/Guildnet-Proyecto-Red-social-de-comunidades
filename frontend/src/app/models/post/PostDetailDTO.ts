@@ -6,7 +6,7 @@ export interface PostDetailDTO {
   title: string;
   content: string;
   tags: string[];
-  postComment: PostComentDTO;
+  postComment: PostComentDTO[];
   communityProfile: CommunityProfileDTO;
   communityId: number;
 }

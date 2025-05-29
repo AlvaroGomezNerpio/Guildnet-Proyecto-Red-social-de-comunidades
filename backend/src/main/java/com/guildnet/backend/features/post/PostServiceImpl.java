@@ -110,19 +110,24 @@ public class PostServiceImpl implements PostService {
         dto.setContent(post.getContent());
         dto.setTags(post.getTags());
         dto.setCommunityId(post.getCommunity().getId());
-
-        if (!post.getComments().isEmpty()) {
-            PostComment comment = post.getComments().get(0);
-            PostComentDTO comentDTO = new PostComentDTO();
-            comentDTO.setId(comment.getId());
-            comentDTO.setContent(comment.getContent());
-            comentDTO.setCommunityProfile(mapToCommunityProfileDTO(comment.getProfile()));
-            dto.setPostComment(comentDTO);
-        }
-
         dto.setCommunityProfile(mapToCommunityProfileDTO(post.getProfile()));
+
+        // Mapeo de todos los comentarios del post a una lista de PostComentDTO
+        List<PostComentDTO> commentDTOs = post.getComments().stream()
+                .map(comment -> {
+                    PostComentDTO dtoComment = new PostComentDTO();
+                    dtoComment.setId(comment.getId());
+                    dtoComment.setContent(comment.getContent());
+                    dtoComment.setCommunityProfile(mapToCommunityProfileDTO(comment.getProfile()));
+                    return dtoComment;
+                })
+                .collect(Collectors.toList());
+
+        dto.setPostComment(commentDTOs);
+
         return dto;
     }
+
 
     private CommunityProfileDTO mapToCommunityProfileDTO(CommunityProfile profile) {
         CommunityProfileDTO dto = new CommunityProfileDTO();

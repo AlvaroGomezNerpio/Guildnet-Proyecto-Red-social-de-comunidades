@@ -9,6 +9,7 @@ import { UpdateCommunityProfileRequest } from '../../models/communityProfile/Upd
 import { ProfileCommentService } from '../../services/profile-comment.service';
 import { ProfileCommentDTO } from '../../models/profileComment/ProfileCommentDTO';
 import { ProfileCommentCreateUpdateDTO } from '../../models/profileComment/ProfileCommentCreateUpdateDTO';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-community-profile-detail',
@@ -17,7 +18,8 @@ import { ProfileCommentCreateUpdateDTO } from '../../models/profileComment/Profi
   styleUrl: './community-profile-detail.component.css'
 })
 export class CommunityProfileDetailComponent implements OnInit {
-  profileId!: number;
+  profileId!: number; // Perfil que estás visitando
+  myProfileId!: number; // Tu perfil en esa comunidad
   profile: CommunityProfileDTO | null = null;
   posts: PostDTO[] = [];
   comments: ProfileCommentDTO[] = [];
@@ -27,13 +29,15 @@ export class CommunityProfileDetailComponent implements OnInit {
   selectedImage: File | undefined;
   successMessage: string | null = null;
   errorMessage: string | null = null;
+  isOwnProfile: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
     private profileService: CommunityProfileService,
     private postService: PostService,
     private commentService: ProfileCommentService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -41,6 +45,16 @@ export class CommunityProfileDetailComponent implements OnInit {
       const idParam = params.get('id');
       if (idParam) {
         this.profileId = +idParam;
+
+        // Obtenemos también el query param con tu perfil
+        this.route.queryParamMap.subscribe(queryParams => {
+          const myProfileParam = queryParams.get('myProfileId');
+          if (myProfileParam) {
+            this.myProfileId = +myProfileParam;
+            this.isOwnProfile = this.myProfileId === this.profileId;
+          }
+        });
+
         this.loadProfile();
         this.loadPosts();
         this.loadComments();
@@ -59,7 +73,7 @@ export class CommunityProfileDetailComponent implements OnInit {
   }
 
   loadProfile(): void {
-    this.profileService.getMyProfileInCommunity(this.profileId).subscribe({
+    this.profileService.getProfileById(this.profileId).subscribe({
       next: data => {
         this.profile = data;
         this.editForm.patchValue({
@@ -112,13 +126,13 @@ export class CommunityProfileDetailComponent implements OnInit {
   }
 
   onSubmitComment(): void {
-    if (!this.newComment.trim() || !this.profile) return;
+    if (!this.newComment.trim() || !this.profile || !this.myProfileId) return;
 
     const dto: ProfileCommentCreateUpdateDTO = {
       content: this.newComment.trim()
     };
 
-    this.commentService.createComment(this.profile.id, this.profileId, dto).subscribe({
+    this.commentService.createComment(this.myProfileId, this.profileId, dto).subscribe({
       next: comment => {
         this.comments.unshift(comment);
         this.newComment = '';
