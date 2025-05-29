@@ -18,7 +18,7 @@ public class PostDetailDTO {
     private String title;
     private String content;
     private List<String> tags;
-    private PostComentDTO postComment;
+    private List<PostComentDTO> postComment;
     private CommunityProfileDTO communityProfile;
     private Long communityId;
 }

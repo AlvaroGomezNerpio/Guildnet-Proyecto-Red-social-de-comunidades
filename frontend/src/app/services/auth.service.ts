@@ -8,7 +8,7 @@ import { LoginRequest } from '../models/user/LoginRequest';
 import { LoginResponse } from '../models/user/LoginResponse';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/v1/auth';
@@ -21,13 +21,19 @@ export class AuthService {
     this.loadCurrentUser();
   }
 
+  getCurrentUserId(): number | null {
+    return this.currentUserSubject.value?.id ?? null;
+  }
+
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials).pipe(
-      tap(response => {
-        this.saveToken(response.token);
-        this.loadCurrentUser();
-      })
-    );
+    return this.http
+      .post<LoginResponse>(`${this.apiUrl}/login`, credentials)
+      .pipe(
+        tap((response) => {
+          this.saveToken(response.token);
+          this.loadCurrentUser();
+        })
+      );
   }
 
   saveToken(token: string): void {
@@ -59,11 +65,13 @@ export class AuthService {
       return;
     }
 
-    this.http.get<UserDTO>(this.meUrl, {
-      headers: this.getAuthHeaders()
-    }).subscribe({
-      next: user => this.currentUserSubject.next(user),
-      error: () => this.currentUserSubject.next(null)
-    });
+    this.http
+      .get<UserDTO>(this.meUrl, {
+        headers: this.getAuthHeaders(),
+      })
+      .subscribe({
+        next: (user) => this.currentUserSubject.next(user),
+        error: () => this.currentUserSubject.next(null),
+      });
   }
 }

@@ -1,5 +1,6 @@
 <div class="container mt-5 text-center">
   <!-- Imagen de perfil -->
+  <!-- Imagen de perfil -->
   <div class="mb-4">
     <img
       [src]="profile?.profileImage || 'assets/default-avatar.png'"
@@ -41,8 +42,9 @@
     </span>
   </div>
 
-  <!-- Botón para abrir el modal -->
+  <!-- Botón para abrir el modal (solo si es tu propio perfil) -->
   <button
+    *ngIf="isOwnProfile"
     type="button"
     class="btn btn-outline-primary mb-3"
     data-bs-toggle="modal"
@@ -70,13 +72,17 @@
     <div class="card card-body text-start">
       <div
         class="quill-content"
-        [innerHTML]="profile?.description || '<p class=\'text-muted\'>No hay descripción disponible.</p>'"
+        [innerHTML]="
+          profile?.description ||
+          '<p class=\'text-muted\'>No hay descripción disponible.</p>'
+        "
       ></div>
     </div>
   </div>
 
-  <!-- Modal de edición de perfil -->
+  <!-- Modal de edición (solo si es tu propio perfil) -->
   <div
+    *ngIf="isOwnProfile"
     class="modal fade"
     id="editProfileModal"
     tabindex="-1"
@@ -206,7 +212,7 @@
 
     <!-- Comentarios -->
     <div class="tab-pane fade" id="comments" role="tabpanel">
-      <form class="mb-4" (ngSubmit)="onSubmitComment()">
+      <form class="mb-4" *ngIf="myProfileId" (ngSubmit)="onSubmitComment()">
         <div class="input-group">
           <input
             type="text"

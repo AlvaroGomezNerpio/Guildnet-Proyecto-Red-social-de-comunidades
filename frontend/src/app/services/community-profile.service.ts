@@ -37,6 +37,70 @@ export class CommunityProfileService {
     );
   }
 
+  // 🔹 Obtener todos los perfiles de una comunidad
+  getProfilesByCommunity(communityId: number): Observable<CommunityProfileDTO[]> {
+    return this.http.get<CommunityProfileDTO[]>(
+      `${this.apiUrl}/community/${communityId}`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  // 🔹 Obtener perfil por ID
+  getProfileById(profileId: number): Observable<CommunityProfileDTO> {
+    return this.http.get<CommunityProfileDTO>(
+      `${this.apiUrl}/${profileId}`,
+      { headers: this.getAuthHeaders() }
+    );
+  }
+
+  // 🔹 Eliminar un perfil
+  deleteProfile(profileId: number): Observable<string> {
+    return this.http.delete(`${this.apiUrl}/${profileId}`, {
+      headers: this.getAuthHeaders(),
+      responseType: 'text'
+    });
+  }
+
+  // 🔹 Asignar un título a un perfil
+  assignTitle(profileId: number, titleId: number): Observable<string> {
+    return this.http.post(`${this.apiUrl}/${profileId}/titles/${titleId}`, null, {
+      headers: this.getAuthHeaders(),
+      responseType: 'text'
+    });
+  }
+
+  // 🔹 Quitar un título de un perfil
+  removeTitle(profileId: number, titleId: number): Observable<string> {
+    return this.http.delete(`${this.apiUrl}/${profileId}/titles/${titleId}`, {
+      headers: this.getAuthHeaders(),
+      responseType: 'text'
+    });
+  }
+
+  // 🔹 Cambiar el título destacado
+  changeFeaturedTitle(profileId: number, titleId: number): Observable<string> {
+    return this.http.put(`${this.apiUrl}/${profileId}/featured-title/${titleId}`, null, {
+      headers: this.getAuthHeaders(),
+      responseType: 'text'
+    });
+  }
+
+  // 🔹 Asignar rol
+  assignRoleToProfile(profileId: number, roleId: number): Observable<string> {
+    return this.http.post(`${this.apiUrl}/${profileId}/roles/${roleId}`, null, {
+      headers: this.getAuthHeaders(),
+      responseType: 'text'
+    });
+  }
+
+  // 🔹 Quitar rol
+  removeRoleFromProfile(profileId: number, roleId: number): Observable<string> {
+    return this.http.delete(`${this.apiUrl}/${profileId}/roles/${roleId}`, {
+      headers: this.getAuthHeaders(),
+      responseType: 'text'
+    });
+  }
+
   // 🔹 Actualizar perfil de comunidad con imagen
   updateProfile(
     profileId: number,
