@@ -54,10 +54,9 @@ public class RolePermissionServiceImpl implements RolePermissionService {
                 .roleId(rolePermission.getRole().getId())
                 .roleName(rolePermission.getRole().getName())
                 .permissionId(rolePermission.getPermission().getId())
-                .permissionName(rolePermission.getPermission().getName())
+                .permissionName(rolePermission.getPermission().getName().name())
                 .build();
     }
-
 
 }
 

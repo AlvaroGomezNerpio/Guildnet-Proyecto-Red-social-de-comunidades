@@ -174,11 +174,23 @@
               <!-- Título -->
               <h5 class="card-title">{{ post.title }}</h5>
 
-              <!-- Contenido del post (resumen) -->
+              <!-- 🔽 Contenido completo -->
               <div
-                class="quill-content card-text mb-2"
-                [innerHTML]="post.content | slice : 0 : 300"
-              ></div>
+                class="card card-body mb-2 text-start"
+                *ngIf="post.showContent"
+              >
+                <div class="quill-content" [innerHTML]="post.content"></div>
+              </div>
+
+              <!-- 🔘 Botón centrado -->
+              <div class="text-center">
+                <button
+                  class="btn btn-sm btn-outline-secondary mt-2"
+                  (click)="toggleContent(post); $event.stopPropagation()"
+                >
+                  {{ post.showContent ? "Ver menos" : "Ver más" }}
+                </button>
+              </div>
 
               <!-- Tags -->
               <div class="text-muted mb-2">
@@ -187,7 +199,7 @@
 
               <!-- Likes y comentarios -->
               <div class="text-end">
-                <small class="text-muted">{{ post.likes }} 👍</small> |
+                <small class="text-muted">{{ post.likes }} 💙</small> |
                 <small class="text-muted">{{ post.coments }} 💬</small>
               </div>
             </div>

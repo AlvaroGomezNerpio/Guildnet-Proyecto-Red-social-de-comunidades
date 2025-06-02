@@ -20,6 +20,6 @@ public class CommunityProfileDTO {
     private TitleDTO featuredTitle;
     private Long userId;
     private Long communityId;
-    private List<RoleDTO> roles;
+    private RoleDTO rol;
     private List<TitleDTO> titles;
 }

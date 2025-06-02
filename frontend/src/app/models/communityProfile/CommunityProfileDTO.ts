@@ -9,6 +9,6 @@ export interface CommunityProfileDTO {
   featuredTitle: TitleDTO | null;
   userId: number;
   communityId: number;
-  roles: RoleDTO[];
+  rol: RoleDTO;
   titles: TitleDTO[];
 }

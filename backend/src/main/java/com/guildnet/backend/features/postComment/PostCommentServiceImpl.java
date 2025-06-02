@@ -69,6 +69,7 @@ public class PostCommentServiceImpl implements PostCommentService {
     }
 
     private CommunityProfileDTO mapToCommunityProfileDTO(CommunityProfile profile) {
+        // Título destacado (si existe)
         Title featured = profile.getFeaturedTitle();
         TitleDTO featuredTitle = featured != null
                 ? new TitleDTO(
@@ -80,17 +81,20 @@ public class PostCommentServiceImpl implements PostCommentService {
         )
                 : null;
 
-        List<RoleDTO> roleDTOs = profile.getRoles().stream()
-                .map(role -> new RoleDTO(
-                        role.getId(),
-                        role.getName(),
-                        role.getTextColor(),
-                        role.getBackgroundColor(),
-                        role.getCommunity().getId()
-                ))
-                .collect(Collectors.toList());
+        // Rol único (ahora es un solo objeto, no lista)
+        RoleDTO roleDTO = profile.getRole() != null
+                ? new RoleDTO(
+                profile.getRole().getId(),
+                profile.getRole().getName(),
+                profile.getRole().getTextColor(),
+                profile.getRole().getBackgroundColor(),
+                profile.getRole().getCommunity().getId()
+        )
+                : null;
 
-        List<TitleDTO> titleDTOs = profile.getTitles().stream()
+        // Títulos
+        List<TitleDTO> titleDTOs = profile.getTitles() != null
+                ? profile.getTitles().stream()
                 .map(title -> new TitleDTO(
                         title.getId(),
                         title.getTitle(),
@@ -98,8 +102,10 @@ public class PostCommentServiceImpl implements PostCommentService {
                         title.getBackgroundColor(),
                         title.getCommunity().getId()
                 ))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())
+                : List.of();
 
+        // Construcción del DTO final
         return new CommunityProfileDTO(
                 profile.getId(),
                 profile.getUsername(),
@@ -108,9 +114,10 @@ public class PostCommentServiceImpl implements PostCommentService {
                 featuredTitle,
                 profile.getUser().getId(),
                 profile.getCommunity().getId(),
-                roleDTOs,
+                roleDTO,
                 titleDTOs
         );
     }
 
 }
+

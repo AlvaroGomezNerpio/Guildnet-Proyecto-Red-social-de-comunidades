@@ -46,7 +46,7 @@ public class PostServiceImpl implements PostService {
         post.setCommunity(community);
 
         Post saved = postRepository.save(post);
-        return mapToDTO(saved);
+        return mapToPostDTO(saved);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class PostServiceImpl implements PostService {
         post.setContent(dto.getContent());
         post.setTags(dto.getTags());
 
-        return mapToDTO(postRepository.save(post));
+        return mapToPostDTO(postRepository.save(post));
     }
 
     @Override
@@ -65,7 +65,7 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post no encontrado"));
 
-        post.getComments().clear(); // Elimina comentarios
+        post.getComments().clear();
         postRepository.delete(post);
     }
 
@@ -73,24 +73,26 @@ public class PostServiceImpl implements PostService {
     public PostDetailDTO getPostById(Long id) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post no encontrado"));
-        return mapToDetailDTO(post);
+        return mapToPostDetailDTO(post);
     }
 
     @Override
     public List<PostDTO> getPostsByProfileId(Long profileId) {
         return postRepository.findByProfileId(profileId).stream()
-                .map(this::mapToDTO)
+                .map(this::mapToPostDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<PostDTO> getPostsByCommunityId(Long communityId) {
         return postRepository.findByCommunityId(communityId).stream()
-                .map(this::mapToDTO)
+                .map(this::mapToPostDTO)
                 .collect(Collectors.toList());
     }
 
-    private PostDTO mapToDTO(Post post) {
+    // 🔽 Métodos de mapeo
+
+    private PostDTO mapToPostDTO(Post post) {
         PostDTO dto = new PostDTO();
         dto.setId(post.getId());
         dto.setTitle(post.getTitle());
@@ -103,7 +105,7 @@ public class PostServiceImpl implements PostService {
         return dto;
     }
 
-    private PostDetailDTO mapToDetailDTO(Post post) {
+    private PostDetailDTO mapToPostDetailDTO(Post post) {
         PostDetailDTO dto = new PostDetailDTO();
         dto.setId(post.getId());
         dto.setTitle(post.getTitle());
@@ -112,7 +114,6 @@ public class PostServiceImpl implements PostService {
         dto.setCommunityId(post.getCommunity().getId());
         dto.setCommunityProfile(mapToCommunityProfileDTO(post.getProfile()));
 
-        // Mapeo de todos los comentarios del post a una lista de PostComentDTO
         List<PostComentDTO> commentDTOs = post.getComments().stream()
                 .map(comment -> {
                     PostComentDTO dtoComment = new PostComentDTO();
@@ -124,14 +125,11 @@ public class PostServiceImpl implements PostService {
                 .collect(Collectors.toList());
 
         dto.setPostComment(commentDTOs);
-
         return dto;
     }
 
-
     private CommunityProfileDTO mapToCommunityProfileDTO(CommunityProfile profile) {
         CommunityProfileDTO dto = new CommunityProfileDTO();
-
         dto.setId(profile.getId());
         dto.setUsername(profile.getUsername());
         dto.setDescription(profile.getDescription());
@@ -141,22 +139,20 @@ public class PostServiceImpl implements PostService {
 
         // Título destacado
         if (profile.getFeaturedTitle() != null) {
-            dto.setFeaturedTitle(mapToDTO(profile.getFeaturedTitle()));
+            dto.setFeaturedTitle(mapToTitleDTO(profile.getFeaturedTitle()));
         }
 
-        // Roles
-        if (profile.getRoles() != null) {
-            dto.setRoles(profile.getRoles().stream()
-                    .map(this::mapToDTO)
-                    .toList());
+        // Rol (único)
+        if (profile.getRole() != null) {
+            dto.setRol(mapToRoleDTO(profile.getRole())); // ✅ CORRECTO
         } else {
-            dto.setRoles(List.of());
+            dto.setRol(null); // también válido
         }
 
         // Títulos
         if (profile.getTitles() != null) {
             dto.setTitles(profile.getTitles().stream()
-                    .map(this::mapToDTO)
+                    .map(this::mapToTitleDTO)
                     .toList());
         } else {
             dto.setTitles(List.of());
@@ -165,7 +161,7 @@ public class PostServiceImpl implements PostService {
         return dto;
     }
 
-    private RoleDTO mapToDTO(Role role) {
+    private RoleDTO mapToRoleDTO(Role role) {
         return new RoleDTO(
                 role.getId(),
                 role.getName(),
@@ -175,7 +171,7 @@ public class PostServiceImpl implements PostService {
         );
     }
 
-    private TitleDTO mapToDTO(Title title) {
+    private TitleDTO mapToTitleDTO(Title title) {
         return new TitleDTO(
                 title.getId(),
                 title.getTitle(),
@@ -184,7 +180,6 @@ public class PostServiceImpl implements PostService {
                 title.getCommunity().getId()
         );
     }
-
-
 }
+
 

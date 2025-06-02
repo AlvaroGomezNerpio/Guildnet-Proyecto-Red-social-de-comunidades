@@ -35,7 +35,7 @@ public class ProfileCommentServiceImpl implements ProfileCommentService {
                 .targetProfile(target)
                 .build();
 
-        return mapToDTO(profileCommentRepository.save(comment));
+        return mapToProfileCommentDTO(profileCommentRepository.save(comment));
     }
 
     @Override
@@ -43,13 +43,13 @@ public class ProfileCommentServiceImpl implements ProfileCommentService {
     public ProfileCommentDTO updateProfileComment(Long commentId, ProfileCommentCreateUpdateDTO dto) {
         ProfileComment comment = profileCommentRepository.findById(commentId).orElseThrow();
         comment.setContent(dto.getContent());
-        return mapToDTO(profileCommentRepository.save(comment));
+        return mapToProfileCommentDTO(profileCommentRepository.save(comment));
     }
 
     @Override
     public List<ProfileCommentDTO> getCommentsByTargetProfileId(Long targetProfileId) {
         return profileCommentRepository.findByTargetProfileId(targetProfileId).stream()
-                .map(this::mapToDTO)
+                .map(this::mapToProfileCommentDTO)
                 .collect(Collectors.toList());
     }
 
@@ -58,7 +58,7 @@ public class ProfileCommentServiceImpl implements ProfileCommentService {
         profileCommentRepository.deleteById(commentId);
     }
 
-    private ProfileCommentDTO mapToDTO(ProfileComment comment) {
+    private ProfileCommentDTO mapToProfileCommentDTO(ProfileComment comment) {
         return new ProfileCommentDTO(
                 comment.getId(),
                 comment.getContent(),
@@ -68,16 +68,14 @@ public class ProfileCommentServiceImpl implements ProfileCommentService {
     }
 
     private CommunityProfileDTO mapToCommunityProfileDTO(CommunityProfile profile) {
-        List<RoleDTO> roleDTOs = profile.getRoles() != null
-                ? profile.getRoles().stream().map(this::mapToDTO).toList()
-                : List.of();
+        RoleDTO roleDTO = profile.getRole() != null ? mapToRoleDTO(profile.getRole()) : null;
 
         List<TitleDTO> titleDTOs = profile.getTitles() != null
-                ? profile.getTitles().stream().map(this::mapToDTO).toList()
+                ? profile.getTitles().stream().map(this::mapToTitleDTO).toList()
                 : List.of();
 
         TitleDTO featuredTitleDTO = profile.getFeaturedTitle() != null
-                ? mapToDTO(profile.getFeaturedTitle())
+                ? mapToTitleDTO(profile.getFeaturedTitle())
                 : null;
 
         return new CommunityProfileDTO(
@@ -88,12 +86,13 @@ public class ProfileCommentServiceImpl implements ProfileCommentService {
                 featuredTitleDTO,
                 profile.getUser().getId(),
                 profile.getCommunity().getId(),
-                roleDTOs,
+                roleDTO,
                 titleDTOs
         );
     }
 
-    private RoleDTO mapToDTO(Role role) {
+
+    private RoleDTO mapToRoleDTO(Role role) {
         return new RoleDTO(
                 role.getId(),
                 role.getName(),
@@ -103,7 +102,7 @@ public class ProfileCommentServiceImpl implements ProfileCommentService {
         );
     }
 
-    private TitleDTO mapToDTO(Title title) {
+    private TitleDTO mapToTitleDTO(Title title) {
         return new TitleDTO(
                 title.getId(),
                 title.getTitle(),
@@ -112,7 +111,6 @@ public class ProfileCommentServiceImpl implements ProfileCommentService {
                 title.getCommunity().getId()
         );
     }
-
-
 }
+
 

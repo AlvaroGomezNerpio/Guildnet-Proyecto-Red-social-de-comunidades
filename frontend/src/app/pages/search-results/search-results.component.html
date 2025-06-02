@@ -46,7 +46,6 @@
               />
               <h5 class="card-title mb-0">{{ community.name }}</h5>
             </div>
-            <p class="card-text">{{ community.description }}</p>
             <button
               class="btn btn-outline-success w-100 mt-2"
               data-bs-toggle="modal"
@@ -63,9 +62,6 @@
 
   <p *ngIf="results.length === 0 && !error">No se encontraron comunidades.</p>
   <p *ngIf="error" class="text-danger">{{ error }}</p>
-
-  <!-- Modal de comunidad -->
-  <!-- ... hasta aquí sin cambios ... -->
 
   <!-- Modal de comunidad -->
   <div
@@ -113,14 +109,15 @@
             </div>
           </div>
 
-          <p class="mb-3">{{ selectedCommunity.description }}</p>
-          <p>
+          <div class="mb-3">
+            <strong>Descripción:</strong>
+            <div class="quill-content card-text" [innerHTML]="selectedCommunity.description"></div>
+          </div>
+
+          <div>
             <strong>Reglas:</strong>
-            {{
-              selectedCommunity.rules ||
-                "Esta comunidad aún no tiene reglas públicas."
-            }}
-          </p>
+            <div class="quill-content card-text" [innerHTML]="selectedCommunity.rules"></div>
+          </div>
         </div>
 
         <div class="modal-footer">

@@ -1,6 +1,5 @@
 <div class="container mt-5 text-center">
   <!-- Imagen de perfil -->
-  <!-- Imagen de perfil -->
   <div class="mb-4">
     <img
       [src]="profile?.profileImage || 'assets/default-avatar.png'"
@@ -14,17 +13,16 @@
   <!-- Nombre de usuario sin editar -->
   <h4 class="mb-2">{{ profile?.username }}</h4>
 
-  <!-- Roles -->
-  <div *ngIf="profile?.roles?.length" class="mb-2">
+  <!-- Rol -->
+  <div *ngIf="profile?.rol as rol" class="mb-2">
     <span
       class="badge me-1"
-      *ngFor="let role of profile?.roles"
       [ngStyle]="{
-        'background-color': role.backgroundColor,
-        color: role.textColor
+        'background-color': rol.backgroundColor,
+        color: rol.textColor
       }"
     >
-      {{ role.name }}
+      {{ rol.name }}
     </span>
   </div>
 
@@ -193,18 +191,42 @@
         <div
           *ngFor="let post of posts.slice().reverse()"
           class="card mb-3 text-start"
+          style="cursor: pointer"
+          (click)="goToPostDetail(post.id)"
         >
           <div class="card-body">
+            <!-- Título -->
             <h5 class="card-title">{{ post.title }}</h5>
-            <div
-              class="quill-content card-text"
-              [innerHTML]="post.content"
-            ></div>
-            <div class="text-muted">Etiquetas: {{ post.tags.join(", ") }}</div>
-            <div class="mt-2">❤️ {{ post.likes }} · 💬 {{ post.coments }}</div>
+
+            <!-- Contenido colapsable -->
+            <div *ngIf="post.showContent" class="card card-body mb-2">
+              <div class="quill-content" [innerHTML]="post.content"></div>
+            </div>
+
+            <!-- Botón centrado para Ver más / Ver menos -->
+            <div class="text-center">
+              <button
+                class="btn btn-sm btn-outline-secondary mt-2"
+                (click)="toggleContent(post); $event.stopPropagation()"
+              >
+                {{ post.showContent ? "Ver menos" : "Ver más" }}
+              </button>
+            </div>
+
+            <!-- Etiquetas -->
+            <div class="text-muted mt-2">
+              Etiquetas: {{ post.tags.join(", ") }}
+            </div>
+
+            <!-- Likes y comentarios -->
+            <div class="text-end mt-1">
+              <small class="text-muted">{{ post.likes }} 💙</small> |
+              <small class="text-muted">{{ post.coments }} 💬</small>
+            </div>
           </div>
         </div>
       </div>
+
       <ng-template #noPosts>
         <p>No hay publicaciones de este usuario aún.</p>
       </ng-template>
