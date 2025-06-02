@@ -18,12 +18,12 @@ public class Permission {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name; // Nombre de la permisión (por ejemplo: "EDIT_POST", "DELETE_USER", etc.)
+    @Enumerated(EnumType.STRING)
+    @Column(unique = true, nullable = false)
+    private PermissionType name;
 
     private String description;
 
-    // Lista de asociaciones con roles.
-    // Esta relación es parte de una tabla intermedia (RolePermission) para modelar la relación muchos a muchos entre Role y Permission
     @OneToMany(mappedBy = "permission")
     private List<RolePermission> roles;
 }

@@ -17,14 +17,17 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     public PermissionDTO createPermission(CreatePermissionRequest request) {
         Permission permission = new Permission();
-        permission.setName(request.getName());
+
+        // Convierte el String a Enum
+        PermissionType type = PermissionType.valueOf(request.getName());
+        permission.setName(type);
         permission.setDescription(request.getDescription());
 
         Permission saved = permissionRepository.save(permission);
 
         return new PermissionDTO(
                 saved.getId(),
-                saved.getName(),
+                saved.getName().name(), // Enum a String
                 saved.getDescription()
         );
     }
@@ -35,7 +38,7 @@ public class PermissionServiceImpl implements PermissionService {
                 .stream()
                 .map(permission -> new PermissionDTO(
                         permission.getId(),
-                        permission.getName(),
+                        permission.getName().name(), // Enum a String
                         permission.getDescription()
                 ))
                 .collect(Collectors.toList());
@@ -47,7 +50,7 @@ public class PermissionServiceImpl implements PermissionService {
                 .orElseThrow(() -> new RuntimeException("Permiso no encontrado"));
         return new PermissionDTO(
                 permission.getId(),
-                permission.getName(),
+                permission.getName().name(), // Enum a String
                 permission.getDescription()
         );
     }
@@ -57,4 +60,5 @@ public class PermissionServiceImpl implements PermissionService {
         permissionRepository.deleteById(id);
     }
 }
+
 

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { CommunityProfileDTO } from '../../models/communityProfile/CommunityProfileDTO';
 import { CommunityProfileService } from '../../services/community-profile.service';
@@ -11,6 +11,10 @@ import { ProfileCommentDTO } from '../../models/profileComment/ProfileCommentDTO
 import { ProfileCommentCreateUpdateDTO } from '../../models/profileComment/ProfileCommentCreateUpdateDTO';
 import { AuthService } from '../../services/auth.service';
 
+interface PostWithToggle extends PostDTO {
+  showContent: boolean;
+}
+
 @Component({
   selector: 'app-community-profile-detail',
   standalone: false,
@@ -21,7 +25,7 @@ export class CommunityProfileDetailComponent implements OnInit {
   profileId!: number; // Perfil que estás visitando
   myProfileId!: number; // Tu perfil en esa comunidad
   profile: CommunityProfileDTO | null = null;
-  posts: PostDTO[] = [];
+  posts: PostWithToggle[] = [];
   comments: ProfileCommentDTO[] = [];
   newComment: string = '';
 
@@ -33,6 +37,7 @@ export class CommunityProfileDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private profileService: CommunityProfileService,
     private postService: PostService,
     private commentService: ProfileCommentService,
@@ -87,7 +92,12 @@ export class CommunityProfileDetailComponent implements OnInit {
 
   loadPosts(): void {
     this.postService.getPostsByProfile(this.profileId).subscribe({
-      next: data => this.posts = data,
+      next: data => {
+        this.posts = data.map(post => ({
+          ...post,
+          showContent: false
+        }));
+      },
       error: () => this.errorMessage = 'No se pudieron cargar los posts.'
     });
   }
@@ -97,6 +107,20 @@ export class CommunityProfileDetailComponent implements OnInit {
       next: data => this.comments = data,
       error: () => this.errorMessage = 'No se pudieron cargar los comentarios.'
     });
+  }
+
+  toggleContent(post: PostWithToggle): void {
+    post.showContent = !post.showContent;
+  }
+
+  goToPostDetail(postId: number): void {
+    if (this.myProfileId) {
+      this.router.navigate(['/posts', postId], {
+        queryParams: { myProfileId: this.myProfileId }
+      });
+    } else {
+      this.router.navigate(['/posts', postId]);
+    }
   }
 
   onImageSelected(event: any): void {

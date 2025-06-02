@@ -29,13 +29,13 @@ public class NotificationServiceImpl implements NotificationService {
     public List<NotificationDTO> getNotificationsForProfile(Long profileId) {
         return notificationRepository.findByReceiverIdOrderByCreatedAtDesc(profileId)
                 .stream()
-                .map(this::mapToDTO)
+                .map(this::mapToNotificationDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     public int countUnreadNotifications(Long profileId) {
-        return notificationRepository.countByReceiverIdAndItIsReadFalse(profileId); // <--- CAMBIO AQUÍ
+        return notificationRepository.countByReceiverIdAndItIsReadFalse(profileId);
     }
 
     @Override
@@ -82,10 +82,10 @@ public class NotificationServiceImpl implements NotificationService {
                 .build();
 
         Notification saved = notificationRepository.save(notification);
-        return mapToDTO(saved);
+        return mapToNotificationDTO(saved);
     }
 
-    private NotificationDTO mapToDTO(Notification notification) {
+    private NotificationDTO mapToNotificationDTO(Notification notification) {
         return NotificationDTO.builder()
                 .id(notification.getId())
                 .message(notification.getMessage())
@@ -103,20 +103,18 @@ public class NotificationServiceImpl implements NotificationService {
                 profile.getUsername(),
                 profile.getDescription(),
                 profile.getProfileImage(),
-                profile.getFeaturedTitle() != null ? mapToDTO(profile.getFeaturedTitle()) : null,
+                profile.getFeaturedTitle() != null ? mapToTitleDTO(profile.getFeaturedTitle()) : null,
                 profile.getUser().getId(),
                 profile.getCommunity().getId(),
-                profile.getRoles() != null
-                        ? profile.getRoles().stream().map(this::mapToDTO).collect(Collectors.toList())
-                        : List.of(),
+                profile.getRole() != null ? mapToRoleDTO(profile.getRole()) : null,
                 profile.getTitles() != null
-                        ? profile.getTitles().stream().map(this::mapToDTO).collect(Collectors.toList())
+                        ? profile.getTitles().stream().map(this::mapToTitleDTO).collect(Collectors.toList())
                         : List.of()
         );
     }
 
 
-    private RoleDTO mapToDTO(Role role) {
+    private RoleDTO mapToRoleDTO(Role role) {
         return new RoleDTO(
                 role.getId(),
                 role.getName(),
@@ -126,7 +124,7 @@ public class NotificationServiceImpl implements NotificationService {
         );
     }
 
-    private TitleDTO mapToDTO(Title title) {
+    private TitleDTO mapToTitleDTO(Title title) {
         return new TitleDTO(
                 title.getId(),
                 title.getTitle(),
@@ -136,4 +134,5 @@ public class NotificationServiceImpl implements NotificationService {
         );
     }
 }
+
 

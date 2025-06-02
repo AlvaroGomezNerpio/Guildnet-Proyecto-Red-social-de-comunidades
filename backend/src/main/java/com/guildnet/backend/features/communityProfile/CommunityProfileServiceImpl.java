@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,10 +51,11 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
                 .description(request.getDescription())
                 .user(user)
                 .community(community)
+                .titles(new ArrayList<>())
                 .build();
 
         CommunityProfile saved = profileRepository.save(profile);
-        return mapToDTO(saved);
+        return mapToProfileDTO(saved);
     }
 
     @Override
@@ -64,7 +66,6 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
 
         if (user.getProfileImage() != null) {
             try {
-                // Convertimos la URL a una ruta relativa válida
                 String relativePath = user.getProfileImage().replace("http://localhost:8080/", "");
                 Path originalPath = Paths.get(relativePath);
 
@@ -84,10 +85,11 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
                 .description(null)
                 .user(user)
                 .community(community)
+                .titles(new ArrayList<>())
                 .build();
 
         CommunityProfile saved = profileRepository.save(profile);
-        return mapToDTO(saved);
+        return mapToProfileDTO(saved);
     }
 
     @Override
@@ -108,28 +110,27 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
         }
 
         CommunityProfile updated = profileRepository.save(profile);
-        return mapToDTO(updated);
+        return mapToProfileDTO(updated);
     }
 
     @Override
     public CommunityProfileDTO getProfileDtoById(Long profileId) {
-        CommunityProfile profile = getProfileById(profileId); // ya lo tienes definido internamente
-        return mapToDTO(profile);
+        CommunityProfile profile = getProfileById(profileId);
+        return mapToProfileDTO(profile);
     }
-
 
     @Override
     public List<CommunityProfileDTO> getProfilesByCommunity(Long communityId) {
         return profileRepository.findByCommunityId(communityId)
                 .stream()
-                .map(this::mapToDTO)
+                .map(this::mapToProfileDTO)
                 .toList();
     }
 
     @Override
     public Optional<CommunityProfileDTO> getProfile(Long userId, Long communityId) {
         return profileRepository.findByUserIdAndCommunityId(userId, communityId)
-                .map(this::mapToDTO);
+                .map(this::mapToProfileDTO);
     }
 
     @Override
@@ -144,7 +145,7 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
-        profile.getRoles().add(role);
+        profile.setRole(role);
         profileRepository.save(profile);
     }
 
@@ -154,19 +155,22 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
-        profile.getRoles().remove(role);
-        profileRepository.save(profile);
+        if (profile.getRole() != null && profile.getRole().getId().equals(role.getId())) {
+            profile.setRole(null);
+            profileRepository.save(profile);
+        }
     }
 
     @Override
     public List<RoleDTO> getRolesByProfile(Long profileId) {
         CommunityProfile profile = getProfileById(profileId);
-        return profile.getRoles().stream()
-                .map(this::mapToDTO)
-                .toList();
+
+        if (profile.getRole() == null) return List.of();
+
+        return List.of(mapToRoleDTO(profile.getRole()));
     }
 
-    private RoleDTO mapToDTO(Role role) {
+    private RoleDTO mapToRoleDTO(Role role) {
         return new RoleDTO(
                 role.getId(),
                 role.getName(),
@@ -176,15 +180,15 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
         );
     }
 
-    private CommunityProfileDTO mapToDTO(CommunityProfile profile) {
+    private CommunityProfileDTO mapToProfileDTO(CommunityProfile profile) {
         Title featuredTitle = profile.getFeaturedTitle();
 
-        List<RoleDTO> roleDTOs = profile.getRoles() != null
-                ? profile.getRoles().stream().map(this::mapToDTO).toList()
-                : List.of();
+        RoleDTO roleDTO = profile.getRole() != null
+                ? mapToRoleDTO(profile.getRole())
+                : null;
 
         List<TitleDTO> titleDTOs = profile.getTitles() != null
-                ? profile.getTitles().stream().map(this::mapToDTO).toList()
+                ? profile.getTitles().stream().map(this::mapToTitleDTO).toList()
                 : List.of();
 
         return new CommunityProfileDTO(
@@ -192,15 +196,16 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
                 profile.getUsername(),
                 profile.getDescription(),
                 profile.getProfileImage(),
-                featuredTitle != null ? mapToDTO(featuredTitle) : null,
+                featuredTitle != null ? mapToTitleDTO(featuredTitle) : null,
                 profile.getUser().getId(),
                 profile.getCommunity().getId(),
-                roleDTOs,
+                roleDTO,             // ✅ un único rol
                 titleDTOs
         );
     }
 
-    private TitleDTO mapToDTO(Title title) {
+
+    private TitleDTO mapToTitleDTO(Title title) {
         return new TitleDTO(
                 title.getId(),
                 title.getTitle(),
@@ -247,7 +252,7 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
     @Override
     public void assignTitle(Long profileId, Long titleId) {
         CommunityProfile profile = getProfileById(profileId);
-        Title title = getTitleById(titleId); // ahora creamos este método
+        Title title = getTitleById(titleId);
 
         if (!profile.getTitles().contains(title)) {
             profile.getTitles().add(title);
@@ -271,12 +276,10 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
         CommunityProfile profile = getProfileById(profileId);
         Title title = getTitleById(titleId);
 
-        // Verificar que el título pertenece al perfil
         if (!profile.getTitles().contains(title)) {
             throw new RuntimeException("El título no está asignado al perfil");
         }
 
-        // Asignar el título como destacado
         profile.setFeaturedTitle(title);
         profileRepository.save(profile);
     }
@@ -300,6 +303,8 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
         return titleRepository.findById(titleId)
                 .orElseThrow(() -> new RuntimeException("Título no encontrado"));
     }
-
 }
+
+
+
 

@@ -4,7 +4,15 @@ import com.guildnet.backend.features.Community.dto.CommunityResponse;
 import com.guildnet.backend.features.Community.dto.CommunityResponseDTO;
 import com.guildnet.backend.features.Community.dto.CreateCommunityRequest;
 import com.guildnet.backend.features.Community.dto.UpdateCommunityRequest;
+import com.guildnet.backend.features.communityProfile.CommunityProfileService;
+import com.guildnet.backend.features.communityProfile.dto.CommunityProfileDTO;
+import com.guildnet.backend.features.permission.PermissionService;
+import com.guildnet.backend.features.permission.dto.PermissionDTO;
+import com.guildnet.backend.features.role.RoleService;
+import com.guildnet.backend.features.role.dto.RoleDTO;
+import com.guildnet.backend.features.rolePermission.RolePermissionService;
 import com.guildnet.backend.features.user.User;
+import com.guildnet.backend.features.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +30,10 @@ import java.util.List;
 public class CommunityController {
 
     private final CommunityService communityService;
+    private final RoleService roleService;
+    private final PermissionService permissionService;
+    private final CommunityProfileService profileService;
+    private final RolePermissionService rolePermissionService;
 
     @GetMapping
     public ResponseEntity<List<CommunityResponseDTO>> getAll() {
@@ -157,9 +169,35 @@ public class CommunityController {
             Authentication authentication
     ) {
         User owner = (User) authentication.getPrincipal();
+
+        // Paso 1: Crear comunidad
         CommunityResponse response = communityService.createCommunity(request, owner, imageFile, bannerFile);
+
+        // Paso 2: Crear perfil en la comunidad
+        CommunityProfileDTO profile = profileService.createProfileAutomatically(owner, response.getId());
+
+        // Paso 3: Crear rol "Líder" para esta comunidad
+        RoleDTO leaderRole = roleService.createRole(
+                RoleDTO.builder()
+                        .name("Líder")
+                        .textColor("#ffffff")
+                        .backgroundColor("#000000")
+                        .communityId(response.getId())
+                        .build()
+        );
+
+        // Paso 4: Asignar todos los permisos al rol "Líder"
+        List<PermissionDTO> allPermissions = permissionService.getAllPermissions();
+        for (PermissionDTO permission : allPermissions) {
+            rolePermissionService.assignPermissionToRole(leaderRole.getId(), permission.getId());
+        }
+
+        // Paso 5: Asignar el rol al perfil creado
+        profileService.assignRole(profile.getId(), leaderRole.getId());
+
         return ResponseEntity.status(201).body(response);
     }
+
 
     @PutMapping(
             value = "/{id}",

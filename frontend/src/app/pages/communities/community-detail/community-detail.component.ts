@@ -76,7 +76,7 @@ export class CommunityDetailComponent {
       next: (data) => {
         this.posts = data.map((post) => ({
           ...post,
-          showContent: false, // 👈 añadimos esta propiedad
+          showContent: false,
         }));
       },
       error: () => (this.error = 'No se pudieron cargar los posts.'),
@@ -112,7 +112,7 @@ export class CommunityDetailComponent {
   viewProfile(profileId: number): void {
     if (this.profile) {
       this.router.navigate(['/communities/profile', profileId], {
-        queryParams: { myProfileId: this.profile.id }, // 👈 tu propio perfil
+        queryParams: { myProfileId: this.profile.id },
       });
     } else {
       // Por si acaso (no logueado o sin perfil en la comunidad)
@@ -136,6 +136,12 @@ export class CommunityDetailComponent {
   }
 
   goToPostDetail(postId: number): void {
-    this.router.navigate(['/posts', postId]);
+    if (this.profile) {
+      this.router.navigate(['/posts', postId], {
+        queryParams: { myProfileId: this.profile.id },
+      });
+    } else {
+      this.router.navigate(['/posts', postId]);
+    }
   }
 }

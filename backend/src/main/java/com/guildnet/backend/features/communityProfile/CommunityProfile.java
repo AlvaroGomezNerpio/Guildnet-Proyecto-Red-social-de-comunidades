@@ -76,22 +76,23 @@ public class CommunityProfile {
     private List<ChatMessage> chatMessages;
 
     // Roles que tiene este perfil en la comunidad (relación muchos a muchos)
-    @ManyToMany
-    @JoinTable(name = "profile_roles",
-            joinColumns = @JoinColumn(name = "profile_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private List<Role> roles;
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     // Títulos obtenidos por este perfil (relación muchos a muchos)
     @ManyToMany
     @JoinTable(name = "profile_titles",
             joinColumns = @JoinColumn(name = "profile_id"),
             inverseJoinColumns = @JoinColumn(name = "title_id"))
-    private List<Title> titles;
+    private List<Title> titles = new ArrayList<>();
 
+    // ✅ Notificaciones enviadas
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> sentNotifications = new ArrayList<>();
+
+    // ✅ Notificaciones recibidas
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notification> receivedNotifications = new ArrayList<>();
-
-    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
-    private List<Notification> sentNotifications = new ArrayList<>();
+    
 }
