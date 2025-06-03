@@ -9,7 +9,9 @@ import { UpdateCommunityProfileRequest } from '../../models/communityProfile/Upd
 import { ProfileCommentService } from '../../services/profile-comment.service';
 import { ProfileCommentDTO } from '../../models/profileComment/ProfileCommentDTO';
 import { ProfileCommentCreateUpdateDTO } from '../../models/profileComment/ProfileCommentCreateUpdateDTO';
-import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
+import { NotificationCreateDTO } from '../../models/notification/NotificationCreateDTO';
+import { NotificationType } from '../../models/notification/NotificationType';
 
 interface PostWithToggle extends PostDTO {
   showContent: boolean;
@@ -42,7 +44,8 @@ export class CommunityProfileDetailComponent implements OnInit {
     private postService: PostService,
     private commentService: ProfileCommentService,
     private fb: FormBuilder,
-    private authService: AuthService
+    private notificationService: NotificationService
+
   ) {}
 
   ngOnInit(): void {
@@ -150,20 +153,35 @@ export class CommunityProfileDetailComponent implements OnInit {
   }
 
   onSubmitComment(): void {
-    if (!this.newComment.trim() || !this.profile || !this.myProfileId) return;
+  if (!this.newComment.trim() || !this.profile || !this.myProfileId) return;
 
-    const dto: ProfileCommentCreateUpdateDTO = {
-      content: this.newComment.trim()
-    };
+  const dto: ProfileCommentCreateUpdateDTO = {
+    content: this.newComment.trim()
+  };
 
-    this.commentService.createComment(this.myProfileId, this.profileId, dto).subscribe({
-      next: comment => {
-        this.comments.unshift(comment);
-        this.newComment = '';
-      },
-      error: () => this.errorMessage = 'No se pudo enviar el comentario.'
-    });
-  }
+  this.commentService.createComment(this.myProfileId, this.profileId, dto).subscribe({
+    next: comment => {
+      this.comments.unshift(comment);
+      this.newComment = '';
+
+      if (this.myProfileId !== this.profileId) {
+        const notification: NotificationCreateDTO = {
+          message: 'Ha comentado tu perfil.',
+          type: NotificationType.COMMENT_PROFILE,
+          receiverProfileId: this.profileId,
+          senderProfileId: this.myProfileId
+        };
+
+        this.notificationService.createNotification(notification).subscribe({
+          next: () => console.log('Notificación de comentario enviada'),
+          error: err => console.error('Error al crear notificación:', err)
+        });
+      }
+    },
+    error: () => this.errorMessage = 'No se pudo enviar el comentario.'
+  });
+}
+
 
     // --- Edición de comentarios ---
   editingCommentId: number | null = null;

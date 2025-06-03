@@ -42,11 +42,11 @@ public class Post {
 
 
     // Lista de comentarios asociados a esta publicación
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PostComment> comments;
 
     // Lista de "me gusta" asociados a esta publicación
-    @OneToMany(mappedBy = "post")
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like> likes;
 
 }

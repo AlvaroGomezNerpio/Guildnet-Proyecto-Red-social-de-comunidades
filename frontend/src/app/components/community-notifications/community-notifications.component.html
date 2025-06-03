@@ -1,0 +1,43 @@
+<div class="container mt-3">
+  <h3>Notificaciones</h3>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+  <div *ngIf="notifications.length != 0" class="mb-3">
+    <button class="btn btn-outline-success me-2" (click)="markAllAsRead()">
+      Marcar todas como leídas
+    </button>
+    <button class="btn btn-outline-danger" (click)="deleteAll()">
+      Eliminar todas
+    </button>
+  </div>
+
+  <div *ngIf="notifications.length === 0">No tienes notificaciones.</div>
+
+  <ul class="list-group">
+    <li *ngFor="let n of notifications" class="list-group-item d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center">
+        <img *ngIf="n.sender?.profileImage" [src]="n.sender?.profileImage" alt="Imagen de perfil"
+          class="rounded-circle me-3" width="40" height="40" />
+        <div>
+          <div>
+            <strong *ngIf="!n.read">●</strong>
+            <span *ngIf="n.sender">
+              <strong>{{ n.sender.username }}</strong>:
+            </span>
+            {{ n.message }}
+          </div>
+          <small class="text-muted">{{ n.createdAt | date : "short" }}</small>
+        </div>
+      </div>
+      <div>
+        <button class="btn btn-sm btn-success me-2" (click)="markAsRead(n.id)" [disabled]="n.read">
+          Leída
+        </button>
+        <button class="btn btn-sm btn-danger" (click)="deleteNotification(n.id)">
+          Eliminar
+        </button>
+      </div>
+    </li>
+  </ul>
+</div>

@@ -1,6 +1,6 @@
 <div *ngIf="post" class="container mt-4">
   <!-- Autor -->
-  <div class="d-flex align-items-center mb-4">
+  <div class="d-flex align-items-center mb-4" (click)="viewProfile(post.communityProfile.id)" style="cursor: pointer;">
     <img
       *ngIf="post.communityProfile.profileImage"
       [src]="post.communityProfile.profileImage"
@@ -126,10 +126,14 @@
           class="rounded-circle me-2"
           width="40"
           height="40"
+          style="cursor: pointer;"
+          (click)="viewProfile(comment.communityProfile.id)"
         />
         <div class="w-100">
-          <strong>{{ comment.communityProfile.username }}</strong
-          ><br />
+          <strong (click)="viewProfile(comment.communityProfile.id)" style="cursor: pointer;">
+            {{ comment.communityProfile.username }}
+          </strong>
+          <br />
 
           <div *ngIf="editingCommentId === comment.id">
             <textarea
