@@ -3,9 +3,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommunityService } from '../../../services/community.service';
 import { CommunityProfileService } from '../../../services/community-profile.service';
 import { PostService } from '../../../services/post.service';
+import { NotificationService } from '../../../services/notification.service';
 import { CommunityResponseDTO } from '../../../models/community/CommunityResponse.dto';
 import { CommunityProfileDTO } from '../../../models/communityProfile/CommunityProfileDTO';
 import { PostDTO } from '../../../models/post/PostDTO';
+
 
 interface PostWithToggle extends PostDTO {
   showContent: boolean;
@@ -31,12 +33,15 @@ export class CommunityDetailComponent {
   searchTerm: string = '';
   showMembersModal: boolean = false;
 
+  unreadCount: number = 0;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private communityService: CommunityService,
     private communityProfileService: CommunityProfileService,
-    private postService: PostService
+    private postService: PostService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -66,9 +71,20 @@ export class CommunityDetailComponent {
     this.communityProfileService
       .getMyProfileInCommunity(this.communityId)
       .subscribe({
-        next: (data) => (this.profile = data),
-        error: () => (this.profile = null), // No mostrar error si no está unido
+        next: (data) => {
+          this.profile = data;
+          this.loadUnreadNotifications(); // <- Llama aquí después de cargar el perfil
+        },
+        error: () => (this.profile = null),
       });
+  }
+
+  loadUnreadNotifications(): void {
+    if (!this.profile) return;
+    this.notificationService.countUnread(this.profile.id).subscribe({
+      next: (count) => (this.unreadCount = count),
+      error: () => (this.unreadCount = 0),
+    });
   }
 
   loadPosts(): void {
@@ -115,7 +131,6 @@ export class CommunityDetailComponent {
         queryParams: { myProfileId: this.profile.id },
       });
     } else {
-      // Por si acaso (no logueado o sin perfil en la comunidad)
       this.router.navigate(['/communities/profile', profileId]);
     }
   }
@@ -132,9 +147,8 @@ export class CommunityDetailComponent {
   }
 
   goToSearchPosts(): void {
-  this.router.navigate(['/communities', this.communityId, 'search-posts']);
-}
-
+    this.router.navigate(['/communities', this.communityId, 'search-posts']);
+  }
 
   toggleContent(post: PostWithToggle): void {
     post.showContent = !post.showContent;
@@ -148,5 +162,11 @@ export class CommunityDetailComponent {
     } else {
       this.router.navigate(['/posts', postId]);
     }
+  }
+
+  goToNotifications(): void {
+    this.router.navigate(['/communities', this.communityId, 'notifications'], {
+      queryParams: { myProfileId: this.profile?.id },
+    });
   }
 }

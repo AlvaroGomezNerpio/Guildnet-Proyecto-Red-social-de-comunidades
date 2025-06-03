@@ -146,6 +146,20 @@
                   Buscar publicaciones
                 </button>
               </li>
+
+              <br />
+
+              <li>
+                <button
+                  class="btn btn-outline-primary"
+                  (click)="goToNotifications()"
+                >
+                  Ver notificaciones
+                  <span *ngIf="unreadCount > 0" class="badge bg-danger ms-2">{{
+                    unreadCount
+                  }}</span>
+                </button>
+              </li>
             </ul>
           </div>
         </div>

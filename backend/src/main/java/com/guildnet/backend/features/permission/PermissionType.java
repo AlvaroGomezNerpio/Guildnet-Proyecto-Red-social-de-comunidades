@@ -7,6 +7,7 @@ public enum PermissionType {
     DELETE_COMMENTS,   // Poder borrar cualquier comentario
     ASSIGN_ROLES,      // Poder crear y asignar roles a usuarios
     ASSIGN_TITLES,     // Poder crear y asignar títulos a usuarios
-    BAN_USER           // Poder eliminar usuarios de la comunidad
+    BAN_USER,           // Poder eliminar usuarios de la comunidad
+    MANAGE_COMMUNITY_SETTINGS
 }
 

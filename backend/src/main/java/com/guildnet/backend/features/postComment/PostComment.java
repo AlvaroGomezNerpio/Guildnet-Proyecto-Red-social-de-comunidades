@@ -4,6 +4,8 @@ import com.guildnet.backend.features.communityProfile.CommunityProfile;
 import com.guildnet.backend.features.post.Post;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "post_comments")

@@ -8,6 +8,12 @@ import { PostCommentCreateDTO } from '../../models/postComment/PostCommentCreate
 import { PostCommentUpdateDTO } from '../../models/postComment/PostCommentUpdateDTO';
 import { PostUpdateDTO } from '../../models/post/PostUpdateDTO';
 import { LikeService } from '../../services/like.service';
+import { NotificationService } from '../../services/notification.service';
+import { NotificationCreateDTO } from '../../models/notification/NotificationCreateDTO';
+import { NotificationType } from '../../models/notification/NotificationType';
+import { CommunityProfileDTO } from '../../models/communityProfile/CommunityProfileDTO';
+import { CommunityProfileService } from '../../services/community-profile.service';
+
 
 @Component({
   selector: 'app-post-detail',
@@ -36,7 +42,9 @@ export class PostDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private postService: PostService,
     private postCommentService: PostCommentService,
-    private likeService: LikeService
+    private likeService: LikeService,
+    private notificationService: NotificationService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -90,6 +98,17 @@ export class PostDetailComponent implements OnInit {
       next: (created) => {
         this.post?.postComment.push(created);
         this.newCommentContent = '';
+
+        // ✅ Crear notificación si el autor del comentario NO es el dueño del post
+        if (this.post && this.myProfileId !== this.post.communityProfile.id) {
+          const notification: NotificationCreateDTO = {
+            message: 'Ha comentado tu publicación.',
+            type: NotificationType.COMMENT_POST,
+            receiverProfileId: this.post.communityProfile.id,
+            senderProfileId: this.myProfileId,
+          };
+          this.notificationService.createNotification(notification).subscribe();
+        }
       },
       error: (err) => console.error('Error al crear comentario', err),
     });
@@ -135,10 +154,6 @@ export class PostDetailComponent implements OnInit {
     });
   }
 
-  // ------------------------
-  // POST: Editar y Eliminar
-  // ------------------------
-
   isPostOwner(): boolean {
     return this.post?.communityProfile.id === this.myProfileId;
   }
@@ -180,17 +195,18 @@ export class PostDetailComponent implements OnInit {
   }
 
   deletePost(): void {
-    if (!confirm('¿Estás seguro de que quieres eliminar esta publicación?'))
-      return;
+  if (!confirm('¿Estás seguro de que quieres eliminar esta publicación?'))
+    return;
 
-    this.postService.deletePost(this.postId).subscribe({
-      next: () => {
-        alert('Publicación eliminada');
+  this.postService.deletePost(this.postId).subscribe({
+    next: () => {
+      alert('Publicación eliminada');
+      this.router.navigate(['/communities', this.post?.communityId]); // Redirige al detalle de la comunidad
+    },
+    error: (err) => console.error('Error al eliminar el post', err),
+  });
+}
 
-      },
-      error: (err) => console.error('Error al eliminar el post', err),
-    });
-  }
 
   toggleLike(): void {
     if (!this.post || !this.myProfileId) return;
@@ -208,7 +224,28 @@ export class PostDetailComponent implements OnInit {
         .subscribe(() => {
           this.hasLiked = true;
           this.likeCount++;
+
+          // ✅ Crear notificación si no es el autor del post
+          if (this.post && this.myProfileId !== this.post.communityProfile.id) {
+            const notification: NotificationCreateDTO = {
+              message: 'Ha dado like a tu publicación.',
+              type: NotificationType.LIKE_POST,
+              receiverProfileId: this.post.communityProfile.id,
+              senderProfileId: this.myProfileId,
+            };
+            this.notificationService.createNotification(notification).subscribe();
+          }
         });
     }
   }
+
+  viewProfile(profileId: number): void {
+  if (this.myProfileId) {
+    this.router.navigate(['/communities/profile', profileId], {
+      queryParams: { myProfileId: this.myProfileId },
+    });
+  } else {
+    this.router.navigate(['/communities/profile', profileId]);
+  }
+}
 }
