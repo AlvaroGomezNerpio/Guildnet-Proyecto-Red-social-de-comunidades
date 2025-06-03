@@ -48,5 +48,28 @@ public class PostController {
     public ResponseEntity<List<PostDTO>> getPostsByCommunity(@PathVariable Long communityId) {
         return ResponseEntity.ok(postService.getPostsByCommunityId(communityId));
     }
+
+    @GetMapping("/search/{communityId}")
+    public ResponseEntity<List<PostDTO>> searchPosts(
+            @PathVariable Long communityId,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) List<String> tag
+    ) {
+        List<PostDTO> results;
+
+        if (title != null && tag != null && !tag.isEmpty()) {
+            results = postService.searchByTitleAndTagsInCommunity(communityId, title, tag);
+        } else if (title != null) {
+            results = postService.searchPostsByTitleInCommunity(communityId, title);
+        } else if (tag != null && !tag.isEmpty()) {
+            results = postService.searchByTagsInCommunity(communityId, tag);
+        } else {
+            results = postService.getAllPostsInCommunity(communityId);
+        }
+
+        return ResponseEntity.ok(results);
+    }
+
+
 }
 

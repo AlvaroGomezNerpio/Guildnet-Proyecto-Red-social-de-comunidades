@@ -109,8 +109,16 @@
               height="60"
             />
             <div>
-              <h4 class="mb-0">{{ selectedCommunity.name }}</h4>
-              <small class="text-muted">#{{ selectedCommunity.tags.join(', ') }}</small>
+              <h2 class="mb-0">{{ selectedCommunity.name }}</h2>
+              <div class="mb-2">
+                <span
+                  class="badge bg-primary me-1"
+                  *ngFor="let tag of selectedCommunity.tags"
+                >
+                  {{ tag }}
+                </span>
+              </div>
+
             </div>
           </div>
 

@@ -1,13 +1,9 @@
+<!-- profile.component.html actualizado -->
 <div class="container mt-5 text-center">
   <!-- Imagen de perfil -->
   <div class="mb-4">
-    <img
-      [src]="user?.profileImage || 'assets/default-avatar.png'"
-      alt="Imagen de perfil"
-      class="rounded-circle"
-      width="150"
-      height="150"
-    />
+    <img [src]="user?.profileImage || 'assets/default-avatar.png'" alt="Imagen de perfil" class="rounded-circle"
+      width="150" height="150" />
   </div>
 
   <!-- Nombre de usuario -->
@@ -15,81 +11,50 @@
 
   <!-- Lista de tags/intereses del usuario -->
   <div *ngIf="user?.tags?.length" class="mb-4">
-    <small class="text-muted">#{{ user?.tags?.join(", ") }}</small>
+    <div class="mb-2">
+      <span class="badge bg-primary me-1" *ngFor="let tag of user?.tags">
+        {{ tag }}
+      </span>
+    </div>
   </div>
 
   <!-- Botón para abrir el modal -->
-  <button
-    type="button"
-    class="btn btn-outline-primary mb-5"
-    data-bs-toggle="modal"
-    data-bs-target="#editProfileModal"
-  >
+  <button type="button" class="btn btn-outline-primary mb-5" data-bs-toggle="modal" data-bs-target="#editProfileModal">
     Editar perfil
   </button>
 
-  <!-- Modal de edición -->
-  <div
-    class="modal fade"
-    id="editProfileModal"
-    tabindex="-1"
-    aria-labelledby="editProfileModalLabel"
-    aria-hidden="true"
-  >
+  <!-- Modal de edición de perfil -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel"
+    aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="editProfileModalLabel">Editar perfil</h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
         <form [formGroup]="editForm" (ngSubmit)="onUpdateProfile()">
           <div class="modal-body">
             <div class="mb-3">
               <label for="username" class="form-label">Nombre de usuario</label>
-              <input
-                type="text"
-                id="username"
-                class="form-control"
-                formControlName="username"
-              />
+              <input type="text" id="username" class="form-control" formControlName="username" />
             </div>
 
             <div class="mb-3">
               <label for="email" class="form-label">Correo electrónico</label>
-              <input
-                type="email"
-                id="email"
-                class="form-control"
-                formControlName="email"
-              />
+              <input type="email" id="email" class="form-control" formControlName="email" />
             </div>
 
             <div class="mb-3">
               <label for="tags" class="form-label">Etiquetas de interés</label>
-              <input
-                type="text"
-                id="tags"
-                class="form-control"
-                formControlName="tags"
-                placeholder="Ej. videojuegos, anime, música"
-              />
+              <input type="text" id="tags" class="form-control" formControlName="tags"
+                placeholder="Ej. videojuegos, anime, música" />
               <div class="form-text">Separa las etiquetas con comas</div>
             </div>
 
             <div class="mb-3">
               <label for="image" class="form-label">Cambiar imagen</label>
-              <input
-                type="file"
-                id="image"
-                class="form-control"
-                (change)="onImageSelected($event)"
-              />
+              <input type="file" id="image" class="form-control" (change)="onImageSelected($event)" />
             </div>
 
             <div *ngIf="successMessage" class="alert alert-success mt-3">
@@ -101,11 +66,7 @@
           </div>
 
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
               Cerrar
             </button>
             <button type="submit" class="btn btn-primary">
@@ -121,31 +82,20 @@
 
   <!-- Comunidades suscritas -->
   <h3>Tus comunidades</h3>
-  <div
-    *ngIf="subscribedCommunities.length > 0; else noCommunities"
-    class="row mt-4"
-  >
+  <div *ngIf="subscribedCommunities.length > 0; else noCommunities" class="row mt-4">
     <div *ngFor="let community of subscribedCommunities" class="col-md-4 mb-3">
       <div class="card h-100">
-        <img
-          [src]="community.banner"
-          class="card-img-top"
-          *ngIf="community.banner"
-          alt="Banner"
-        />
+        <img [src]="community.banner" class="card-img-top" *ngIf="community.banner" alt="Banner" />
         <div class="card-body">
-          <div class="d-flex align-items-center mb-2">
-            <img
-              [src]="community.image"
-              alt="Avatar"
-              class="rounded-circle me-2"
-              width="40"
-              height="40"
-              *ngIf="community.image"
-            />
+          <div class="d-flex mb-2">
+            <img [src]="community.image" alt="Avatar" class="rounded-circle me-2" width="40" height="40"
+              *ngIf="community.image" />
             <h5 class="card-title mb-0">{{ community.name }}</h5>
           </div>
-          <p class="card-text">{{ community.description }}</p>
+          <button class="btn btn-outline-success w-100 mt-2" data-bs-toggle="modal" data-bs-target="#communityModal"
+            (click)="selectedCommunity = community">
+            Ver más
+          </button>
         </div>
       </div>
     </div>
@@ -154,4 +104,52 @@
   <ng-template #noCommunities>
     <p>No estás suscrito a ninguna comunidad.</p>
   </ng-template>
+
+  <!-- Modal de comunidad -->
+  <div class="modal fade" id="communityModal" tabindex="-1" aria-labelledby="communityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content" *ngIf="selectedCommunity">
+        <div class="modal-header">
+          <h5 class="modal-title" id="communityModalLabel">
+            {{ selectedCommunity.name }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <img *ngIf="selectedCommunity.banner" [src]="selectedCommunity.banner" class="img-fluid mb-3 rounded"
+            alt="Banner" />
+
+          <div class="d-flex align-items-center mb-3">
+            <img *ngIf="selectedCommunity.image" [src]="selectedCommunity.image" alt="Avatar"
+              class="rounded-circle me-3" width="60" height="60" />
+            <div>
+              <h4 class="mb-0">{{ selectedCommunity.name }}</h4>
+              <small class="text-muted">
+                #{{ selectedCommunity.tags.join(", ") }}
+              </small>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <strong>Descripción:</strong>
+            <div class="quill-content card-text" [innerHTML]="selectedCommunity.description"></div>
+          </div>
+
+          <div>
+            <strong>Reglas:</strong>
+            <div class="quill-content card-text" [innerHTML]="selectedCommunity.rules"></div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-primary" (click)="enterCommunity(selectedCommunity.id)" data-bs-dismiss="modal">
+            Entrar a la comunidad
+          </button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

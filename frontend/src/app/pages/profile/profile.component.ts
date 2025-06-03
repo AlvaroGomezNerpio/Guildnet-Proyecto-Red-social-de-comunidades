@@ -5,27 +5,28 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { UserDTO } from '../../models/user/UserDTO';
 import { UpdateUserRequest } from '../../models/user/UpdateUserRequest';
 import { CommunityResponseDTO } from '../../models/community/CommunityResponse.dto';
-
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-profile',
   standalone: false,
   templateUrl: './profile.component.html',
-  styleUrl: './profile.component.css'
+  styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
-
   user: UserDTO | null = null;
   subscribedCommunities: CommunityResponseDTO[] = [];
   editForm!: FormGroup;
   selectedImage: File | undefined;
   successMessage: string | null = null;
   errorMessage: string | null = null;
+  selectedCommunity: CommunityResponseDTO | null = null;
 
   constructor(
     private userService: UserService,
     private communityService: CommunityService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -94,5 +95,13 @@ export class ProfileComponent implements OnInit {
         this.errorMessage = 'Error al actualizar el perfil.';
       }
     });
+  }
+
+  enterCommunity(communityId: number): void {
+    this.router.navigate(['/communities', communityId]);
+  }
+
+  goToSearchPosts(communityId: number): void {
+    this.router.navigate(['/communities', communityId, 'search-posts']);
   }
 }

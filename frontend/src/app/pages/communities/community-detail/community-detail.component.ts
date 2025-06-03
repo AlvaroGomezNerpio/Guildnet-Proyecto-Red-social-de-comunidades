@@ -131,6 +131,11 @@ export class CommunityDetailComponent {
     }
   }
 
+  goToSearchPosts(): void {
+  this.router.navigate(['/communities', this.communityId, 'search-posts']);
+}
+
+
   toggleContent(post: PostWithToggle): void {
     post.showContent = !post.showContent;
   }

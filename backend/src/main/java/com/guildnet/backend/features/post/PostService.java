@@ -14,5 +14,10 @@ public interface PostService {
     PostDetailDTO getPostById(Long id);
     List<PostDTO> getPostsByProfileId(Long profileId);
     List<PostDTO> getPostsByCommunityId(Long communityId); // Nuevo
+    List<PostDTO> searchPostsByTitleInCommunity(Long communityId, String title);
+    List<PostDTO> searchByTagsInCommunity(Long communityId, List<String> tags);
+    List<PostDTO> searchByTitleAndTagsInCommunity(Long communityId, String title, List<String> tags);
+    List<PostDTO> getAllPostsInCommunity(Long communityId);
+
 }
 

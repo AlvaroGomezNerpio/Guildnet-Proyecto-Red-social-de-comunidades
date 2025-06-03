@@ -164,4 +164,53 @@ export class CommunityProfileDetailComponent implements OnInit {
       error: () => this.errorMessage = 'No se pudo enviar el comentario.'
     });
   }
+
+    // --- Edición de comentarios ---
+  editingCommentId: number | null = null;
+  editingContent: string = '';
+
+  startEditing(comment: ProfileCommentDTO): void {
+    this.editingCommentId = comment.id;
+    this.editingContent = comment.content;
+  }
+
+  cancelEditing(): void {
+    this.editingCommentId = null;
+    this.editingContent = '';
+  }
+
+  updateComment(commentId: number): void {
+    const dto: ProfileCommentCreateUpdateDTO = {
+      content: this.editingContent.trim()
+    };
+
+    this.commentService.updateComment(commentId, dto).subscribe({
+      next: updated => {
+        const comment = this.comments.find(c => c.id === commentId);
+        if (comment) comment.content = updated.content;
+        this.cancelEditing();
+      },
+      error: () => this.errorMessage = 'Error al actualizar el comentario.'
+    });
+  }
+
+  deleteComment(commentId: number): void {
+    if (!confirm('¿Estás seguro de eliminar este comentario?')) return;
+
+    this.commentService.deleteComment(commentId).subscribe({
+      next: () => {
+        this.comments = this.comments.filter(c => c.id !== commentId);
+      },
+      error: () => this.errorMessage = 'Error al eliminar el comentario.'
+    });
+  }
+
+  canEdit(comment: ProfileCommentDTO): boolean {
+    return comment.authorProfile.id === this.myProfileId;
+  }
+
+  canDelete(comment: ProfileCommentDTO): boolean {
+    return this.profileId === this.myProfileId || comment.authorProfile.id === this.myProfileId;
+  }
+
 }
