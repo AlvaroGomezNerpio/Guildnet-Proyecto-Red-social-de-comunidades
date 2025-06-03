@@ -19,6 +19,7 @@ import { CommunityProfileDetailComponent } from './pages/community-profile-detai
 import { QuillModule } from 'ngx-quill';
 import { PostCreateComponent } from './pages/posts/post-create/post-create.component';
 import { PostDetailComponent } from './components/post-detail/post-detail.component';
+import { SearchPostsComponent } from './components/post/search-posts/search-posts.component';
 
 @NgModule({
   declarations: [
@@ -34,7 +35,8 @@ import { PostDetailComponent } from './components/post-detail/post-detail.compon
     CommunityDetailComponent,
     CommunityProfileDetailComponent,
     PostCreateComponent,
-    PostDetailComponent
+    PostDetailComponent,
+    SearchPostsComponent
   ],
   imports: [
     BrowserModule,

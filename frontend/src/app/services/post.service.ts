@@ -54,4 +54,20 @@ export class PostService {
       headers: this.getAuthHeaders(),
     });
   }
+
+searchPostsInCommunity(
+  communityId: number,
+  title?: string,
+  tags?: string[]
+): Observable<PostDTO[]> {
+  const params: any = {};
+  if (title) params.title = title;
+  if (tags && tags.length > 0) params.tag = tags;
+
+  return this.http.get<PostDTO[]>(`${this.apiUrl}/search/${communityId}`, {
+    params,
+    headers: this.getAuthHeaders()
+  });
+}
+
 }

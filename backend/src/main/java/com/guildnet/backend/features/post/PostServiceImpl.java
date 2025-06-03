@@ -90,7 +90,46 @@ public class PostServiceImpl implements PostService {
                 .collect(Collectors.toList());
     }
 
-    // 🔽 Métodos de mapeo
+    @Override
+    public List<PostDTO> searchPostsByTitleInCommunity(Long communityId, String title) {
+        return postRepository.findByCommunityId(communityId).stream()
+                .filter(p -> p.getTitle().toLowerCase().contains(title.toLowerCase()))
+                .map(this::mapToPostDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PostDTO> searchByTagsInCommunity(Long communityId, List<String> tags) {
+        return postRepository.findByCommunityId(communityId).stream()
+                .filter(p -> p.getTags() != null && tags.stream().anyMatch(
+                        inputTag -> p.getTags().stream().anyMatch(
+                                t -> t.toLowerCase().contains(inputTag.toLowerCase())
+                        )
+                ))
+                .map(this::mapToPostDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PostDTO> searchByTitleAndTagsInCommunity(Long communityId, String title, List<String> tags) {
+        return postRepository.findByCommunityId(communityId).stream()
+                .filter(p -> p.getTitle().toLowerCase().contains(title.toLowerCase()))
+                .filter(p -> p.getTags() != null && tags.stream().anyMatch(
+                        inputTag -> p.getTags().stream().anyMatch(
+                                t -> t.toLowerCase().contains(inputTag.toLowerCase())
+                        )
+                ))
+                .map(this::mapToPostDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PostDTO> getAllPostsInCommunity(Long communityId) {
+        return postRepository.findByCommunityId(communityId).stream()
+                .map(this::mapToPostDTO)
+                .collect(Collectors.toList());
+    }
+
 
     private PostDTO mapToPostDTO(Post post) {
         PostDTO dto = new PostDTO();

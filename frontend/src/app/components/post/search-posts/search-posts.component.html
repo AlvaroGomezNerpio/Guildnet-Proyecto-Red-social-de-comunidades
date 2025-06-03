@@ -1,0 +1,93 @@
+<div class="container mt-4">
+  <div class="card p-3 mb-4">
+    <h5 class="mb-3">Buscar publicaciones en esta comunidad</h5>
+    <div class="row g-2">
+      <div class="col-md-6">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Buscar por título"
+          [formControl]="searchTitleControl"
+        />
+      </div>
+      <div class="col-md-6">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Buscar por tags (separados por coma)"
+          [formControl]="searchTagsControl"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="results.length > 0">
+    <h4>Resultados</h4>
+    <div class="row">
+      <div *ngFor="let post of results" class="col-md-4 mb-3">
+        <div class="card h-100">
+          <div class="card-body">
+            <!-- Autor -->
+            <div
+              class="d-flex align-items-center mb-2"
+              *ngIf="post.communityProfile"
+            >
+              <img
+                [src]="post.communityProfile.profileImage"
+                alt="Autor"
+                class="rounded-circle me-2"
+                width="32"
+                height="32"
+              />
+              <span>{{ post.communityProfile.username }}</span>
+            </div>
+
+            <!-- Título y contenido -->
+            <h5 class="card-title">{{ post.title }}</h5>
+            <!-- Botón Ver más / Ver menos -->
+
+
+            <!-- Contenido completo del post -->
+            <div
+              class="card card-body mb-2 text-start"
+              *ngIf="post.showContent"
+            >
+              <div class="quill-content" [innerHTML]="post.content"></div>
+            </div>
+
+            
+
+            <div class="text-center">
+              <button
+                class="btn btn-sm btn-outline-secondary mt-2"
+                (click)="toggleContent(post); $event.stopPropagation()"
+              >
+                {{ post.showContent ? "Ver menos" : "Ver más" }}
+              </button>
+            </div>
+
+            <!-- Tags -->
+            <div class="mb-2">
+              <span
+                class="badge bg-primary me-1"
+                *ngFor="let tag of post.tags"
+                >{{ tag }}</span
+              >
+            </div>
+
+            <!-- Botón -->
+            <button
+              class="btn btn-outline-primary w-100"
+              [routerLink]="['/posts', post.id]"
+            >
+              Ver publicación
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p *ngIf="results.length === 0 && !error">No se encontraron publicaciones.</p>
+  <p *ngIf="error" class="text-danger">{{ error }}</p>
+</div>

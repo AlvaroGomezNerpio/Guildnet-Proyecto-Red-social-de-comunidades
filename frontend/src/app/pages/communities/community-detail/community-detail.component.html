@@ -103,7 +103,7 @@
             <h5 class="card-title">{{ profile?.username }}</h5>
             <button
               class="btn btn-outline-primary w-100 mt-2"
-              (click)="goToProfile()"
+              (click)="viewProfile(profile!.id)"
             >
               Ver perfil
             </button>
@@ -133,6 +133,17 @@
                   (click)="loadCommunityMembers()"
                 >
                   Ver miembros
+                </button>
+              </li>
+
+              <br />
+
+              <li>
+                <button
+                  class="btn btn-outline-primary"
+                  (click)="goToSearchPosts()"
+                >
+                  Buscar publicaciones
                 </button>
               </li>
             </ul>
@@ -182,7 +193,6 @@
                 <div class="quill-content" [innerHTML]="post.content"></div>
               </div>
 
-              <!-- 🔘 Botón centrado -->
               <div class="text-center">
                 <button
                   class="btn btn-sm btn-outline-secondary mt-2"
@@ -193,8 +203,13 @@
               </div>
 
               <!-- Tags -->
-              <div class="text-muted mb-2">
-                Etiquetas: {{ post.tags.join(", ") }}
+              <div class="mb-2">
+                <span
+                  class="badge bg-primary me-1"
+                  *ngFor="let tag of post.tags"
+                >
+                  {{ tag }}
+                </span>
               </div>
 
               <!-- Likes y comentarios -->

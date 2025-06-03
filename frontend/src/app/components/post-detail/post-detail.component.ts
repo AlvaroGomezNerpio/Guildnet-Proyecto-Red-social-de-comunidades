@@ -186,8 +186,7 @@ export class PostDetailComponent implements OnInit {
     this.postService.deletePost(this.postId).subscribe({
       next: () => {
         alert('Publicación eliminada');
-        // Aquí puedes redirigir si lo deseas, por ejemplo:
-        // this.router.navigate(['/communities', this.post?.communityId]);
+
       },
       error: (err) => console.error('Error al eliminar el post', err),
     });

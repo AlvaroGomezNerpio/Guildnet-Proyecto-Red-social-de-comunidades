@@ -8,5 +8,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findByProfileId(Long profileId);
     List<Post> findByCommunityId(Long comumnunityId);
+    List<Post> findByTitleContainingIgnoreCase(String title);
+
 
 }
