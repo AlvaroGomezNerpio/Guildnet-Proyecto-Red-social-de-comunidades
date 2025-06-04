@@ -21,6 +21,7 @@ import { PostCreateComponent } from './pages/posts/post-create/post-create.compo
 import { PostDetailComponent } from './components/post-detail/post-detail.component';
 import { SearchPostsComponent } from './components/post/search-posts/search-posts.component';
 import { CommunityNotificationsComponent } from './components/community-notifications/community-notifications.component';
+import { CreateRoleComponent } from './pages/rol/create-role/create-role.component';
 
 @NgModule({
   declarations: [
@@ -38,7 +39,8 @@ import { CommunityNotificationsComponent } from './components/community-notifica
     PostCreateComponent,
     PostDetailComponent,
     SearchPostsComponent,
-    CommunityNotificationsComponent
+    CommunityNotificationsComponent,
+    CreateRoleComponent
   ],
   imports: [
     BrowserModule,

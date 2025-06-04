@@ -1,9 +1,9 @@
 <div class="container mt-4">
   <!-- Filtro de búsqueda -->
-  <div class="card p-3 mb-4">
+  <div class="card p-4 shadow-sm mb-4">
     <h5 class="mb-3">Buscar comunidades</h5>
-    <div class="row g-2">
-      <div class="col-md-5">
+    <div class="row g-3">
+      <div class="col-md-6">
         <input
           type="text"
           class="form-control"
@@ -11,7 +11,7 @@
           [formControl]="searchNameControl"
         />
       </div>
-      <div class="col-md-5">
+      <div class="col-md-6">
         <input
           type="text"
           class="form-control"
@@ -24,22 +24,22 @@
 
   <!-- Resultados -->
   <div *ngIf="results.length > 0">
-    <h3 class="mb-3">Resultados de búsqueda</h3>
-    <div class="row">
-      <div *ngFor="let community of results" class="col-md-4 mb-3">
-        <div class="card h-100">
+    <h3 class="mb-4">Resultados de búsqueda</h3>
+    <div class="row g-3">
+      <div *ngFor="let community of results" class="col-md-4">
+        <div class="card h-100 shadow-sm">
           <img
             [src]="community.banner"
             class="card-img-top"
-            alt="Banner"
             *ngIf="community.banner"
+            alt="Banner"
           />
           <div class="card-body">
-            <div class="d-flex align-items-center mb-2">
+            <div class="d-flex align-items-center mb-3">
               <img
                 [src]="community.image"
                 alt="Avatar"
-                class="rounded-circle me-2"
+                class="rounded-circle me-3"
                 width="40"
                 height="40"
                 *ngIf="community.image"
@@ -47,7 +47,7 @@
               <h5 class="card-title mb-0">{{ community.name }}</h5>
             </div>
             <button
-              class="btn btn-outline-success w-100 mt-2"
+              class="btn btn-outline-primary w-100"
               data-bs-toggle="modal"
               data-bs-target="#communityModal"
               (click)="openCommunityModal(community)"
@@ -60,8 +60,11 @@
     </div>
   </div>
 
-  <p *ngIf="results.length === 0 && !error">No se encontraron comunidades.</p>
-  <p *ngIf="error" class="text-danger">{{ error }}</p>
+  <!-- Mensajes -->
+  <p *ngIf="results.length === 0 && !error" class="mt-3 text-muted">
+    No se encontraron comunidades.
+  </p>
+  <p *ngIf="error" class="mt-3 text-danger">{{ error }}</p>
 
   <!-- Modal de comunidad -->
   <div
@@ -84,6 +87,7 @@
             aria-label="Cerrar"
           ></button>
         </div>
+
         <div class="modal-body">
           <img
             *ngIf="selectedCommunity.banner"
@@ -103,9 +107,9 @@
             />
             <div>
               <h4 class="mb-0">{{ selectedCommunity.name }}</h4>
-              <small class="text-muted"
-                >#{{ selectedCommunity.tags.join(", ") }}</small
-              >
+              <small class="text-muted">
+                #{{ selectedCommunity.tags.join(', ') }}
+              </small>
             </div>
           </div>
 

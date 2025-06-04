@@ -4,19 +4,19 @@
     <img
       [src]="profile?.profileImage || 'assets/default-avatar.png'"
       alt="Imagen de perfil"
-      class="rounded-circle"
+      class="rounded-circle shadow"
       width="150"
       height="150"
     />
   </div>
 
-  <!-- Nombre de usuario sin editar -->
+  <!-- Nombre de usuario -->
   <h4 class="mb-2">{{ profile?.username }}</h4>
 
   <!-- Rol -->
   <div *ngIf="profile?.rol as rol" class="mb-2">
     <span
-      class="badge me-1"
+      class="badge px-3 py-2"
       [ngStyle]="{
         'background-color': rol.backgroundColor,
         color: rol.textColor
@@ -29,7 +29,7 @@
   <!-- Títulos -->
   <div *ngIf="profile?.titles?.length" class="mb-4">
     <span
-      class="badge me-1"
+      class="badge me-2 px-3 py-2"
       *ngFor="let title of profile?.titles"
       [ngStyle]="{
         'background-color': title.backgroundColor,
@@ -40,7 +40,7 @@
     </span>
   </div>
 
-  <!-- Botón para abrir el modal (solo si es tu propio perfil) -->
+  <!-- Botón editar perfil -->
   <button
     *ngIf="isOwnProfile"
     type="button"
@@ -51,7 +51,7 @@
     Editar perfil
   </button>
 
-  <!-- 🔽 Botón para mostrar descripción -->
+  <!-- Botón mostrar descripción -->
   <div class="text-center mb-4">
     <button
       class="btn btn-outline-secondary"
@@ -59,13 +59,12 @@
       data-bs-toggle="collapse"
       data-bs-target="#descriptionCollapse"
       aria-expanded="false"
-      aria-controls="descriptionCollapse"
     >
       Ver descripción
     </button>
   </div>
 
-  <!-- 🔽 Descripción colapsable -->
+  <!-- Descripción -->
   <div class="collapse mb-4" id="descriptionCollapse">
     <div class="card card-body text-start">
       <div
@@ -78,7 +77,7 @@
     </div>
   </div>
 
-  <!-- Modal de edición (solo si es tu propio perfil) -->
+  <!-- Modal edición perfil -->
   <div
     *ngIf="isOwnProfile"
     class="modal fade"
@@ -89,65 +88,35 @@
   >
     <div class="modal-dialog">
       <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editProfileModalLabel">Editar perfil</h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-
         <form [formGroup]="editForm" (ngSubmit)="onUpdateProfile()">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editProfileModalLabel">Editar perfil</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
           <div class="modal-body">
             <div class="mb-3">
               <label for="username" class="form-label">Nombre de usuario</label>
-              <input
-                type="text"
-                id="username"
-                class="form-control"
-                formControlName="username"
-              />
+              <input type="text" id="username" class="form-control" formControlName="username" />
             </div>
-
             <div class="mb-3">
               <label for="description" class="form-label">Descripción</label>
-              <quill-editor
-                formControlName="description"
-                [styles]="{ height: '150px' }"
-              ></quill-editor>
+              <quill-editor formControlName="description" [styles]="{ height: '150px' }"></quill-editor>
             </div>
-
             <div class="mb-3">
               <label for="image" class="form-label">Cambiar imagen</label>
-              <input
-                type="file"
-                id="image"
-                class="form-control"
-                (change)="onImageSelected($event)"
-              />
+              <input type="file" id="image" class="form-control" (change)="onImageSelected($event)" />
             </div>
-
-            <div *ngIf="successMessage" class="alert alert-success mt-3">
-              {{ successMessage }}
-            </div>
-            <div *ngIf="errorMessage" class="alert alert-danger mt-3">
-              {{ errorMessage }}
-            </div>
+            <div *ngIf="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>
+            <div *ngIf="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
           </div>
-
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Cerrar
-            </button>
-            <button type="submit" class="btn btn-primary">
-              Guardar cambios
-            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
           </div>
         </form>
       </div>
@@ -156,29 +125,15 @@
 
   <hr class="my-5" />
 
-  <!-- Tabs de publicaciones y comentarios -->
+  <!-- Tabs publicaciones y comentarios -->
   <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
     <li class="nav-item" role="presentation">
-      <button
-        class="nav-link active"
-        id="posts-tab"
-        data-bs-toggle="tab"
-        data-bs-target="#posts"
-        type="button"
-        role="tab"
-      >
+      <button class="nav-link active" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button" role="tab">
         Publicaciones
       </button>
     </li>
     <li class="nav-item" role="presentation">
-      <button
-        class="nav-link"
-        id="comments-tab"
-        data-bs-toggle="tab"
-        data-bs-target="#comments"
-        type="button"
-        role="tab"
-      >
+      <button class="nav-link" id="comments-tab" data-bs-toggle="tab" data-bs-target="#comments" type="button" role="tab">
         Comentarios
       </button>
     </li>
@@ -188,37 +143,18 @@
     <!-- Publicaciones -->
     <div class="tab-pane fade show active" id="posts" role="tabpanel">
       <div *ngIf="posts.length > 0; else noPosts">
-        <div
-          *ngFor="let post of posts.slice().reverse()"
-          class="card mb-3 text-start"
-          style="cursor: pointer"
-          (click)="goToPostDetail(post.id)"
-        >
+        <div *ngFor="let post of posts.slice().reverse()" class="card mb-3 text-start" style="cursor: pointer" (click)="goToPostDetail(post.id)">
           <div class="card-body">
-            <!-- Título -->
             <h5 class="card-title">{{ post.title }}</h5>
-
-            <!-- Contenido colapsable -->
             <div *ngIf="post.showContent" class="card card-body mb-2">
               <div class="quill-content" [innerHTML]="post.content"></div>
             </div>
-
-            <!-- Botón centrado para Ver más / Ver menos -->
             <div class="text-center">
-              <button
-                class="btn btn-sm btn-outline-secondary mt-2"
-                (click)="toggleContent(post); $event.stopPropagation()"
-              >
+              <button class="btn btn-sm btn-outline-secondary mt-2" (click)="toggleContent(post); $event.stopPropagation()">
                 {{ post.showContent ? "Ver menos" : "Ver más" }}
               </button>
             </div>
-
-            <!-- Etiquetas -->
-            <div class="text-muted mt-2">
-              Etiquetas: {{ post.tags.join(", ") }}
-            </div>
-
-            <!-- Likes y comentarios -->
+            <div class="text-muted mt-2">Etiquetas: {{ post.tags.join(', ') }}</div>
             <div class="text-end mt-1">
               <small class="text-muted">{{ post.likes }} 💙</small> |
               <small class="text-muted">{{ post.coments }} 💬</small>
@@ -226,7 +162,6 @@
           </div>
         </div>
       </div>
-
       <ng-template #noPosts>
         <p>No hay publicaciones de este usuario aún.</p>
       </ng-template>
@@ -236,76 +171,44 @@
     <div class="tab-pane fade" id="comments" role="tabpanel">
       <form class="mb-4" *ngIf="myProfileId" (ngSubmit)="onSubmitComment()">
         <div class="input-group">
-          <input
-            type="text"
-            class="form-control"
-            [(ngModel)]="newComment"
-            name="comment"
-            placeholder="Escribe un comentario..."
-          />
+          <input type="text" class="form-control" [(ngModel)]="newComment" name="comment" placeholder="Escribe un comentario..." />
           <button class="btn btn-primary" type="submit">Enviar</button>
         </div>
       </form>
 
       <div *ngIf="comments.length > 0; else noComments">
         <div *ngFor="let comment of comments" class="card mb-3 text-start">
-  <div class="card-body d-flex">
-    <img
-      [src]="comment.authorProfile.profileImage || 'assets/default-avatar.png'"
-      class="rounded-circle me-3"
-      width="50"
-      height="50"
-      alt="avatar"
-    />
-    <div class="w-100">
-      <h6 class="mb-1">{{ comment.authorProfile.username }}</h6>
+          <div class="card-body d-flex">
+            <img
+              [src]="comment.authorProfile.profileImage || 'assets/default-avatar.png'"
+              class="rounded-circle me-3"
+              width="50"
+              height="50"
+              alt="avatar"
+            />
+            <div class="w-100">
+              <h6 class="mb-1">{{ comment.authorProfile.username }}</h6>
 
-      <!-- Modo edición -->
-      <div *ngIf="editingCommentId === comment.id">
-        <textarea
-          [(ngModel)]="editingContent"
-          class="form-control my-2"
-          rows="3"
-        ></textarea>
-        <button
-          class="btn btn-sm btn-success me-2"
-          (click)="updateComment(comment.id)"
-        >
-          Guardar
-        </button>
-        <button
-          class="btn btn-sm btn-secondary"
-          (click)="cancelEditing()"
-        >
-          Cancelar
-        </button>
-      </div>
+              <!-- Modo edición -->
+              <div *ngIf="editingCommentId === comment.id">
+                <textarea [(ngModel)]="editingContent" class="form-control my-2" rows="3"></textarea>
+                <button class="btn btn-sm btn-success me-2" (click)="updateComment(comment.id)">Guardar</button>
+                <button class="btn btn-sm btn-secondary" (click)="cancelEditing()">Cancelar</button>
+              </div>
 
-      <!-- Modo lectura -->
-      <div *ngIf="editingCommentId !== comment.id">
-        <p class="mb-1">{{ comment.content }}</p>
-        <div class="mt-2" *ngIf="canEdit(comment) || canDelete(comment)">
-          <button
-            *ngIf="canEdit(comment)"
-            class="btn btn-sm btn-outline-secondary me-2"
-            (click)="startEditing(comment)"
-          >
-            Editar
-          </button>
-          <button
-            *ngIf="canDelete(comment)"
-            class="btn btn-sm btn-outline-danger"
-            (click)="deleteComment(comment.id)"
-          >
-            Eliminar
-          </button>
+              <!-- Modo lectura -->
+              <div *ngIf="editingCommentId !== comment.id">
+                <p class="mb-1">{{ comment.content }}</p>
+                <div class="mt-2" *ngIf="canEdit(comment) || canDelete(comment)">
+                  <button *ngIf="canEdit(comment)" class="btn btn-sm btn-outline-secondary me-2" (click)="startEditing(comment)">Editar</button>
+                  <button *ngIf="canDelete(comment)" class="btn btn-sm btn-outline-danger" (click)="deleteComment(comment.id)">Eliminar</button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</div>
 
-      </div>
       <ng-template #noComments>
         <p>Este perfil no tiene comentarios aún.</p>
       </ng-template>

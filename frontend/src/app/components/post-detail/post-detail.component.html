@@ -4,20 +4,20 @@
     <img
       *ngIf="post.communityProfile.profileImage"
       [src]="post.communityProfile.profileImage"
-      class="rounded-circle me-2"
+      class="rounded-circle me-3 border"
       width="50"
       height="50"
     />
-    <h5 class="mb-0">{{ post.communityProfile.username }}</h5>
+    <h5 class="mb-0 fw-bold">{{ post.communityProfile.username }}</h5>
   </div>
 
   <!-- Título -->
   <div class="mb-3">
-    <h1 *ngIf="!editingPost" class="text-3xl font-bold">{{ post.title }}</h1>
+    <h1 *ngIf="!editingPost" class="h3 fw-bold">{{ post.title }}</h1>
     <input
       *ngIf="editingPost"
       [(ngModel)]="editingPostTitle"
-      class="form-control form-control-lg fw-bold"
+      class="form-control form-control-lg fw-semibold"
       placeholder="Título de la publicación"
     />
   </div>
@@ -25,25 +25,19 @@
   <!-- Contenido -->
   <div class="mb-4">
     <div *ngIf="editingPost">
-      <quill-editor
-        [(ngModel)]="editingPostContent"
-        [styles]="{ height: '250px' }"
-      ></quill-editor>
+      <quill-editor [(ngModel)]="editingPostContent" [styles]="{ height: '250px' }"></quill-editor>
     </div>
-    <div
-      *ngIf="!editingPost"
-      class="quill-content"
-      [innerHTML]="post.content"
-    ></div>
+    <div *ngIf="!editingPost" class="quill-content" [innerHTML]="post.content"></div>
   </div>
 
   <!-- Etiquetas -->
-  <div class="text-muted mb-4">
-    <div *ngIf="!editingPost">
-      <strong>Etiquetas:</strong> {{ post.tags.join(", ") }}
+  <div class="mb-4">
+    <div *ngIf="!editingPost" class="text-muted">
+      <strong></strong>
+      <span class="badge bg-primary me-1" *ngFor="let tag of post.tags">{{ tag }}</span>
     </div>
     <div *ngIf="editingPost">
-      <label><strong>Etiquetas (separadas por comas):</strong></label>
+      <label class="form-label"><strong>Etiquetas (separadas por comas):</strong></label>
       <input
         type="text"
         [(ngModel)]="editingPostTags"
@@ -53,127 +47,81 @@
     </div>
   </div>
 
-  <!-- Botones de editar/eliminar post -->
+  <!-- Botones de editar/eliminar -->
   <div *ngIf="isPostOwner()" class="mb-4">
-    <button
-      *ngIf="!editingPost"
-      class="btn btn-outline-secondary btn-sm me-2"
-      (click)="startEditingPost()"
-    >
-      Editar publicación
-    </button>
-    <button
-      *ngIf="!editingPost"
-      class="btn btn-outline-danger btn-sm"
-      (click)="deletePost()"
-    >
-      Eliminar publicación
-    </button>
+    <ng-container *ngIf="!editingPost; else editModeButtons">
+      <button class="btn btn-outline-secondary btn-sm me-2" (click)="startEditingPost()">Editar publicación</button>
+      <button class="btn btn-outline-danger btn-sm" (click)="deletePost()">Eliminar publicación</button>
+    </ng-container>
 
-    <div *ngIf="editingPost" class="mt-2">
-      <button class="btn btn-sm btn-success me-2" (click)="updatePost()">
-        Guardar
-      </button>
-      <button class="btn btn-sm btn-secondary" (click)="cancelEditingPost()">
-        Cancelar
-      </button>
-    </div>
+    <ng-template #editModeButtons>
+      <button class="btn btn-sm btn-success me-2" (click)="updatePost()">Guardar</button>
+      <button class="btn btn-sm btn-secondary" (click)="cancelEditingPost()">Cancelar</button>
+    </ng-template>
   </div>
 
   <hr />
 
-  <div class="mb-3 d-flex align-items-center gap-2">
-    <button class="btn" (click)="toggleLike()">
-      {{ hasLiked ? "💙" : "🤍" }}
+  <!-- Likes -->
+  <div class="mb-4 d-flex align-items-center gap-2">
+    <button class="btn btn-light border" (click)="toggleLike()">
+      {{ hasLiked ? '💙' : '🤍' }}
     </button>
     <span class="text-muted">{{ likeCount }} me gusta</span>
   </div>
 
   <!-- Comentarios -->
   <div class="mt-5">
-    <h2 class="text-xl font-semibold mb-3">Comentarios</h2>
+    <h4 class="mb-3 fw-semibold">Comentarios</h4>
 
-    <!-- Formulario para nuevo comentario -->
+    <!-- Nuevo comentario -->
     <form (ngSubmit)="createComment()" class="mb-4">
-      <div class="mb-3">
-        <textarea
-          [(ngModel)]="newCommentContent"
-          name="comment"
-          class="form-control"
-          rows="3"
-          placeholder="Escribe un comentario..."
-          required
-        ></textarea>
-      </div>
-      <button
-        type="submit"
-        class="btn btn-primary"
-        [disabled]="!newCommentContent.trim()"
-      >
-        Publicar comentario
-      </button>
+      <textarea
+        [(ngModel)]="newCommentContent"
+        name="comment"
+        class="form-control mb-2"
+        rows="3"
+        placeholder="Escribe un comentario..."
+        required
+      ></textarea>
+      <button type="submit" class="btn btn-primary" [disabled]="!newCommentContent.trim()">Publicar comentario</button>
     </form>
 
     <!-- Lista de comentarios -->
     <ul class="list-unstyled">
-      <li
-        *ngFor="let comment of post.postComment.slice().reverse()"
-        class="border-top py-3 d-flex align-items-start gap-3"
-      >
+      <li *ngFor="let comment of post.postComment.slice().reverse()" class="border-top pt-3 d-flex gap-3">
         <img
           *ngIf="comment.communityProfile.profileImage"
           [src]="comment.communityProfile.profileImage"
-          class="rounded-circle me-2"
+          class="rounded-circle"
           width="40"
           height="40"
           style="cursor: pointer;"
           (click)="viewProfile(comment.communityProfile.id)"
         />
-        <div class="w-100">
-          <strong (click)="viewProfile(comment.communityProfile.id)" style="cursor: pointer;">
+        <div class="flex-grow-1">
+          <div class="fw-bold" (click)="viewProfile(comment.communityProfile.id)" style="cursor: pointer;">
             {{ comment.communityProfile.username }}
-          </strong>
-          <br />
+          </div>
 
-          <div *ngIf="editingCommentId === comment.id">
-            <textarea
-              [(ngModel)]="editingContent"
-              class="form-control my-2"
-              rows="3"
-            ></textarea>
-            <button
-              class="btn btn-sm btn-success me-2"
-              (click)="updateComment(comment.id)"
-            >
-              Guardar
-            </button>
-            <button class="btn btn-sm btn-secondary" (click)="cancelEditing()">
-              Cancelar
-            </button>
+          <div *ngIf="editingCommentId === comment.id" class="mt-2">
+            <textarea [(ngModel)]="editingContent" class="form-control mb-2" rows="3"></textarea>
+            <button class="btn btn-sm btn-success me-2" (click)="updateComment(comment.id)">Guardar</button>
+            <button class="btn btn-sm btn-secondary" (click)="cancelEditing()">Cancelar</button>
           </div>
 
           <div *ngIf="editingCommentId !== comment.id">
-            <span>{{ comment.content }}</span>
+            <p class="mb-1">{{ comment.content }}</p>
             <div *ngIf="canEdit(comment)" class="mt-2">
-              <button
-                class="btn btn-sm btn-outline-secondary me-2"
-                (click)="startEditing(comment)"
-              >
-                Editar
-              </button>
-              <button
-                class="btn btn-sm btn-outline-danger"
-                (click)="deleteComment(comment.id)"
-              >
-                Eliminar
-              </button>
+              <button class="btn btn-sm btn-outline-secondary me-2" (click)="startEditing(comment)">Editar</button>
+              <button class="btn btn-sm btn-outline-danger" (click)="deleteComment(comment.id)">Eliminar</button>
             </div>
           </div>
         </div>
       </li>
     </ul>
 
-    <div *ngIf="post.postComment.length === 0" class="text-muted mt-2">
+    <div *ngIf="post.postComment.length === 0" class="text-muted mt-3">
       No hay comentarios aún.
     </div>
   </div>

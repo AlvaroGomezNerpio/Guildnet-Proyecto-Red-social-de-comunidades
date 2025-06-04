@@ -1,7 +1,8 @@
 <div class="container mt-4">
-  <div class="card p-3 mb-4">
+  <!-- Filtros de búsqueda -->
+  <div class="card p-4 shadow-sm mb-4">
     <h5 class="mb-3">Buscar publicaciones en esta comunidad</h5>
-    <div class="row g-2">
+    <div class="row g-3">
       <div class="col-md-6">
         <input
           type="text"
@@ -21,73 +22,69 @@
     </div>
   </div>
 
+  <!-- Resultados -->
   <div *ngIf="results.length > 0">
-    <h4>Resultados</h4>
+    <h4 class="mb-3">Resultados</h4>
     <div class="row">
-      <div *ngFor="let post of results" class="col-md-4 mb-3">
-        <div class="card h-100">
-          <div class="card-body">
+      <div *ngFor="let post of results" class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body d-flex flex-column">
             <!-- Autor -->
-            <div
-              class="d-flex align-items-center mb-2"
-              *ngIf="post.communityProfile"
-            >
+            <div class="d-flex align-items-center mb-2" *ngIf="post.communityProfile">
               <img
                 [src]="post.communityProfile.profileImage"
                 alt="Autor"
-                class="rounded-circle me-2"
-                width="32"
-                height="32"
+                class="rounded-circle me-2 border"
+                width="36"
+                height="36"
               />
-              <span>{{ post.communityProfile.username }}</span>
+              <span class="fw-semibold">{{ post.communityProfile.username }}</span>
             </div>
 
-            <!-- Título y contenido -->
-            <h5 class="card-title">{{ post.title }}</h5>
-            <!-- Botón Ver más / Ver menos -->
+            <!-- Título -->
+            <h5 class="card-title mb-2">{{ post.title }}</h5>
 
-
-            <!-- Contenido completo del post -->
+            <!-- Contenido expandible -->
             <div
-              class="card card-body mb-2 text-start"
+              class="bg-light border rounded p-2 mb-2 quill-content"
               *ngIf="post.showContent"
+              [innerHTML]="post.content"
+            ></div>
+
+            <!-- Ver más / Ver menos -->
+            <button
+              class="btn btn-sm btn-outline-secondary mb-3"
+              (click)="toggleContent(post); $event.stopPropagation()"
             >
-              <div class="quill-content" [innerHTML]="post.content"></div>
-            </div>
-
-            
-
-            <div class="text-center">
-              <button
-                class="btn btn-sm btn-outline-secondary mt-2"
-                (click)="toggleContent(post); $event.stopPropagation()"
-              >
-                {{ post.showContent ? "Ver menos" : "Ver más" }}
-              </button>
-            </div>
+              {{ post.showContent ? 'Ver menos' : 'Ver más' }}
+            </button>
 
             <!-- Tags -->
-            <div class="mb-2">
-              <span
-                class="badge bg-primary me-1"
-                *ngFor="let tag of post.tags"
-                >{{ tag }}</span
-              >
+            <div class="mb-3">
+              <span class="badge bg-primary me-1" *ngFor="let tag of post.tags">
+                {{ tag }}
+              </span>
             </div>
 
-            <!-- Botón -->
-            <button
-              class="btn btn-outline-primary w-100"
+            <!-- Botón ir a detalle -->
+            <a
+              class="btn btn-outline-primary mt-auto"
               [routerLink]="['/posts', post.id]"
             >
               Ver publicación
-            </button>
+            </a>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <p *ngIf="results.length === 0 && !error">No se encontraron publicaciones.</p>
-  <p *ngIf="error" class="text-danger">{{ error }}</p>
+  <!-- Sin resultados -->
+  <div *ngIf="results.length === 0 && !error" class="text-muted">
+    No se encontraron publicaciones.
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
 </div>
