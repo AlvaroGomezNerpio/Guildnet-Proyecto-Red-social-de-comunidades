@@ -13,6 +13,7 @@ import { PostDetailComponent } from './pages/posts/post-detail/post-detail.compo
 import { SearchPostsComponent } from './pages/posts/search-posts/search-posts.component';
 import { CommunityNotificationsComponent } from './pages/communities/community-notifications/community-notifications.component';
 import { CreateRoleComponent } from './pages/rol/create-role/create-role.component';
+import { EditCommunityComponent } from './pages/communities/edit-community/edit-community.component';
 
 const routes: Routes = [
   { path: 'communities', component: CommunityListComponent },
@@ -28,6 +29,7 @@ const routes: Routes = [
   { path: 'communities/:id/notifications', component: CommunityNotificationsComponent},
   { path: 'communities/:id/create-role',component: CreateRoleComponent},
   { path: 'posts/:id', component: PostDetailComponent },
+  { path: 'communities/:id/edit', component: EditCommunityComponent },
   { path: '', redirectTo: '/communities', pathMatch: 'full' },
   { path: '**', redirectTo: '/communities' }
 ];

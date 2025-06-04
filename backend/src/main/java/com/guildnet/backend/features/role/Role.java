@@ -31,6 +31,6 @@ public class Role {
     private Community community;
 
     // Lista de permisos asociados a este rol (relación uno a muchos)
-    @OneToMany(mappedBy = "role")
+    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RolePermission> permissions;
 }

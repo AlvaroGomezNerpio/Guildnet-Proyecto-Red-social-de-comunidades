@@ -22,6 +22,7 @@ import { PostDetailComponent } from './pages/posts/post-detail/post-detail.compo
 import { SearchPostsComponent } from './pages/posts/search-posts/search-posts.component';
 import { CommunityNotificationsComponent } from './pages/communities/community-notifications/community-notifications.component';
 import { CreateRoleComponent } from './pages/rol/create-role/create-role.component';
+import { EditCommunityComponent } from './pages/communities/edit-community/edit-community.component';
 
 @NgModule({
   declarations: [
@@ -40,7 +41,8 @@ import { CreateRoleComponent } from './pages/rol/create-role/create-role.compone
     PostDetailComponent,
     SearchPostsComponent,
     CommunityNotificationsComponent,
-    CreateRoleComponent
+    CreateRoleComponent,
+    EditCommunityComponent
   ],
   imports: [
     BrowserModule,
