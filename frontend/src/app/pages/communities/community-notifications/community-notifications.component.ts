@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { NotificationService } from '../../services/notification.service';
-import { NotificationDTO } from '../../models/notification/NotificationDTO';
+import { NotificationService } from '../../../services/notification.service';
+import { NotificationDTO } from '../../../models/notification/NotificationDTO';
 import { forkJoin } from 'rxjs';
 
 @Component({

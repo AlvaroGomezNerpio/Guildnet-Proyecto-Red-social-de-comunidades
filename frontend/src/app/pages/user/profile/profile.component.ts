@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { UserService } from '../../services/user.service';
-import { CommunityService } from '../../services/community.service';
+import { UserService } from '../../../services/user.service';
+import { CommunityService } from '../../../services/community.service';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { UserDTO } from '../../models/user/UserDTO';
-import { UpdateUserRequest } from '../../models/user/UpdateUserRequest';
-import { CommunityResponseDTO } from '../../models/community/CommunityResponse.dto';
+import { UserDTO } from '../../../models/user/UserDTO';
+import { UpdateUserRequest } from '../../../models/user/UpdateUserRequest';
+import { CommunityResponseDTO } from '../../../models/community/CommunityResponse.dto';
 import { Router } from '@angular/router';
 
 @Component({

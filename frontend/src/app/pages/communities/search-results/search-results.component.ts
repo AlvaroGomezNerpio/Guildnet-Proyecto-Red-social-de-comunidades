@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { CommunityService } from '../../services/community.service';
-import { CommunityProfileService } from '../../services/community-profile.service';
-import { CommunityResponseDTO } from '../../models/community/CommunityResponse.dto';
+import { CommunityService } from '../../../services/community.service';
+import { CommunityProfileService } from '../../../services/community-profile.service';
+import { CommunityResponseDTO } from '../../../models/community/CommunityResponse.dto';
 
 @Component({
   selector: 'app-search-results',

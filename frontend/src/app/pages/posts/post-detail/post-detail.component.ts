@@ -1,18 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PostService } from '../../services/post.service';
-import { PostDetailDTO } from '../../models/post/PostDetailDTO';
-import { PostCommentService } from '../../services/post-comment.service';
-import { PostComentDTO } from '../../models/postComment/PostComentDTO';
-import { PostCommentCreateDTO } from '../../models/postComment/PostCommentCreateDTO';
-import { PostCommentUpdateDTO } from '../../models/postComment/PostCommentUpdateDTO';
-import { PostUpdateDTO } from '../../models/post/PostUpdateDTO';
-import { LikeService } from '../../services/like.service';
-import { NotificationService } from '../../services/notification.service';
-import { NotificationCreateDTO } from '../../models/notification/NotificationCreateDTO';
-import { NotificationType } from '../../models/notification/NotificationType';
-import { CommunityProfileDTO } from '../../models/communityProfile/CommunityProfileDTO';
-import { CommunityProfileService } from '../../services/community-profile.service';
+import { PostService } from '../../../services/post.service';
+import { PostDetailDTO } from '../../../models/post/PostDetailDTO';
+import { PostCommentService } from '../../../services/post-comment.service';
+import { PostComentDTO } from '../../../models/postComment/PostComentDTO';
+import { PostCommentCreateDTO } from '../../../models/postComment/PostCommentCreateDTO';
+import { PostCommentUpdateDTO } from '../../../models/postComment/PostCommentUpdateDTO';
+import { PostUpdateDTO } from '../../../models/post/PostUpdateDTO';
+import { LikeService } from '../../../services/like.service';
+import { NotificationService } from '../../../services/notification.service';
+import { NotificationCreateDTO } from '../../../models/notification/NotificationCreateDTO';
+import { NotificationType } from '../../../models/notification/NotificationType';
 
 
 @Component({

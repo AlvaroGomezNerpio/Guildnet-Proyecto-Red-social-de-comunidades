@@ -1,17 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { CommunityProfileDTO } from '../../models/communityProfile/CommunityProfileDTO';
-import { CommunityProfileService } from '../../services/community-profile.service';
-import { PostDTO } from '../../models/post/PostDTO';
-import { PostService } from '../../services/post.service';
-import { UpdateCommunityProfileRequest } from '../../models/communityProfile/UpdateCommunityProfileRequest';
-import { ProfileCommentService } from '../../services/profile-comment.service';
-import { ProfileCommentDTO } from '../../models/profileComment/ProfileCommentDTO';
-import { ProfileCommentCreateUpdateDTO } from '../../models/profileComment/ProfileCommentCreateUpdateDTO';
-import { NotificationService } from '../../services/notification.service';
-import { NotificationCreateDTO } from '../../models/notification/NotificationCreateDTO';
-import { NotificationType } from '../../models/notification/NotificationType';
+import { CommunityProfileDTO } from '../../../models/communityProfile/CommunityProfileDTO';
+import { CommunityProfileService } from '../../../services/community-profile.service';
+import { PostDTO } from '../../../models/post/PostDTO';
+import { PostService } from '../../../services/post.service';
+import { UpdateCommunityProfileRequest } from '../../../models/communityProfile/UpdateCommunityProfileRequest';
+import { ProfileCommentService } from '../../../services/profile-comment.service';
+import { ProfileCommentDTO } from '../../../models/profileComment/ProfileCommentDTO';
+import { ProfileCommentCreateUpdateDTO } from '../../../models/profileComment/ProfileCommentCreateUpdateDTO';
+import { NotificationService } from '../../../services/notification.service';
+import { NotificationCreateDTO } from '../../../models/notification/NotificationCreateDTO';
+import { NotificationType } from '../../../models/notification/NotificationType';
 
 interface PostWithToggle extends PostDTO {
   showContent: boolean;
