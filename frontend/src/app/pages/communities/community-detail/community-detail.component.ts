@@ -8,7 +8,6 @@ import { CommunityResponseDTO } from '../../../models/community/CommunityRespons
 import { CommunityProfileDTO } from '../../../models/communityProfile/CommunityProfileDTO';
 import { PostDTO } from '../../../models/post/PostDTO';
 
-
 interface PostWithToggle extends PostDTO {
   showContent: boolean;
 }
@@ -168,5 +167,9 @@ export class CommunityDetailComponent {
     this.router.navigate(['/communities', this.communityId, 'notifications'], {
       queryParams: { myProfileId: this.profile?.id },
     });
+  }
+
+  goToCreateRole(): void {
+    this.router.navigate(['/communities', this.communityId, 'create-role']);
   }
 }

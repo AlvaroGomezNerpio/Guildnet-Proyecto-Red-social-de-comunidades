@@ -1,39 +1,83 @@
-<div class="container mt-4">
-  <h2>Crear nueva comunidad</h2>
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title mb-4">Crear nueva comunidad</h2>
 
-  <form (ngSubmit)="onSubmit()" #form="ngForm">
+      <form (ngSubmit)="onSubmit()" #form="ngForm">
+        <!-- Nombre -->
+        <div class="mb-3">
+          <label for="name" class="form-label">Nombre</label>
+          <input
+            type="text"
+            id="name"
+            class="form-control"
+            [(ngModel)]="community.name"
+            name="name"
+            required
+          />
+        </div>
 
-    <div class="mb-3">
-      <label>Nombre</label>
-      <input type="text" class="form-control" [(ngModel)]="community.name" name="name" required>
+        <!-- Descripción -->
+        <div class="mb-3">
+          <label for="description" class="form-label">Descripción</label>
+          <quill-editor
+            id="description"
+            [(ngModel)]="community.description"
+            name="description"
+            [style]="{ height: '600px' }"
+          ></quill-editor>
+        </div>
+
+        <!-- Reglas -->
+        <div class="mb-3">
+          <label for="rules" class="form-label">Reglas</label>
+          <quill-editor
+            id="rules"
+            [(ngModel)]="community.rules"
+            name="rules"
+            [style]="{ height: '600px' }"
+          ></quill-editor>
+        </div>
+
+        <!-- Etiquetas -->
+        <div class="mb-3">
+          <label for="tags" class="form-label">Etiquetas (separadas por comas)</label>
+          <input
+            type="text"
+            id="tags"
+            class="form-control"
+            [(ngModel)]="tagsInput"
+            name="tags"
+          />
+        </div>
+
+        <!-- Imagen de perfil -->
+        <div class="mb-3">
+          <label for="image" class="form-label">Imagen de perfil</label>
+          <input
+            type="file"
+            id="image"
+            (change)="onImageSelected($event)"
+            class="form-control"
+          />
+        </div>
+
+        <!-- Banner -->
+        <div class="mb-3">
+          <label for="banner" class="form-label">Banner</label>
+          <input
+            type="file"
+            id="banner"
+            (change)="onBannerSelected($event)"
+            class="form-control"
+          />
+        </div>
+
+        <!-- Botón -->
+        <div class="d-grid">
+          <button type="submit" class="btn btn-success">Crear comunidad</button>
+        </div>
+      </form>
     </div>
-
-    <div class="mb-3">
-      <label>Descripción</label>
-      <quill-editor [(ngModel)]="community.description" name="description" [style]="{ height: '200px' }"></quill-editor>
-    </div>
-
-    <div class="mb-3">
-      <label>Reglas</label>
-      <quill-editor [(ngModel)]="community.rules" name="rules" [style]="{ height: '200px' }"></quill-editor>
-    </div>
-
-    <div class="mb-3">
-      <label>Etiquetas (separadas por comas)</label>
-      <input type="text" class="form-control" [(ngModel)]="tagsInput" name="tags">
-    </div>
-
-    <div class="mb-3">
-      <label>Imagen de perfil</label>
-      <input type="file" (change)="onImageSelected($event)" class="form-control">
-    </div>
-
-    <div class="mb-3">
-      <label>Banner</label>
-      <input type="file" (change)="onBannerSelected($event)" class="form-control">
-    </div>
-
-    <button type="submit" class="btn btn-success">Crear comunidad</button>
-  </form>
+  </div>
 </div>
-

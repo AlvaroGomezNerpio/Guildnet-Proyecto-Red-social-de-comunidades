@@ -12,6 +12,7 @@ import { PostCreateComponent } from './pages/posts/post-create/post-create.compo
 import { PostDetailComponent } from './components/post-detail/post-detail.component';
 import { SearchPostsComponent } from './components/post/search-posts/search-posts.component';
 import { CommunityNotificationsComponent } from './components/community-notifications/community-notifications.component';
+import { CreateRoleComponent } from './pages/rol/create-role/create-role.component';
 
 const routes: Routes = [
   { path: 'communities', component: CommunityListComponent },
@@ -24,7 +25,8 @@ const routes: Routes = [
   { path: 'communities/profile/:id', component: CommunityProfileDetailComponent },
   { path: 'communities/:id/create-post/:profileId', component: PostCreateComponent },
   { path: 'communities/:communityId/search-posts', component: SearchPostsComponent },
-  {path: 'communities/:id/notifications', component: CommunityNotificationsComponent},
+  { path: 'communities/:id/notifications', component: CommunityNotificationsComponent},
+  { path: 'communities/:id/create-role',component: CreateRoleComponent},
   { path: 'posts/:id', component: PostDetailComponent },
   { path: '', redirectTo: '/communities', pathMatch: 'full' },
   { path: '**', redirectTo: '/communities' }

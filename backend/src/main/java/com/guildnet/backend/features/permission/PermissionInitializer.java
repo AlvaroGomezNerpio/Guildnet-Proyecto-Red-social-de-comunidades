@@ -33,6 +33,7 @@ public class PermissionInitializer implements CommandLineRunner {
             case ASSIGN_ROLES -> "Poder crear y asignar roles a usuarios";
             case ASSIGN_TITLES -> "Poder crear y asignar títulos a usuarios";
             case BAN_USER -> "Poder eliminar usuarios de la comunidad";
+            case MANAGE_COMMUNITY_SETTINGS -> "Poder editar la comunidad";
         };
     }
 }
