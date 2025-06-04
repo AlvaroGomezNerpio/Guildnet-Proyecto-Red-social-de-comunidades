@@ -19,7 +19,9 @@
       />
       <div>
         <h2 class="mb-1">{{ community?.name }}</h2>
-        <small class="text-muted d-block">#{{ community?.tags?.join(", ") }}</small>
+        <small class="text-muted d-block"
+          >#{{ community?.tags?.join(", ") }}</small
+        >
       </div>
     </div>
 
@@ -43,7 +45,12 @@
           data-bs-parent="#communityAccordion"
         >
           <div class="accordion-body">
-            <div class="quill-content" [innerHTML]="community?.rules || 'Esta comunidad no tiene reglas públicas.'"></div>
+            <div
+              class="quill-content"
+              [innerHTML]="
+                community?.rules || 'Esta comunidad no tiene reglas públicas.'
+              "
+            ></div>
           </div>
         </div>
       </div>
@@ -66,7 +73,13 @@
           data-bs-parent="#communityAccordion"
         >
           <div class="accordion-body">
-            <div class="quill-content" [innerHTML]="community?.description || 'Esta comunidad no tiene descripción pública.'"></div>
+            <div
+              class="quill-content"
+              [innerHTML]="
+                community?.description ||
+                'Esta comunidad no tiene descripción pública.'
+              "
+            ></div>
           </div>
         </div>
       </div>
@@ -90,7 +103,10 @@
             height="70"
           />
           <h5 class="card-title">{{ profile?.username }}</h5>
-          <button class="btn btn-outline-primary w-100 mt-2" (click)="viewProfile(profile!.id)">
+          <button
+            class="btn btn-outline-primary w-100 mt-2"
+            (click)="viewProfile(profile!.id)"
+          >
             Ver perfil
           </button>
         </div>
@@ -101,14 +117,36 @@
         <div class="card-body">
           <h6 class="mb-3">Opciones</h6>
           <div class="d-grid gap-2">
-            <button class="btn btn-primary" (click)="goToCreatePost()">Crear publicación</button>
-            <button class="btn btn-outline-primary" (click)="loadCommunityMembers()">Ver miembros</button>
-            <button class="btn btn-outline-primary" (click)="goToSearchPosts()">Buscar publicaciones</button>
-            <button class="btn btn-outline-primary" (click)="goToNotifications()">
-              Ver notificaciones
-              <span *ngIf="unreadCount > 0" class="badge bg-danger ms-2">{{ unreadCount }}</span>
+            <button class="btn btn-primary" (click)="goToCreatePost()">
+              Crear publicación
             </button>
-            <button class="btn btn-outline-primary" (click)="goToCreateRole()">Crear rol</button>
+            <button
+              class="btn btn-outline-primary"
+              (click)="loadCommunityMembers()"
+            >
+              Ver miembros
+            </button>
+            <button class="btn btn-outline-primary" (click)="goToSearchPosts()">
+              Buscar publicaciones
+            </button>
+            <button
+              class="btn btn-outline-primary"
+              (click)="goToNotifications()"
+            >
+              Ver notificaciones
+              <span *ngIf="unreadCount > 0" class="badge bg-danger ms-2">{{
+                unreadCount
+              }}</span>
+            </button>
+            <button class="btn btn-outline-primary" (click)="goToCreateRole()">
+              Crear rol
+            </button>
+            <button
+              class="btn btn-outline-warning"
+              (click)="goToEditCommunity()"
+            >
+              <i class="bi bi-pencil-square me-1"></i> Editar comunidad
+            </button>
           </div>
         </div>
       </div>
@@ -119,10 +157,20 @@
       <h4 class="mb-4">Publicaciones recientes</h4>
 
       <ng-container *ngIf="posts.length > 0; else noPosts">
-        <div *ngFor="let post of posts.slice().reverse()" class="card mb-4" (click)="goToPostDetail(post.id)" style="cursor: pointer">
+        <div
+          *ngFor="let post of posts.slice().reverse()"
+          class="card mb-4"
+          (click)="goToPostDetail(post.id)"
+          style="cursor: pointer"
+        >
           <div class="card-body">
             <!-- Autor -->
-            <div class="d-flex align-items-center mb-3" (click)="viewProfile(post.communityProfile.id); $event.stopPropagation()">
+            <div
+              class="d-flex align-items-center mb-3"
+              (click)="
+                viewProfile(post.communityProfile.id); $event.stopPropagation()
+              "
+            >
               <img
                 *ngIf="post.communityProfile?.profileImage"
                 [src]="post.communityProfile.profileImage"
@@ -131,7 +179,9 @@
                 width="40"
                 height="40"
               />
-              <h6 class="mb-0 text-truncate">{{ post.communityProfile.username }}</h6>
+              <h6 class="mb-0 text-truncate">
+                {{ post.communityProfile.username }}
+              </h6>
             </div>
 
             <!-- Título -->
@@ -144,14 +194,21 @@
 
             <!-- Ver más -->
             <div class="text-center">
-              <button class="btn btn-sm btn-outline-secondary" (click)="toggleContent(post); $event.stopPropagation()">
+              <button
+                class="btn btn-sm btn-outline-secondary"
+                (click)="toggleContent(post); $event.stopPropagation()"
+              >
                 {{ post.showContent ? "Ver menos" : "Ver más" }}
               </button>
             </div>
 
             <!-- Tags -->
             <div class="mt-2 mb-2">
-              <span class="badge bg-primary me-1" *ngFor="let tag of post.tags">{{ tag }}</span>
+              <span
+                class="badge bg-primary me-1"
+                *ngFor="let tag of post.tags"
+                >{{ tag }}</span
+              >
             </div>
 
             <!-- Likes / comentarios -->
@@ -164,7 +221,9 @@
       </ng-container>
 
       <ng-template #noPosts>
-        <div class="alert alert-secondary">No hay publicaciones en esta comunidad todavía.</div>
+        <div class="alert alert-secondary">
+          No hay publicaciones en esta comunidad todavía.
+        </div>
       </ng-template>
     </div>
   </div>
@@ -175,7 +234,11 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Miembros de la comunidad</h5>
-          <button type="button" class="btn-close" (click)="showMembersModal = false"></button>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="showMembersModal = false"
+          ></button>
         </div>
         <div class="modal-body">
           <input
@@ -185,17 +248,33 @@
             [(ngModel)]="searchTerm"
             (input)="filterMembers()"
           />
-          <div *ngIf="filteredMembers.length === 0">No se encontraron miembros.</div>
+          <div *ngIf="filteredMembers.length === 0">
+            No se encontraron miembros.
+          </div>
           <ul class="list-group">
-            <li *ngFor="let member of filteredMembers" class="list-group-item d-flex align-items-center">
-              <img [src]="member.profileImage" width="40" class="rounded-circle me-2" />
+            <li
+              *ngFor="let member of filteredMembers"
+              class="list-group-item d-flex align-items-center"
+            >
+              <img
+                [src]="member.profileImage"
+                width="40"
+                class="rounded-circle me-2"
+              />
               <span class="flex-grow-1">{{ member.username }}</span>
-              <button class="btn btn-sm btn-link" (click)="viewProfile(member.id)">Ver perfil</button>
+              <button
+                class="btn btn-sm btn-link"
+                (click)="viewProfile(member.id)"
+              >
+                Ver perfil
+              </button>
             </li>
           </ul>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="showMembersModal = false">Cerrar</button>
+          <button class="btn btn-secondary" (click)="showMembersModal = false">
+            Cerrar
+          </button>
         </div>
       </div>
     </div>

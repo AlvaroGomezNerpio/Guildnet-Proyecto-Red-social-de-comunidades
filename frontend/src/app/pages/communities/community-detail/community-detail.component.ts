@@ -172,4 +172,8 @@ export class CommunityDetailComponent {
   goToCreateRole(): void {
     this.router.navigate(['/communities', this.communityId, 'create-role']);
   }
+
+  goToEditCommunity() {
+  this.router.navigate(['/communities', this.communityId, 'edit']);
+}
 }
