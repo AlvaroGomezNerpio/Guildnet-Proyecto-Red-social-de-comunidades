@@ -29,7 +29,6 @@ public class Title {
     @ManyToMany(mappedBy = "titles")
     private List<CommunityProfile> profiles = new ArrayList<>();
 
-    // Comunidad a la que pertenece este título (relación muchos a uno)
     @ManyToOne
     @JoinColumn(name = "community_id")
     private Community community;
