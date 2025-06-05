@@ -51,6 +51,68 @@
     Editar perfil
   </button>
 
+  <!-- Botón para abrir modal de gestión de títulos -->
+<div *ngIf="isOwnProfile" class="mb-4 text-center">
+  <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#manageTitlesModal">
+    Gestionar títulos
+  </button>
+</div>
+
+<!-- Modal para gestionar títulos -->
+<div *ngIf="isOwnProfile" class="modal fade" id="manageTitlesModal" tabindex="-1" aria-labelledby="manageTitlesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header">
+        <h5 class="modal-title" id="manageTitlesModalLabel">Gestionar títulos</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Crear nuevo título -->
+        <form (ngSubmit)="createTitle()" class="row g-3 align-items-end mb-4">
+          <div class="col-md-4">
+            <input type="text" class="form-control" placeholder="Título" [(ngModel)]="titleText" name="titleText" required />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small">Color texto</label>
+            <input type="color" class="form-control form-control-color" [(ngModel)]="titleTextColor" name="textColor" />
+          </div>
+          <div class="col-md-2">
+            <label class="form-label small">Color fondo</label>
+            <input type="color" class="form-control form-control-color" [(ngModel)]="titleBgColor" name="bgColor" />
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-success w-100" type="submit">Crear</button>
+          </div>
+        </form>
+
+        <!-- Lista de títulos asignados -->
+        <div *ngIf="profile?.titles?.length">
+          <div *ngFor="let title of profile?.titles" class="d-flex align-items-center justify-content-between bg-light p-2 rounded mb-2">
+            <span class="badge me-2 px-3 py-2" [ngStyle]="{ 'background-color': title.backgroundColor, color: title.textColor }">
+              {{ title.title }}
+            </span>
+            <div>
+              <button class="btn btn-sm btn-outline-primary me-2" (click)="updateTitle(title)">Editar</button>
+              <button class="btn btn-sm btn-outline-danger" (click)="deleteTitle(title.id)">Eliminar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensajes -->
+        <div *ngIf="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>
+        <div *ngIf="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
   <!-- Botón mostrar descripción -->
   <div class="text-center mb-4">
     <button

@@ -51,8 +51,18 @@ public class TitleServiceImpl implements TitleService {
     public void deleteTitle(Long id) {
         Title title = titleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Título no encontrado"));
-        titleRepository.delete(title);
+
+        // 🔸 Eliminar relaciones con perfiles (evita fallo de integridad referencial)
+        if (title.getProfiles() != null) {
+            title.getProfiles().forEach(profile -> profile.getTitles().remove(title));
+            title.getProfiles().clear();
+        }
+
+        titleRepository.save(title); // Guardamos la entidad sin relaciones
+
+        titleRepository.delete(title); // Ahora sí, se puede eliminar
     }
+
 
     @Override
     public List<TitleDTO> getTitlesByCommunity(Long communityId) {
