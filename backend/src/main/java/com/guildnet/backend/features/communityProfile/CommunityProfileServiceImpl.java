@@ -170,6 +170,20 @@ public class CommunityProfileServiceImpl implements CommunityProfileService {
         return List.of(mapToRoleDTO(profile.getRole()));
     }
 
+    @Override
+    @Transactional
+    public void removeProfileFromCommunity(Long profileId, Long communityId) {
+        CommunityProfile profile = profileRepository.findById(profileId)
+                .orElseThrow(() -> new RuntimeException("Perfil no encontrado"));
+
+        if (!profile.getCommunity().getId().equals(communityId)) {
+            throw new RuntimeException("El perfil no pertenece a esta comunidad");
+        }
+
+        profileRepository.deleteById(profileId);
+    }
+
+
     private RoleDTO mapToRoleDTO(Role role) {
         return new RoleDTO(
                 role.getId(),

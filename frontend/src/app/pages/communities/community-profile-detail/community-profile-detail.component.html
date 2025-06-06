@@ -47,6 +47,11 @@
         Asignar nuevo rol
       </button>
     </div>
+    <div *ngIf="canBanUser()" class="d-inline-block">
+      <button type="button" class="btn btn-outline-danger me-2" (click)="removeUserFromCommunity()">
+        Eliminar de la comunidad
+      </button>
+    </div>
   </div>
 
   <!-- Botón descripción -->
@@ -181,8 +186,8 @@
   </div>
 
   <!-- Modal: asignar rol -->
-  <div *ngIf="canManageRoles" class="modal fade" id="assignRoleModal" tabindex="-1" aria-labelledby="assignRoleModalLabel"
-    aria-hidden="true">
+  <div *ngIf="canManageRoles" class="modal fade" id="assignRoleModal" tabindex="-1"
+    aria-labelledby="assignRoleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content shadow-lg">
         <div class="modal-header">
