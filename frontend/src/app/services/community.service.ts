@@ -86,27 +86,42 @@ export class CommunityService {
   }
 
   updateCommunity(
-  id: number,
-  data: any,
-  image?: File,
-  banner?: File
-): Observable<string> {
-  const formData = new FormData();
-  formData.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
-  if (image) formData.append('image', image);
-  if (banner) formData.append('banner', banner);
+    id: number,
+    data: any,
+    image?: File,
+    banner?: File
+  ): Observable<string> {
+    const formData = new FormData();
+    formData.append(
+      'data',
+      new Blob([JSON.stringify(data)], { type: 'application/json' })
+    );
+    if (image) formData.append('image', image);
+    if (banner) formData.append('banner', banner);
 
-  return this.http.put<string>(`${this.apiUrl}/${id}`, formData, {
-    headers: this.getAuthHeaders(),
-    responseType: 'text' as 'json' 
-  });
-}
-
+    return this.http.put<string>(`${this.apiUrl}/${id}`, formData, {
+      headers: this.getAuthHeaders(),
+      responseType: 'text' as 'json',
+    });
+  }
 
   deleteCommunity(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`, {
       headers: this.getAuthHeaders(),
-      responseType: 'text' as 'json'
+      responseType: 'text' as 'json',
     });
+  }
+
+  removeUserFromCommunity(
+    communityId: number,
+    profileId: number
+  ): Observable<string> {
+    return this.http.delete<string>(
+      `${this.apiUrl}/${communityId}/remove-user/${profileId}`,
+      {
+        headers: this.getAuthHeaders(),
+        responseType: 'text' as 'json',
+      }
+    );
   }
 }

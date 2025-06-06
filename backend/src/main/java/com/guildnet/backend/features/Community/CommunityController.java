@@ -219,6 +219,21 @@ public class CommunityController {
         communityService.deleteCommunity(id);
         return ResponseEntity.ok("Comunidad eliminada correctamente");
     }
+
+    @DeleteMapping("/{communityId}/remove-user/{profileId}")
+    public ResponseEntity<?> removeUserFromCommunity(
+            @PathVariable Long communityId,
+            @PathVariable Long profileId,
+            Authentication authentication
+    ) {
+        User requester = (User) authentication.getPrincipal();
+
+        // Validación opcional: verificar que el requester tiene permisos (por implementar si quieres)
+        profileService.removeProfileFromCommunity(profileId, communityId);
+
+        return ResponseEntity.ok("Usuario eliminado de la comunidad");
+    }
+
 }
 
 

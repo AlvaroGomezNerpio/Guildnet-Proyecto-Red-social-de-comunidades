@@ -19,6 +19,7 @@ import { UpdateTitleRequest } from '../../../models/title/UpdateTitleRequest';
 import { RoleService } from '../../../services/role.service';
 import { RoleDTO } from '../../../models/role/RoleDTO';
 import { ActiveRoleService } from '../../../services/active-role.service';
+import { CommunityService } from '../../../services/community.service';
 
 interface PostWithToggle extends PostDTO {
   showContent: boolean;
@@ -67,7 +68,8 @@ export class CommunityProfileDetailComponent implements OnInit {
     private notificationService: NotificationService,
     private titleService: TitleService,
     private roleService: RoleService,
-    private activeRoleService: ActiveRoleService
+    private activeRoleService: ActiveRoleService,
+    private communityService: CommunityService
   ) {}
 
   ngOnInit(): void {
@@ -456,5 +458,29 @@ export class CommunityProfileDetailComponent implements OnInit {
         setTimeout(() => (this.errorMessage = null), 3000);
       },
     });
+  }
+
+  removeUserFromCommunity(): void {
+    if (!this.profile || !this.profile.communityId) return;
+
+    if (!confirm('¿Estás seguro de eliminar a este usuario de la comunidad?'))
+      return;
+
+    this.communityService
+      .removeUserFromCommunity(this.profile.communityId, this.profile.id)
+      .subscribe({
+        next: () => {
+          alert('Usuario eliminado de la comunidad.');
+          this.router.navigate(['/communities']); // o a donde prefieras redirigir
+        },
+        error: () => {
+          this.errorMessage = 'Error al eliminar al usuario de la comunidad.';
+          setTimeout(() => (this.errorMessage = null), 3000);
+        },
+      });
+  }
+
+  canBanUser(): boolean {
+    return this.hasPermission('BAN_USER');
   }
 }

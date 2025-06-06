@@ -27,6 +27,7 @@ public interface CommunityProfileService {
     void removeRole(Long profileId, Long roleId);
     List<RoleDTO> getRolesByProfile(Long profileId);
 
+    void removeProfileFromCommunity(Long profileId, Long communityId);
 
 }
 
