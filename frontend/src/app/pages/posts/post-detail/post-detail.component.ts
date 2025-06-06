@@ -11,6 +11,7 @@ import { LikeService } from '../../../services/like.service';
 import { NotificationService } from '../../../services/notification.service';
 import { NotificationCreateDTO } from '../../../models/notification/NotificationCreateDTO';
 import { NotificationType } from '../../../models/notification/NotificationType';
+import { ActiveRoleService } from '../../../services/active-role.service';
 
 
 @Component({
@@ -36,13 +37,16 @@ export class PostDetailComponent implements OnInit {
   likeCount: number = 0;
   hasLiked: boolean = false;
 
+  permissions: string[] = [];
+
   constructor(
     private route: ActivatedRoute,
     private postService: PostService,
     private postCommentService: PostCommentService,
     private likeService: LikeService,
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private activeRoleService: ActiveRoleService
   ) {}
 
   ngOnInit(): void {
@@ -65,7 +69,38 @@ export class PostDetailComponent implements OnInit {
         .subscribe((status) => (this.hasLiked = status));
     }
 
+    const role = this.activeRoleService.getActiveRole();
+    if (role) {
+      this.permissions = role.permissions;
+    }
+
     this.loadPost();
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
+  }
+
+  canEditPost(): boolean {
+    return this.isPostOwner() || this.hasPermission('EDIT_POST');
+  }
+
+  canDeletePost(): boolean {
+    return this.isPostOwner() || this.hasPermission('DELETE_POST');
+  }
+
+  canEditComment(comment: PostComentDTO): boolean {
+    return (
+      comment.communityProfile.id === this.myProfileId ||
+      this.hasPermission('EDIT_COMMENTS')
+    );
+  }
+
+  canDeleteComment(comment: PostComentDTO): boolean {
+    return (
+      comment.communityProfile.id === this.myProfileId ||
+      this.hasPermission('DELETE_COMMENTS')
+    );
   }
 
   loadPost(): void {
@@ -193,18 +228,17 @@ export class PostDetailComponent implements OnInit {
   }
 
   deletePost(): void {
-  if (!confirm('¿Estás seguro de que quieres eliminar esta publicación?'))
-    return;
+    if (!confirm('¿Estás seguro de que quieres eliminar esta publicación?'))
+      return;
 
-  this.postService.deletePost(this.postId).subscribe({
-    next: () => {
-      alert('Publicación eliminada');
-      this.router.navigate(['/communities', this.post?.communityId]); // Redirige al detalle de la comunidad
-    },
-    error: (err) => console.error('Error al eliminar el post', err),
-  });
-}
-
+    this.postService.deletePost(this.postId).subscribe({
+      next: () => {
+        alert('Publicación eliminada');
+        this.router.navigate(['/communities', this.post?.communityId]); // Redirige al detalle de la comunidad
+      },
+      error: (err) => console.error('Error al eliminar el post', err),
+    });
+  }
 
   toggleLike(): void {
     if (!this.post || !this.myProfileId) return;
@@ -231,19 +265,21 @@ export class PostDetailComponent implements OnInit {
               receiverProfileId: this.post.communityProfile.id,
               senderProfileId: this.myProfileId,
             };
-            this.notificationService.createNotification(notification).subscribe();
+            this.notificationService
+              .createNotification(notification)
+              .subscribe();
           }
         });
     }
   }
 
   viewProfile(profileId: number): void {
-  if (this.myProfileId) {
-    this.router.navigate(['/communities/profile', profileId], {
-      queryParams: { myProfileId: this.myProfileId },
-    });
-  } else {
-    this.router.navigate(['/communities/profile', profileId]);
+    if (this.myProfileId) {
+      this.router.navigate(['/communities/profile', profileId], {
+        queryParams: { myProfileId: this.myProfileId },
+      });
+    } else {
+      this.router.navigate(['/communities/profile', profileId]);
+    }
   }
-}
 }

@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { RoleService } from '../../../services/role.service';
 import { PermissionService } from '../../../services/permission.service';
 import { RolePermissionService } from '../../../services/role-permission.service';
-
 import { RoleDTO } from '../../../models/rol/RoleDTO';
 import { PermissionDTO } from '../../../models/rol/PermissionDTO';
 import { RolePermissionCreateDTO } from '../../../models/rol/RolePermissionCreateDTO';
+import { ActiveRoleService } from '../../../services/active-role.service';
+
 
 @Component({
   selector: 'app-create-role',
@@ -26,19 +27,33 @@ export class CreateRoleComponent implements OnInit {
     private roleService: RoleService,
     private permissionService: PermissionService,
     private rolePermissionService: RolePermissionService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router,
+    private activeRoleService: ActiveRoleService
   ) {}
 
   ngOnInit(): void {
-    this.communityId = +this.route.snapshot.paramMap.get('id')!;
-    this.roleForm = this.fb.group({
-      name: ['', Validators.required],
-      textColor: ['#000000', Validators.required],
-      backgroundColor: ['#ffffff', Validators.required]
-    });
+  this.communityId = +this.route.snapshot.paramMap.get('id')!;
 
-    this.loadPermissions();
+  // Comprobar permisos
+  if (
+    !this.activeRoleService.isForCommunity(this.communityId) ||
+    !this.activeRoleService.hasPermission('ASSIGN_ROLES')
+  ) {
+    this.router.navigate(['/communities']);
+    return;
   }
+
+  // Inicializar el formulario
+  this.roleForm = this.fb.group({
+    name: ['', Validators.required],
+    textColor: ['#000000', Validators.required],
+    backgroundColor: ['#ffffff', Validators.required],
+  });
+
+  this.loadPermissions();
+}
+
 
   loadPermissions(): void {
     this.permissionService.getAllPermissions().subscribe({
