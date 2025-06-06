@@ -7,6 +7,8 @@ import { NotificationService } from '../../../services/notification.service';
 import { CommunityResponseDTO } from '../../../models/community/CommunityResponse.dto';
 import { CommunityProfileDTO } from '../../../models/communityProfile/CommunityProfileDTO';
 import { PostDTO } from '../../../models/post/PostDTO';
+import { ActiveRoleService } from '../../../services/active-role.service';
+import { RolePermissionService } from '../../../services/role-permission.service';
 
 interface PostWithToggle extends PostDTO {
   showContent: boolean;
@@ -40,7 +42,9 @@ export class CommunityDetailComponent {
     private communityService: CommunityService,
     private communityProfileService: CommunityProfileService,
     private postService: PostService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private activeRoleService: ActiveRoleService,
+    private rolePermissionService: RolePermissionService
   ) {}
 
   ngOnInit(): void {
@@ -67,16 +71,40 @@ export class CommunityDetailComponent {
   }
 
   loadUserProfile(): void {
-    this.communityProfileService
-      .getMyProfileInCommunity(this.communityId)
-      .subscribe({
-        next: (data) => {
-          this.profile = data;
-          this.loadUnreadNotifications(); // <- Llama aquí después de cargar el perfil
-        },
-        error: () => (this.profile = null),
-      });
-  }
+  this.communityProfileService.getMyProfileInCommunity(this.communityId).subscribe({
+    next: (profile) => {
+      this.profile = profile;
+
+      if (profile.rol?.id) {
+        this.rolePermissionService.getPermissionsByRole(profile.rol.id).subscribe({
+          next: (permissions) => {
+            const permissionNames = permissions.map(p => p.permissionName);
+            this.activeRoleService.setActiveRole({
+              communityId: this.communityId,
+              roleId: profile.rol.id,
+              roleName: profile.rol.name,
+              permissions: permissionNames
+            });
+
+            this.loadUnreadNotifications();
+          },
+          error: () => {
+            this.activeRoleService.clear();
+            this.loadUnreadNotifications();
+          }
+        });
+      } else {
+        this.activeRoleService.clear();
+        this.loadUnreadNotifications();
+      }
+    },
+    error: () => {
+      this.profile = null;
+      this.activeRoleService.clear();
+    }
+  });
+}
+
 
   loadUnreadNotifications(): void {
     if (!this.profile) return;
@@ -176,4 +204,19 @@ export class CommunityDetailComponent {
   goToEditCommunity() {
   this.router.navigate(['/communities', this.communityId, 'edit']);
 }
+
+canAssignRoles(): boolean {
+  return (
+    this.activeRoleService.isForCommunity(this.communityId) &&
+    this.activeRoleService.hasPermission('ASSIGN_ROLES')
+  );
+}
+
+canEditCommunity(): boolean {
+  return (
+    this.activeRoleService.isForCommunity(this.communityId) &&
+    this.activeRoleService.hasPermission('MANAGE_COMMUNITY_SETTINGS')
+  );
+}
+
 }

@@ -138,10 +138,15 @@
                 unreadCount
               }}</span>
             </button>
-            <button class="btn btn-outline-primary" (click)="goToCreateRole()">
+            <button
+              *ngIf="canAssignRoles()"
+              class="btn btn-outline-primary"
+              (click)="goToCreateRole()"
+            >
               Crear rol
             </button>
             <button
+              *ngIf="canEditCommunity()"
               class="btn btn-outline-warning"
               (click)="goToEditCommunity()"
             >

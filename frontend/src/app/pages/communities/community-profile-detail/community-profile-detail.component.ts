@@ -16,6 +16,9 @@ import { TitleService } from '../../../services/title.service';
 import { TitleDTO } from '../../../models/title/TitleDTO';
 import { CreateTitleRequest } from '../../../models/title/CreateTitleRequest';
 import { UpdateTitleRequest } from '../../../models/title/UpdateTitleRequest';
+import { RoleService } from '../../../services/role.service';
+import { RoleDTO } from '../../../models/role/RoleDTO';
+import { ActiveRoleService } from '../../../services/active-role.service';
 
 interface PostWithToggle extends PostDTO {
   showContent: boolean;
@@ -48,6 +51,12 @@ export class CommunityProfileDetailComponent implements OnInit {
   titleBgColor = '#ffffff';
   titleTextColor = '#000000';
 
+  roles: RoleDTO[] = [];
+  selectedRoleId: number | null = null;
+  showRoleModal: boolean = false;
+
+  permissions: string[] = [];
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -56,7 +65,9 @@ export class CommunityProfileDetailComponent implements OnInit {
     private commentService: ProfileCommentService,
     private fb: FormBuilder,
     private notificationService: NotificationService,
-    private titleService: TitleService
+    private titleService: TitleService,
+    private roleService: RoleService,
+    private activeRoleService: ActiveRoleService
   ) {}
 
   ngOnInit(): void {
@@ -77,6 +88,11 @@ export class CommunityProfileDetailComponent implements OnInit {
         this.loadProfile();
         this.loadPosts();
         this.loadComments();
+
+        const role = this.activeRoleService.getActiveRole();
+        if (role) {
+          this.permissions = role.permissions;
+        }
       }
     });
 
@@ -99,6 +115,13 @@ export class CommunityProfileDetailComponent implements OnInit {
           username: data.username,
           description: data.description || '',
         });
+
+        if (data.communityId) {
+          this.roleService.getRolesByCommunity(data.communityId).subscribe({
+            next: (roles) => (this.roles = roles),
+            error: () => console.error('Error al cargar roles'),
+          });
+        }
       },
       error: () => (this.errorMessage = 'No se pudo cargar el perfil.'),
     });
@@ -201,6 +224,98 @@ export class CommunityProfileDetailComponent implements OnInit {
       });
   }
 
+  assignRoleToProfile(): void {
+    if (!this.selectedRoleId || !this.profile) return;
+
+    const selectedRole = this.roles.find((r) => r.id === this.selectedRoleId);
+    const roleName = selectedRole?.name || 'un rol';
+
+    this.profileService
+      .assignRoleToProfile(this.profile.id, this.selectedRoleId)
+      .subscribe({
+        next: () => {
+          this.successMessage = 'Rol asignado correctamente.';
+          this.showRoleModal = false;
+
+          if (this.myProfileId !== this.profileId) {
+            const notification: NotificationCreateDTO = {
+              message: `Te ha asignado el rol "${roleName}".`,
+              type: NotificationType.ROLE_ASSIGNED,
+              receiverProfileId: this.profile!.id,
+              senderProfileId: this.myProfileId,
+            };
+            this.notificationService
+              .createNotification(notification)
+              .subscribe();
+          }
+        },
+        error: () => {
+          this.errorMessage = 'Error al asignar el rol.';
+          setTimeout(() => (this.errorMessage = null), 3000);
+        },
+      });
+  }
+
+  removeRoleFromProfile(roleId: number): void {
+    if (!this.profile) return;
+
+    const roleName = this.roles.find((r) => r.id === roleId)?.name || 'un rol';
+
+    if (!confirm(`¿Eliminar el rol "${roleName}" del usuario?`)) return;
+
+    this.profileService
+      .removeRoleFromProfile(this.profile.id, roleId)
+      .subscribe({
+        next: () => {
+          this.successMessage = 'Rol eliminado correctamente.';
+          this.loadProfile();
+
+          if (this.myProfileId !== this.profileId) {
+            const notification: NotificationCreateDTO = {
+              message: `Te ha eliminado el rol "${roleName}".`,
+              type: NotificationType.ROLE_REMOVED,
+              receiverProfileId: this.profile!.id,
+              senderProfileId: this.myProfileId,
+            };
+            this.notificationService
+              .createNotification(notification)
+              .subscribe();
+          }
+        },
+        error: () => {
+          this.errorMessage = 'Error al eliminar el rol.';
+          setTimeout(() => (this.errorMessage = null), 3000);
+        },
+      });
+  }
+
+  hasPermission(permission: string): boolean {
+    return this.permissions.includes(permission);
+  }
+
+  canManageTitles(): boolean {
+    return this.hasPermission('ASSIGN_TITLES');
+  }
+
+  canManageRoles(): boolean {
+    return this.hasPermission('ASSIGN_ROLES');
+  }
+
+  canEdit(comment: ProfileCommentDTO): boolean {
+    return (
+      comment.authorProfile.id === this.myProfileId ||
+      this.hasPermission('EDIT_COMMENTS')
+    );
+  }
+
+  canDelete(comment: ProfileCommentDTO): boolean {
+    return (
+      this.profileId === this.myProfileId ||
+      comment.authorProfile.id === this.myProfileId ||
+      this.hasPermission('DELETE_COMMENTS')
+    );
+  }
+
   startEditing(comment: ProfileCommentDTO): void {
     this.editingCommentId = comment.id;
     this.editingContent = comment.content;
@@ -237,17 +352,6 @@ export class CommunityProfileDetailComponent implements OnInit {
     });
   }
 
-  canEdit(comment: ProfileCommentDTO): boolean {
-    return comment.authorProfile.id === this.myProfileId;
-  }
-
-  canDelete(comment: ProfileCommentDTO): boolean {
-    return (
-      this.profileId === this.myProfileId ||
-      comment.authorProfile.id === this.myProfileId
-    );
-  }
-
   createTitle(): void {
     if (!this.profile || !this.profile.communityId) return;
 
@@ -268,6 +372,19 @@ export class CommunityProfileDetailComponent implements OnInit {
               this.titleText = '';
               this.successMessage = 'Título creado y asignado';
               setTimeout(() => (this.successMessage = null), 3000);
+
+              // Notificación si es otro perfil
+              if (this.myProfileId !== this.profile!.id) {
+                const notification: NotificationCreateDTO = {
+                  message: `Te ha asignado el título "${createdTitle.title}".`,
+                  type: NotificationType.TITLE_ASSIGNED,
+                  receiverProfileId: this.profile!.id,
+                  senderProfileId: this.myProfileId,
+                };
+                this.notificationService
+                  .createNotification(notification)
+                  .subscribe();
+              }
             },
             error: () => {
               this.errorMessage = 'Error al asignar el título';
@@ -310,6 +427,9 @@ export class CommunityProfileDetailComponent implements OnInit {
   deleteTitle(titleId: number): void {
     if (!confirm('¿Eliminar este título?')) return;
 
+    const titleName =
+      this.profile?.titles?.find((t) => t.id === titleId)?.title || 'un título';
+
     this.titleService.deleteTitle(titleId).subscribe({
       next: () => {
         if (this.profile?.titles) {
@@ -319,6 +439,17 @@ export class CommunityProfileDetailComponent implements OnInit {
         }
         this.successMessage = 'Título eliminado';
         setTimeout(() => (this.successMessage = null), 3000);
+
+        // Notificación si es otro perfil
+        if (this.myProfileId !== this.profile!.id) {
+          const notification: NotificationCreateDTO = {
+            message: `Te ha eliminado el título "${titleName}".`,
+            type: NotificationType.TITLE_REMOVED,
+            receiverProfileId: this.profile!.id,
+            senderProfileId: this.myProfileId,
+          };
+          this.notificationService.createNotification(notification).subscribe();
+        }
       },
       error: () => {
         this.errorMessage = 'Error al eliminar el título';

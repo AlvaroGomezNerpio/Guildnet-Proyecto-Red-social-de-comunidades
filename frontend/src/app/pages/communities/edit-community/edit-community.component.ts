@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommunityService } from '../../../services/community.service';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import { ActiveRoleService } from '../../../services/active-role.service';
 
 @Component({
   selector: 'app-edit-community',
@@ -19,21 +20,30 @@ export class EditCommunityComponent implements OnInit {
     private route: ActivatedRoute,
     private communityService: CommunityService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private activeRoleService: ActiveRoleService
   ) {}
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.communityService.getCommunityById(id).subscribe(c => {
-      this.community = c;
-      this.editForm = this.fb.group({
-        name: [c.name, Validators.required],
-        description: [c.description],
-        rules: [c.rules],
-        tags: [c.tags.join(', ')]
-      });
-    });
+  const id = Number(this.route.snapshot.paramMap.get('id'));
+
+  const role = this.activeRoleService.getActiveRole();
+
+  if (!role || role.communityId !== id || !role.permissions.includes('MANAGE_COMMUNITY_SETTINGS')) {
+    this.router.navigate(['/communities']);
+    return;
   }
+
+  this.communityService.getCommunityById(id).subscribe(c => {
+    this.community = c;
+    this.editForm = this.fb.group({
+      name: [c.name, Validators.required],
+      description: [c.description],
+      rules: [c.rules],
+      tags: [c.tags.join(', ')]
+    });
+  });
+}
 
   get descriptionControl(): FormControl {
     return this.editForm.get('description') as FormControl;
