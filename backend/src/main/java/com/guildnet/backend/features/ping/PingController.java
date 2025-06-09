@@ -6,8 +6,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class PingController {
 
-    @GetMapping("/ping")
-    public String ping() {
-        return "pong";
+    @RestController
+    public class HealthController {
+
+        @GetMapping("/")
+        public String hello() {
+            return "Guildnet backend está funcionando";
+        }
     }
+
 }
