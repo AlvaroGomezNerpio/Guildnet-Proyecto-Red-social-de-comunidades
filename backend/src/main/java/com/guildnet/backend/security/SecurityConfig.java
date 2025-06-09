@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Preflight CORS
                         .requestMatchers(
+                                "/",
                                 "/api/v1/auth/**",
                                 "/uploads/**",
                                 "/api/v1/communities/popular",
