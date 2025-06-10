@@ -35,7 +35,8 @@
                 "glob": "**/*",
                 "input": "public"
               },
-              "src/_redirects"
+              "src/_redirects",
+              "src/netlify.toml"
             ],
             "styles": [
               "node_modules/quill/dist/quill.snow.css",
