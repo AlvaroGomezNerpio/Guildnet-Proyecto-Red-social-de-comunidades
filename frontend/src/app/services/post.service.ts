@@ -10,7 +10,7 @@ import { PostDetailDTO } from '../models/post/PostDetailDTO';
   providedIn: 'root',
 })
 export class PostService {
-  private apiUrl = 'http://localhost:8080/api/v1/posts';
+  private apiUrl = '${environment.apiUrl}/api/v1/posts';
 
   constructor(private http: HttpClient) {}
 

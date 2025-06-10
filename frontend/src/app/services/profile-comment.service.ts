@@ -10,7 +10,7 @@ import { ProfileCommentCreateUpdateDTO } from '../models/profileComment/ProfileC
 })
 export class ProfileCommentService {
 
-  private apiUrl = 'http://localhost:8080/api/profile-comments';
+  private apiUrl = '${environment.apiUrl}/api/profile-comments';
 
   constructor(private http: HttpClient) {}
 
