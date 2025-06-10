@@ -8,7 +8,7 @@ import { CreateCommunityRequest } from '../models/community/CreateCommunityReque
   providedIn: 'root',
 })
 export class CommunityService {
-  private apiUrl = 'http://localhost:8080/api/v1/communities';
+  private apiUrl = '${environment.apiUrl}/api/v1/communities';
 
   constructor(private http: HttpClient) {}
 

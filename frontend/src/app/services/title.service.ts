@@ -10,7 +10,7 @@ import { UpdateTitleRequest } from '../models/title/UpdateTitleRequest';
   providedIn: 'root'
 })
 export class TitleService {
-  private baseUrl = 'http://localhost:8080/api/v1/titles';
+  private baseUrl = '${environment.apiUrl}/api/v1/titles';
 
   constructor(private http: HttpClient) {}
 
