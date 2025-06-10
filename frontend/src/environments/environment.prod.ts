@@ -1,5 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://<TU_BACKEND>.railway.app'
+  apiUrl: 'https://guildnet-proyecto-red-social-de-comunidades-production.up.railway.app'
 };
-
