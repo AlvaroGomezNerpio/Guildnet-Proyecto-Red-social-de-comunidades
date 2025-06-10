@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "postbuild": "cp -a dist/frontend/browser/. dist/frontend/ && cp dist/frontend/browser/_redirects dist/frontend/ && cp dist/frontend/browser/netlify.toml dist/frontend/",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
