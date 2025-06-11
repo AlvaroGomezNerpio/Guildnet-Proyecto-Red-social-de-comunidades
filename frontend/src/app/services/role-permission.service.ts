@@ -6,7 +6,7 @@ import { RolePermissionCreateDTO } from '../models/rol/RolePermissionCreateDTO';
 
 @Injectable({ providedIn: 'root' })
 export class RolePermissionService {
-  private baseUrl = '${environment.apiUrl}/api/v1/role-permissions';
+  private baseUrl = 'http://localhost:8080/api/v1/role-permissions';
 
   constructor(private http: HttpClient) {}
 
