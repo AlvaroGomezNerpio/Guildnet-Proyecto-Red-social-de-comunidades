@@ -9,7 +9,7 @@ import { UpdateUserTagsRequest } from '../models/user/UpdateUserTagsRequest';
   providedIn: 'root',
 })
 export class UserService {
-  private apiUrl = '${environment.apiUrl}/api/v1/user';
+  private apiUrl = 'http://localhost:8080/api/v1/user';
 
   constructor(private http: HttpClient) {}
 

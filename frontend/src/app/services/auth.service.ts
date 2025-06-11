@@ -11,8 +11,8 @@ import { LoginResponse } from '../models/user/LoginResponse';
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = '${environment.apiUrl}/api/v1/auth';
-  private meUrl = '${environment.apiUrl}/api/v1/user/me';
+  private apiUrl = 'http://localhost:8080/api/v1/auth';
+  private meUrl = 'http://localhost:8080/api/v1/user/me';
 
   private currentUserSubject = new BehaviorSubject<UserDTO | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();

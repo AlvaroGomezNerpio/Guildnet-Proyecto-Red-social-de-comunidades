@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 })
 export class NotificationService {
 
-  private baseUrl = '${environment.apiUrl}/api/v1/notifications';
+  private baseUrl = 'http://localhost:8080/api/v1/notifications';
 
   constructor(private http: HttpClient) {}
 

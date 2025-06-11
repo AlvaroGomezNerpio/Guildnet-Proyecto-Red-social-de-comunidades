@@ -9,7 +9,7 @@ import { PostCommentUpdateDTO } from '../models/postComment/PostCommentUpdateDTO
   providedIn: 'root'
 })
 export class PostCommentService {
-  private apiUrl = '${environment.apiUrl}/api/v1/comments';
+  private apiUrl = 'http://localhost:8080/api/v1/comments';
 
   constructor(private http: HttpClient) {}
 
