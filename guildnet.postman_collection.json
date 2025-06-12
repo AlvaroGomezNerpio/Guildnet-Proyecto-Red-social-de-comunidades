@@ -1,0 +1,2343 @@
+{
+	"info": {
+		"_postman_id": "490a2379-f9c7-4c0f-bf5b-bfafe54cb204",
+		"name": "guildnet",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27125391"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var template = `\r",
+									"<style type=\"text/css\">\r",
+									"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
+									"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
+									"    .tftable tr {background-color:#ffffff;}\r",
+									"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
+									"    .tftable tr:hover {background-color:#e0ffff;}\r",
+									"</style>\r",
+									"\r",
+									"<table class=\"tftable\" border=\"1\">\r",
+									"    <tr>\r",
+									"        <th>Token</th>\r",
+									"    </tr>\r",
+									"    <tr>\r",
+									"        <td>{{response.token}}</td>\r",
+									"    </tr>\r",
+									"</table>\r",
+									"`;\r",
+									"\r",
+									"function constructVisualizerPayload() {\r",
+									"    return { response: pm.response.json() }\r",
+									"}\r",
+									"\r",
+									"pm.visualizer.set(template, constructVisualizerPayload());"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "user",
+									"value": "{\"username\":\"alvaro\",\"email\":\"alvaro4@example.com\",\"password\":\"1234\"}",
+									"contentType": "application/json",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": "postman-cloud:///1f00e634-8dba-4230-b116-6fc6e19b9f4d"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/auth/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"alvaro3@example.com\",\r\n  \"password\": \"1234\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/auth/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Me",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ3OTQzNjIxLCJleHAiOjE3NDgwMzAwMjF9.TdxNyBdkke0iWeKszFd667ge5IMISI7_JQl10W0ovpg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/user/me",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ3MzM1MTAxLCJleHAiOjE3NDc0MjE1MDF9._06G3aHnHWfB-8NdMi3K6YegZewlkeW_B0CPrTWhjac",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"tags\": [\"retro\"]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/user/tags",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"user",
+								"tags"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Community",
+			"item": [
+				{
+					"name": "Get All Communities",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ3MzMyNjIzLCJleHAiOjE3NDc0MTkwMjN9.uPzpZM-vu_tUD4Ny8pzMiI4oxNdcSzgl3Cvk9237foc",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/communities",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"communities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Community by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm9AZXhhbXBsZS5jb20iLCJpYXQiOjE3NDM1NDI5MDcsImV4cCI6MTc0MzYyOTMwN30.3PyVaEcFvtLMM-QdKa6yBYDcjw7utahr-CfDJ7J0Zvw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/communities/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"communities",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Communities by Name",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm9AZXhhbXBsZS5jb20iLCJpYXQiOjE3NDM1NDI5MDcsImV4cCI6MTc0MzYyOTMwN30.3PyVaEcFvtLMM-QdKa6yBYDcjw7utahr-CfDJ7J0Zvw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/communities/search?name=retro",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"communities",
+								"search"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "retro"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Communities by Tag",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm9AZXhhbXBsZS5jb20iLCJpYXQiOjE3NDM1NDI5MDcsImV4cCI6MTc0MzYyOTMwN30.3PyVaEcFvtLMM-QdKa6yBYDcjw7utahr-CfDJ7J0Zvw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/communities/search?tag=gaming&tag=techgf",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"communities",
+								"search"
+							],
+							"query": [
+								{
+									"key": "tag",
+									"value": "gaming"
+								},
+								{
+									"key": "tag",
+									"value": "techgf"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Search Communities by Name and Tag",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm9AZXhhbXBsZS5jb20iLCJpYXQiOjE3NDM1NDI5MDcsImV4cCI6MTc0MzYyOTMwN30.3PyVaEcFvtLMM-QdKa6yBYDcjw7utahr-CfDJ7J0Zvw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/communities/search?name=retr&tag=gaming&tag=techwewq",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"communities",
+								"search"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "retr"
+								},
+								{
+									"key": "tag",
+									"value": "gaming"
+								},
+								{
+									"key": "tag",
+									"value": "techwewq"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Community",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm9AZXhhbXBsZS5jb20iLCJpYXQiOjE3NDM1NDI5MDcsImV4cCI6MTc0MzYyOTMwN30.3PyVaEcFvtLMM-QdKa6yBYDcjw7utahr-CfDJ7J0Zvw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "community",
+									"value": "{\"name\":\"Retro Gamers\",\"description\":\"Comunidad de juegos clásicos\",\"rules\":\"No spam\",\"tags\":[\"retro\",\"gaming\"]}",
+									"contentType": "application/json",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": "postman-cloud:///1f00e634-8dba-4230-b116-6fc6e19b9f4d"
+								},
+								{
+									"key": "banner",
+									"type": "file",
+									"src": "postman-cloud:///1f00b61a-ba2c-45b0-b271-c5f6e306feca"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/communities/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"communities",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Community",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm9AZXhhbXBsZS5jb20iLCJpYXQiOjE3NDM1NDI5MDcsImV4cCI6MTc0MzYyOTMwN30.3PyVaEcFvtLMM-QdKa6yBYDcjw7utahr-CfDJ7J0Zvw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "data",
+									"value": "{\"name\":\"Actualizado\",\"description\":\"Desc nueva\",\"rules\":\"Reglas nuevas\",\"tags\":[\"nueva\"]}",
+									"contentType": "application/json",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "banner",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/communities/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"communities",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Community",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm9AZXhhbXBsZS5jb20iLCJpYXQiOjE3NDM1NDI5MDcsImV4cCI6MTc0MzYyOTMwN30.3PyVaEcFvtLMM-QdKa6yBYDcjw7utahr-CfDJ7J0Zvw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/communities/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"communities",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ3ODQ4MDU0LCJleHAiOjE3NDc5MzQ0NTR9.05Bsv0D3L8YzmSbTxAm3P5xJLMLm_WCLYaCqKzj36nI",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/communities/suggested",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"communities",
+								"suggested"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "profiles",
+			"item": [
+				{
+					"name": "Crear perfil automáticamente",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm80QGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0ODMyMTIyLCJleHAiOjE3NDQ5MTg1MjJ9.ShUHGs_H5v-XmQUkweOneq1orbWh6Xp8fJItFQCjD-w",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/profiles/auto-create/community/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"profiles",
+								"auto-create",
+								"community",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener mi perfil por usuario",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ4NTM1MTY1LCJleHAiOjE3NDg2MjE1NjV9.koC2QOHdPJr7IXaaiErlGpBf8r59Xs3NoEL00mULHfA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/profiles/me/community/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"profiles",
+								"me",
+								"community",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Editar perfil",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQzNjE1NzA2LCJleHAiOjE3NDM3MDIxMDZ9.mD-Ek_hPK1Chq_hp2UArfRY4CdlvcT70iCV9Tz66KS8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "data",
+									"value": "{\n  \"userName\": \"Nombre actualizado\",\n  \"description\": \"Nueva descripción\"\n}\n",
+									"contentType": "application/json",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"type": "file",
+									"src": "postman-cloud:///1f00b61a-ba2c-45b0-b271-c5f6e306feca"
+								}
+							]
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/profiles/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"profiles",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar perfil",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQzNjE1NzA2LCJleHAiOjE3NDM3MDIxMDZ9.mD-Ek_hPK1Chq_hp2UArfRY4CdlvcT70iCV9Tz66KS8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/profiles/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"profiles",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Asignar un título a un perfil",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ4MzY4NDE3LCJleHAiOjE3NDg0NTQ4MTd9.5ntH9ZQrFbP3f0DMUHfGm19RaunYkNBOMWfAe4bWnhw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/profiles/2/titles/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"profiles",
+								"2",
+								"titles",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cambiar el título destacado",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MTQzNDI4LCJleHAiOjE3NDQyMjk4Mjh9.GY150KpYluvGo2v19HWFZd7MVkcSrKzYO3T4SKHibT4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/profiles/2/featured-title/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"profiles",
+								"2",
+								"featured-title",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un perfil por usuario",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ4NjAwODkzLCJleHAiOjE3NDg2ODcyOTN9.P5B5dgeFL4RrhbwHym8HCN155OARv6YQEIHIYOY-ALI",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/profiles/11",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"profiles",
+								"11"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Title",
+			"item": [
+				{
+					"name": "Crear Título",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MTQyNTMyLCJleHAiOjE3NDQyMjg5MzJ9.QthcfVG21_7orBiEjODBZcO4LA92cOu2T8e_dTsg-Sk",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Campeón\",\n  \"textColor\": \"#FFFFFF\",\n  \"backgroundColor\": \"#FF0000\",\n  \"communityId\": 2\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/titles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"titles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Título",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MTQyNTMyLCJleHAiOjE3NDQyMjg5MzJ9.QthcfVG21_7orBiEjODBZcO4LA92cOu2T8e_dTsg-Sk",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Campeón 2025\",\n  \"textColor\": \"#000000\",\n  \"backgroundColor\": \"#00FF00\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/titles/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"titles",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Título",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MTQyNTMyLCJleHAiOjE3NDQyMjg5MzJ9.QthcfVG21_7orBiEjODBZcO4LA92cOu2T8e_dTsg-Sk",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/titles/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"titles",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Título por ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MTQyNTMyLCJleHAiOjE3NDQyMjg5MzJ9.QthcfVG21_7orBiEjODBZcO4LA92cOu2T8e_dTsg-Sk",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/titles/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"titles",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Títulos de Comunidad",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ4MzY4NDE3LCJleHAiOjE3NDg0NTQ4MTd9.5ntH9ZQrFbP3f0DMUHfGm19RaunYkNBOMWfAe4bWnhw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/titles/community/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"titles",
+								"community",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Role",
+			"item": [
+				{
+					"name": "Crear un Rol",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MzEzNjYxLCJleHAiOjE3NDQ0MDAwNjF9.1E--pS-dPIotda4smiVyoBRCIbQdfD4IqoiOatdwatg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Moderador\",\r\n  \"textColor\": \"#FFFFFF\",\r\n  \"backgroundColor\": \"#3498db\",\r\n  \"communityId\": 2\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/roles",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener todos los roles de una comunidad",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MzEzNjYxLCJleHAiOjE3NDQ0MDAwNjF9.1E--pS-dPIotda4smiVyoBRCIbQdfD4IqoiOatdwatg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/roles/community/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"roles",
+								"community",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener un rol por ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MzEzNjYxLCJleHAiOjE3NDQ0MDAwNjF9.1E--pS-dPIotda4smiVyoBRCIbQdfD4IqoiOatdwatg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/roles/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"roles",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar un rol",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MzEzNjYxLCJleHAiOjE3NDQ0MDAwNjF9.1E--pS-dPIotda4smiVyoBRCIbQdfD4IqoiOatdwatg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Admin actualizado\",\r\n  \"textColor\": \"#00ff00\",\r\n  \"backgroundColor\": \"#333333\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/roles/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"roles",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un rol",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MzEzNjYxLCJleHAiOjE3NDQ0MDAwNjF9.1E--pS-dPIotda4smiVyoBRCIbQdfD4IqoiOatdwatg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/roles/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"roles",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Permission",
+			"item": [
+				{
+					"name": "Crear un Permiso",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MzEzNjYxLCJleHAiOjE3NDQ0MDAwNjF9.1E--pS-dPIotda4smiVyoBRCIbQdfD4IqoiOatdwatg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"EDIT_PROFILE\",\r\n  \"description\": \"Permite editar el perfil del usuario\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/permissions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"permissions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Listar todos los permisos",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MzEzNjYxLCJleHAiOjE3NDQ0MDAwNjF9.1E--pS-dPIotda4smiVyoBRCIbQdfD4IqoiOatdwatg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/permissions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"permissions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un permiso",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MzEzNjYxLCJleHAiOjE3NDQ0MDAwNjF9.1E--pS-dPIotda4smiVyoBRCIbQdfD4IqoiOatdwatg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/permissions/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"permissions",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "RolePermission",
+			"item": [
+				{
+					"name": "Asignar un Permiso a un Rol",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MzEzNjYxLCJleHAiOjE3NDQ0MDAwNjF9.1E--pS-dPIotda4smiVyoBRCIbQdfD4IqoiOatdwatg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"roleId\": 1,\r\n  \"permissionId\": 1\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/role-permissions",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"role-permissions"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "obtener permisos de un rol",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MzEzNjYxLCJleHAiOjE3NDQ0MDAwNjF9.1E--pS-dPIotda4smiVyoBRCIbQdfD4IqoiOatdwatg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/role-permissions/role/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"role-permissions",
+								"role",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "eliminar un RolePermission",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0MzEzNjYxLCJleHAiOjE3NDQ0MDAwNjF9.1E--pS-dPIotda4smiVyoBRCIbQdfD4IqoiOatdwatg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/role-permissions/5",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"role-permissions",
+								"5"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Posts",
+			"item": [
+				{
+					"name": "Crear Post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzI4Mzc1LCJleHAiOjE3NDQ4MTQ3NzV9.SM_bbQ8VR0Pq64M1Jr1-VnRJ27wYoZTm-SAm7ZtkANE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"Guía de iniciación a Spring Boot\",\r\n  \"content\": \"<p>Este post contiene una introducción a <strong>Spring Boot</strong>.</p>\",\r\n  \"tags\": [\"spring\", \"java\", \"backend\"],\r\n  \"profileId\": 2,\r\n  \"communityId\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/posts",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"posts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "actualizar un post existente",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzI4Mzc1LCJleHAiOjE3NDQ4MTQ3NzV9.SM_bbQ8VR0Pq64M1Jr1-VnRJ27wYoZTm-SAm7ZtkANE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"Guía avanzada de Spring Boot\",\r\n  \"content\": \"<p>Contenido actualizado con nuevos ejemplos.</p>\",\r\n  \"tags\": [\"spring\", \"backend\", \"avance\"],\r\n  \"profileId\": 1,\r\n  \"communityId\": 2\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/posts/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"posts",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post por ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ4NDYwODU1LCJleHAiOjE3NDg1NDcyNTV9.E2GU7QgUXizmvZ68c80vd-4m_3cnKsipeSmcl1vC3CU",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/posts/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"posts",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "posts de la comunidad",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzI4Mzc1LCJleHAiOjE3NDQ4MTQ3NzV9.SM_bbQ8VR0Pq64M1Jr1-VnRJ27wYoZTm-SAm7ZtkANE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/posts/community/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"posts",
+								"community",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "posts del perfil de comunidad",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzI4Mzc1LCJleHAiOjE3NDQ4MTQ3NzV9.SM_bbQ8VR0Pq64M1Jr1-VnRJ27wYoZTm-SAm7ZtkANE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/posts/profile/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"posts",
+								"profile",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Elimina el post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzI4Mzc1LCJleHAiOjE3NDQ4MTQ3NzV9.SM_bbQ8VR0Pq64M1Jr1-VnRJ27wYoZTm-SAm7ZtkANE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/posts/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"posts",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "PostComment",
+			"item": [
+				{
+					"name": "Crear comentario",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzI4Mzc1LCJleHAiOjE3NDQ4MTQ3NzV9.SM_bbQ8VR0Pq64M1Jr1-VnRJ27wYoZTm-SAm7ZtkANE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"content\": \"¡Gran publicación! Me encantó el tema.\",\r\n  \"postId\": 2,\r\n  \"profileId\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/comments",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar comentario",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzI4Mzc1LCJleHAiOjE3NDQ4MTQ3NzV9.SM_bbQ8VR0Pq64M1Jr1-VnRJ27wYoZTm-SAm7ZtkANE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"content\": \"Este es el nuevo comentario\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/comments/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"comments",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "comentarios de un post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzI4Mzc1LCJleHAiOjE3NDQ4MTQ3NzV9.SM_bbQ8VR0Pq64M1Jr1-VnRJ27wYoZTm-SAm7ZtkANE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/comments/post/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"comments",
+								"post",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar un comentario",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzI4Mzc1LCJleHAiOjE3NDQ4MTQ3NzV9.SM_bbQ8VR0Pq64M1Jr1-VnRJ27wYoZTm-SAm7ZtkANE",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/comments/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"comments",
+								"3"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Like",
+			"item": [
+				{
+					"name": "Hacer like",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzQzOTkzLCJleHAiOjE3NDQ4MzAzOTN9.efMX-2mQvZ5EGfCZuaijxyq4CJaYynIkHWbnYJK8E4U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/likes/4/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"likes",
+								"4",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Quitar like",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzQzOTkzLCJleHAiOjE3NDQ4MzAzOTN9.efMX-2mQvZ5EGfCZuaijxyq4CJaYynIkHWbnYJK8E4U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/likes/4/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"likes",
+								"4",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Contar like",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzQzOTkzLCJleHAiOjE3NDQ4MzAzOTN9.efMX-2mQvZ5EGfCZuaijxyq4CJaYynIkHWbnYJK8E4U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/likes/4/count",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"likes",
+								"4",
+								"count"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verificar si un perfil ha dado \"like\"",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzQzOTkzLCJleHAiOjE3NDQ4MzAzOTN9.efMX-2mQvZ5EGfCZuaijxyq4CJaYynIkHWbnYJK8E4U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/likes/4/liked-by/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"likes",
+								"4",
+								"liked-by",
+								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ProfileComment",
+			"item": [
+				{
+					"name": "Crear comentario de perfil",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzQzOTkzLCJleHAiOjE3NDQ4MzAzOTN9.efMX-2mQvZ5EGfCZuaijxyq4CJaYynIkHWbnYJK8E4U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"content\": \"¡Hola! Este es un comentario en tu perfil.\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/profile-comments/2/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"profile-comments",
+								"2",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar comentario de perfil",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzQzOTkzLCJleHAiOjE3NDQ4MzAzOTN9.efMX-2mQvZ5EGfCZuaijxyq4CJaYynIkHWbnYJK8E4U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"content\": \"He editado mi comentario del perfil.\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/profile-comments/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"profile-comments",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener comentarios dirigidos a un perfil",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzQzOTkzLCJleHAiOjE3NDQ4MzAzOTN9.efMX-2mQvZ5EGfCZuaijxyq4CJaYynIkHWbnYJK8E4U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/profile-comments/target/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"profile-comments",
+								"target",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar comentario de perfil",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0NzQzOTkzLCJleHAiOjE3NDQ4MzAzOTN9.efMX-2mQvZ5EGfCZuaijxyq4CJaYynIkHWbnYJK8E4U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/profile-comments/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"profile-comments",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "notificación",
+			"item": [
+				{
+					"name": "Crear notificación",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0ODI2NTQwLCJleHAiOjE3NDQ5MTI5NDB9.icXOv8NTfy_dhDSWuWPuNxUSGmumTsWctQOn364AgF8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"message\": \"¡Tienes un nuevo comentario!\",\r\n  \"type\": \"FOLLOW\",\r\n  \"receiverProfileId\": 2,\r\n  \"senderProfileId\": 2\r\n}\r\n\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/notifications",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"notifications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear notificación sistema",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0ODI5Mzc5LCJleHAiOjE3NDQ5MTU3Nzl9.a9Zh0eta4yffy6PdIGkiDkFoPsQkv5CQsqxwR8Nxsqk",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"message\": \"Tu perfil ha sido aprobado.\",\r\n  \"type\": \"SYSTEM\",\r\n  \"receiverProfileId\": 2\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/notifications",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"notifications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener todas las notificaciones de un perfil",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0ODI5Mzc5LCJleHAiOjE3NDQ5MTU3Nzl9.a9Zh0eta4yffy6PdIGkiDkFoPsQkv5CQsqxwR8Nxsqk",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/notifications/profile/2",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"profile",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Marcar una notificación como leída",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0ODI5Mzc5LCJleHAiOjE3NDQ5MTU3Nzl9.a9Zh0eta4yffy6PdIGkiDkFoPsQkv5CQsqxwR8Nxsqk",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/v1/notifications/2/read",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"2",
+								"read"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Contar notificaciones no leídas",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0ODI5Mzc5LCJleHAiOjE3NDQ5MTU3Nzl9.a9Zh0eta4yffy6PdIGkiDkFoPsQkv5CQsqxwR8Nxsqk",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/notifications/profile/2/unread/count",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"profile",
+								"2",
+								"unread",
+								"count"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar una notificación",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhbHZhcm8zQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQ0ODI5Mzc5LCJleHAiOjE3NDQ5MTU3Nzl9.a9Zh0eta4yffy6PdIGkiDkFoPsQkv5CQsqxwR8Nxsqk",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/v1/notifications/3",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"v1",
+								"notifications",
+								"3"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
