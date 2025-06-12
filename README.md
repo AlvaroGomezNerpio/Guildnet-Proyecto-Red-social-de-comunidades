@@ -133,6 +133,5 @@ El proyecto cumple los objetivos planteados, con una plataforma funcional, segur
 ### Vías futuras
 
 * Moderación automática mediante bot contra contenido inadecuado (insultos, lenguaje ofensivo, etc.).
-* Integración de subida de multimedia en chat.
 * Sistema de recompensas/gamificación.
 * Aplicación móvil nativa.
