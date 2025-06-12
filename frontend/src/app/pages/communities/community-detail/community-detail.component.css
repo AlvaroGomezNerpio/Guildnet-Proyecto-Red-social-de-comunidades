@@ -5,6 +5,14 @@
   margin: 0 auto;
 }
 
+::ng-deep .quill-content {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+}
+
 ::ng-deep .accordion-button {
   background-color: #f8f9fa;
 }
