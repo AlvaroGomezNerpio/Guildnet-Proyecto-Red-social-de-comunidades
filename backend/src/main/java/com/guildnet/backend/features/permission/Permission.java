@@ -1,6 +1,6 @@
 package com.guildnet.backend.features.permission;
 
-import com.guildnet.backend.features.rolePermission.RolePermission;
+import com.guildnet.backend.features.role.RolePermission;
 import jakarta.persistence.*;
 import lombok.*;
 

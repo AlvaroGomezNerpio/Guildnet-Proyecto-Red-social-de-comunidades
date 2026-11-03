@@ -3,7 +3,7 @@ package com.guildnet.backend.features.notification;
 import com.guildnet.backend.common.exception.ForbiddenException;
 import com.guildnet.backend.common.exception.NotFoundException;
 import com.guildnet.backend.common.mapper.DtoMapper;
-import com.guildnet.backend.features.communityProfile.CommunityProfile;
+import com.guildnet.backend.features.profile.CommunityProfile;
 import com.guildnet.backend.features.notification.dto.NotificationDTO;
 import com.guildnet.backend.features.user.User;
 import com.guildnet.backend.security.AccessGuard;

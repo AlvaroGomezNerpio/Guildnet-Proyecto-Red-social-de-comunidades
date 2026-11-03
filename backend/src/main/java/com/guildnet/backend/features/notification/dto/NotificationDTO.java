@@ -1,6 +1,6 @@
 package com.guildnet.backend.features.notification.dto;
 
-import com.guildnet.backend.features.communityProfile.dto.CommunityProfileDTO;
+import com.guildnet.backend.features.profile.dto.CommunityProfileDTO;
 import com.guildnet.backend.features.notification.NotificationType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

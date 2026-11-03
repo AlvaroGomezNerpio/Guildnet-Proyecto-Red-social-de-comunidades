@@ -3,7 +3,7 @@ package com.guildnet.backend.features.post;
 import com.guildnet.backend.common.exception.NotFoundException;
 import com.guildnet.backend.common.html.HtmlSanitizer;
 import com.guildnet.backend.common.mapper.DtoMapper;
-import com.guildnet.backend.features.communityProfile.CommunityProfile;
+import com.guildnet.backend.features.profile.CommunityProfile;
 import com.guildnet.backend.features.permission.PermissionType;
 import com.guildnet.backend.features.post.dto.PostCreateDTO;
 import com.guildnet.backend.features.post.dto.PostDTO;

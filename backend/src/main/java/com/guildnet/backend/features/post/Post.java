@@ -1,9 +1,9 @@
 package com.guildnet.backend.features.post;
 
 import com.guildnet.backend.features.community.Community;
-import com.guildnet.backend.features.communityProfile.CommunityProfile;
+import com.guildnet.backend.features.profile.CommunityProfile;
 import com.guildnet.backend.features.like.Like;
-import com.guildnet.backend.features.postComment.PostComment;
+import com.guildnet.backend.features.postcomment.PostComment;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

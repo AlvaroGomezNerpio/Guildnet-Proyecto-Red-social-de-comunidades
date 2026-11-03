@@ -1,6 +1,6 @@
 package com.guildnet.backend.features.post.dto;
 
-import com.guildnet.backend.features.communityProfile.dto.CommunityProfileDTO;
+import com.guildnet.backend.features.profile.dto.CommunityProfileDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

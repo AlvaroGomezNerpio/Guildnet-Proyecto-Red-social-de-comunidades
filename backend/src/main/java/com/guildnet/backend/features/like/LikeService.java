@@ -2,7 +2,7 @@ package com.guildnet.backend.features.like;
 
 import com.guildnet.backend.common.exception.BadRequestException;
 import com.guildnet.backend.common.exception.NotFoundException;
-import com.guildnet.backend.features.communityProfile.CommunityProfile;
+import com.guildnet.backend.features.profile.CommunityProfile;
 import com.guildnet.backend.features.notification.NotificationService;
 import com.guildnet.backend.features.notification.NotificationType;
 import com.guildnet.backend.features.post.Post;

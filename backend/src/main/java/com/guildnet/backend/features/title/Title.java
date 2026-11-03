@@ -1,7 +1,7 @@
 package com.guildnet.backend.features.title;
 
 import com.guildnet.backend.features.community.Community;
-import com.guildnet.backend.features.communityProfile.CommunityProfile;
+import com.guildnet.backend.features.profile.CommunityProfile;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -2,12 +2,12 @@ package com.guildnet.backend.common.mapper;
 
 import com.guildnet.backend.features.community.Community;
 import com.guildnet.backend.features.community.dto.CommunityResponseDTO;
-import com.guildnet.backend.features.communityProfile.CommunityProfile;
-import com.guildnet.backend.features.communityProfile.dto.CommunityProfileDTO;
+import com.guildnet.backend.features.profile.CommunityProfile;
+import com.guildnet.backend.features.profile.dto.CommunityProfileDTO;
 import com.guildnet.backend.features.post.Post;
 import com.guildnet.backend.features.post.dto.PostDTO;
-import com.guildnet.backend.features.postComment.PostComment;
-import com.guildnet.backend.features.postComment.dto.PostCommentDTO;
+import com.guildnet.backend.features.postcomment.PostComment;
+import com.guildnet.backend.features.postcomment.dto.PostCommentDTO;
 import com.guildnet.backend.features.role.Role;
 import com.guildnet.backend.features.role.dto.RoleDTO;
 import com.guildnet.backend.features.title.Title;

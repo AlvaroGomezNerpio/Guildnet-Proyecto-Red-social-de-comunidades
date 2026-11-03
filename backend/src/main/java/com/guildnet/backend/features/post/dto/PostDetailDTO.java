@@ -1,7 +1,7 @@
 package com.guildnet.backend.features.post.dto;
 
-import com.guildnet.backend.features.communityProfile.dto.CommunityProfileDTO;
-import com.guildnet.backend.features.postComment.dto.PostCommentDTO;
+import com.guildnet.backend.features.profile.dto.CommunityProfileDTO;
+import com.guildnet.backend.features.postcomment.dto.PostCommentDTO;
 
 import java.time.LocalDateTime;
 import java.util.List;

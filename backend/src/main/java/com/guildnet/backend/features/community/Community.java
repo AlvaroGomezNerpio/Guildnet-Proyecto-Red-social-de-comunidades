@@ -1,7 +1,7 @@
 package com.guildnet.backend.features.community;
 
-import com.guildnet.backend.features.chatMessage.ChatMessage;
-import com.guildnet.backend.features.communityProfile.CommunityProfile;
+import com.guildnet.backend.features.chat.ChatMessage;
+import com.guildnet.backend.features.profile.CommunityProfile;
 import com.guildnet.backend.features.post.Post;
 import com.guildnet.backend.features.role.Role;
 import com.guildnet.backend.features.title.Title;

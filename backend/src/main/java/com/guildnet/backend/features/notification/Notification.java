@@ -1,6 +1,6 @@
 package com.guildnet.backend.features.notification;
 
-import com.guildnet.backend.features.communityProfile.CommunityProfile;
+import com.guildnet.backend.features.profile.CommunityProfile;
 import com.guildnet.backend.features.user.User;
 import jakarta.persistence.*;
 import lombok.*;

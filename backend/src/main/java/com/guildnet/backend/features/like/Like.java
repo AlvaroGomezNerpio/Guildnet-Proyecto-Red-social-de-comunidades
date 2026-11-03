@@ -1,6 +1,6 @@
 package com.guildnet.backend.features.like;
 
-import com.guildnet.backend.features.communityProfile.CommunityProfile;
+import com.guildnet.backend.features.profile.CommunityProfile;
 import com.guildnet.backend.features.post.Post;
 import jakarta.persistence.*;
 import lombok.*;
