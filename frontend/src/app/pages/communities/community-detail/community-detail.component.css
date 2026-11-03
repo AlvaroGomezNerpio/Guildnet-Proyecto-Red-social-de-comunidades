@@ -18,3 +18,12 @@
 }
 
 
+
+.post-card {
+  cursor: pointer;
+}
+
+.community-banner {
+  max-height: 280px;
+  object-fit: cover;
+}

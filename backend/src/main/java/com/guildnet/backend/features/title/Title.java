@@ -1,6 +1,6 @@
 package com.guildnet.backend.features.title;
 
-import com.guildnet.backend.features.Community.Community;
+import com.guildnet.backend.features.community.Community;
 import com.guildnet.backend.features.communityProfile.CommunityProfile;
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,6 +26,7 @@ public class Title {
 
     private String backgroundColor;
 
+    @Builder.Default
     @ManyToMany(mappedBy = "titles")
     private List<CommunityProfile> profiles = new ArrayList<>();
 

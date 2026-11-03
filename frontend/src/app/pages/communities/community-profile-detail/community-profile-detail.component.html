@@ -1,255 +1,231 @@
 <div class="container mt-5 text-center">
-  <!-- Imagen de perfil -->
-  <div class="mb-4">
-    <img [src]="profile?.profileImage || 'assets/default-avatar.png'" alt="Imagen de perfil"
-      class="rounded-circle shadow" width="150" height="150" />
+  @if (successMessage) {
+    <div class="alert alert-success">{{ successMessage }}</div>
+  }
+  @if (errorMessage) {
+    <div class="alert alert-danger">{{ errorMessage }}</div>
+  }
+
+  <div class="text-start mb-3">
+    <button class="btn btn-link px-0" (click)="goToCommunity()">
+      <i class="bi bi-arrow-left me-1"></i>Volver a la comunidad
+    </button>
   </div>
 
-  <!-- Nombre de usuario -->
+  <!-- Cabecera del perfil -->
+  <div class="mb-4">
+    <img [src]="profile?.profileImage || 'default-avatar.svg'" alt="Foto de perfil" class="rounded-circle shadow" width="150" height="150" />
+  </div>
+
   <h4 class="mb-2">{{ profile?.username }}</h4>
 
-  <!-- Rol -->
-  <div *ngIf="profile?.rol as rol" class="mb-2">
-    <span class="badge px-3 py-2" [ngStyle]="{
-        'background-color': rol.backgroundColor,
-        color: rol.textColor
-      }">
-      {{ rol.name }}
-    </span>
-  </div>
+  @if (profile?.rol; as rol) {
+    <div class="mb-2">
+      <span class="badge px-3 py-2" [style.background-color]="rol.backgroundColor" [style.color]="rol.textColor">
+        {{ rol.name }}
+      </span>
+    </div>
+  }
 
-  <!-- Títulos -->
-  <div *ngIf="profile?.titles?.length" class="mb-4">
-    <span class="badge me-2 px-3 py-2" *ngFor="let title of profile?.titles" [ngStyle]="{
-        'background-color': title.backgroundColor,
-        color: title.textColor
-      }">
-      {{ title.title }}
-    </span>
-  </div>
+  @if (profile?.titles?.length) {
+    <div class="mb-4">
+      @for (title of profile!.titles; track title.id) {
+        <span class="badge me-2 px-3 py-2" [style.background-color]="title.backgroundColor" [style.color]="title.textColor">
+          @if (profile!.featuredTitle?.id === title.id) {
+            <i class="bi bi-star-fill me-1"></i>
+          }
+          {{ title.title }}
+        </span>
+      }
+    </div>
+  }
 
-  <!-- Botones de gestión -->
+  <!-- Acciones -->
   <div class="mb-4">
-    <div *ngIf="isOwnProfile" class="d-inline-block">
-      <button type="button" class="btn btn-outline-primary me-2" data-bs-toggle="modal"
-        data-bs-target="#editProfileModal">
+    @if (isOwnProfile) {
+      <button type="button" class="btn btn-outline-primary me-2 mb-2" data-bs-toggle="modal" data-bs-target="#editProfileModal">
         Editar perfil
       </button>
-    </div>
-    <div *ngIf="canManageTitles()" class="d-inline-block">
-      <button class="btn btn-outline-success me-2" data-bs-toggle="modal" data-bs-target="#manageTitlesModal">
+      <button type="button" class="btn btn-outline-danger me-2 mb-2" (click)="leaveCommunity()">
+        Abandonar comunidad
+      </button>
+    }
+    @if (canManageTitles) {
+      <button class="btn btn-outline-success me-2 mb-2" data-bs-toggle="modal" data-bs-target="#manageTitlesModal">
         Gestionar títulos
       </button>
-    </div>
-    <div *ngIf="canManageRoles()" class="d-inline-block">
-      <button type="button" class="btn btn-outline-secondary me-2" data-bs-toggle="modal"
-        data-bs-target="#assignRoleModal">
-        Asignar nuevo rol
+    }
+    @if (canManageRoles) {
+      <button type="button" class="btn btn-outline-secondary me-2 mb-2" data-bs-toggle="modal" data-bs-target="#assignRoleModal">
+        Gestionar rol
       </button>
-    </div>
-    <div *ngIf="canBanUser()" class="d-inline-block">
-      <button type="button" class="btn btn-outline-danger me-2" (click)="removeUserFromCommunity()">
-        Eliminar de la comunidad
+    }
+    @if (canBanUser) {
+      <button type="button" class="btn btn-outline-danger me-2 mb-2" (click)="removeUserFromCommunity()">
+        Expulsar de la comunidad
       </button>
-    </div>
+    }
   </div>
 
-  <!-- Botón descripción -->
+  <!-- Descripción -->
   <div class="mb-4">
     <button class="btn btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#descriptionCollapse">
       Ver descripción
     </button>
   </div>
-
-  <!-- Descripción -->
   <div class="collapse mb-4" id="descriptionCollapse">
     <div class="card card-body text-start">
-      <div class="quill-content" [innerHTML]="
-          profile?.description ||
-          '<p class=\'text-muted\'>No hay descripción disponible.</p>'
-        "></div>
+      <div class="quill-content" [innerHTML]="profile?.description || '<p class=\'text-muted\'>No hay descripción disponible.</p>'"></div>
     </div>
   </div>
 
   <!-- Modal: editar perfil -->
-  <div *ngIf="isOwnProfile" class="modal fade" id="editProfileModal" tabindex="-1"
-    aria-labelledby="editProfileModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content shadow-lg">
-        <form [formGroup]="editForm" (ngSubmit)="onUpdateProfile()">
+  @if (isOwnProfile) {
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg text-start">
+          <form [formGroup]="editForm" (ngSubmit)="onUpdateProfile()">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editProfileModalLabel">Editar perfil</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label" for="profileUsername">Nombre en la comunidad</label>
+                <input id="profileUsername" type="text" class="form-control" formControlName="username" maxlength="50" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Descripción</label>
+                <quill-editor formControlName="description" [styles]="{ height: '150px' }"></quill-editor>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="profileImage">Cambiar imagen</label>
+                <input id="profileImage" type="file" class="form-control" accept="image/png, image/jpeg, image/gif, image/webp" (change)="onImageSelected($event)" />
+              </div>
+              @if (profile?.titles?.length) {
+                <div class="mb-3">
+                  <label class="form-label d-block">Título destacado</label>
+                  @for (title of profile!.titles; track title.id) {
+                    <button type="button" class="btn btn-sm me-2 mb-2"
+                      [class.btn-primary]="profile!.featuredTitle?.id === title.id"
+                      [class.btn-outline-primary]="profile!.featuredTitle?.id !== title.id"
+                      (click)="setFeaturedTitle(title.id)">
+                      {{ title.title }}
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+              <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid">Guardar cambios</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal: gestionar títulos -->
+  @if (canManageTitles) {
+    <div class="modal fade" id="manageTitlesModal" tabindex="-1" aria-labelledby="manageTitlesModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg text-start">
           <div class="modal-header">
-            <h5 class="modal-title" id="editProfileModalLabel">
-              Editar perfil
-            </h5>
+            <h5 class="modal-title" id="manageTitlesModalLabel">Gestionar títulos</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form (ngSubmit)="createTitle()" class="row g-3 align-items-end mb-4">
+              <div class="col-md-4">
+                <label class="form-label small" for="titleText">Título</label>
+                <input id="titleText" type="text" class="form-control" placeholder="Título" [(ngModel)]="titleText" name="titleText" maxlength="50" required />
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small" for="titleTextColor">Color texto</label>
+                <input id="titleTextColor" type="color" class="form-control form-control-color" [(ngModel)]="titleTextColor" name="textColor" />
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small" for="titleBgColor">Color fondo</label>
+                <input id="titleBgColor" type="color" class="form-control form-control-color" [(ngModel)]="titleBgColor" name="bgColor" />
+              </div>
+              <div class="col-md-4">
+                <button class="btn btn-success w-100" type="submit" [disabled]="!titleText.trim()">Crear y asignar</button>
+              </div>
+            </form>
+
+            @for (title of profile?.titles ?? []; track title.id) {
+              <div class="d-flex align-items-center justify-content-between bg-light p-2 rounded mb-2">
+                <span class="badge me-2 px-3 py-2" [style.background-color]="title.backgroundColor" [style.color]="title.textColor">
+                  {{ title.title }}
+                </span>
+                <div>
+                  <button class="btn btn-sm btn-outline-primary me-2" (click)="updateTitle(title)" title="Aplica el texto y los colores del formulario">
+                    Aplicar cambios
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteTitle(title.id)">Eliminar</button>
+                </div>
+              </div>
+            } @empty {
+              <p class="text-muted">Este perfil no tiene títulos.</p>
+            }
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal: asignar rol -->
+  @if (canManageRoles) {
+    <div class="modal fade" id="assignRoleModal" tabindex="-1" aria-labelledby="assignRoleModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content shadow-lg text-start">
+          <div class="modal-header">
+            <h5 class="modal-title" id="assignRoleModalLabel">Gestionar rol del perfil</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
             <div class="mb-3">
-              <label class="form-label">Nombre de usuario</label>
-              <input type="text" class="form-control" formControlName="username" />
+              <label for="roleSelect" class="form-label">Selecciona un nuevo rol:</label>
+              <select id="roleSelect" class="form-select" [(ngModel)]="selectedRoleId">
+                <option [ngValue]="null" disabled>Selecciona un rol</option>
+                @for (role of roles; track role.id) {
+                  <option [ngValue]="role.id">{{ role.name }}</option>
+                }
+              </select>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Descripción</label>
-              <quill-editor formControlName="description" [styles]="{ height: '150px' }"></quill-editor>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Cambiar imagen</label>
-              <input type="file" class="form-control" (change)="onImageSelected($event)" />
-            </div>
-            <div *ngIf="successMessage" class="alert alert-success mt-3">
-              {{ successMessage }}
-            </div>
-            <div *ngIf="errorMessage" class="alert alert-danger mt-3">
-              {{ errorMessage }}
-            </div>
+            @if (profile?.rol; as rol) {
+              <h6 class="mt-4">Rol actual</h6>
+              <p>{{ rol.name }}</p>
+              <button class="btn btn-sm btn-outline-danger" (click)="removeRoleFromProfile(rol.id)">Quitar rol actual</button>
+            } @else {
+              <div class="text-muted mt-3">Este perfil no tiene ningún rol asignado.</div>
+            }
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-              Cerrar
-            </button>
-            <button type="submit" class="btn btn-primary">
-              Guardar cambios
-            </button>
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <button class="btn btn-primary" (click)="assignRoleToProfile()" [disabled]="!selectedRoleId">Asignar</button>
           </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: gestionar títulos -->
-  <div *ngIf="canManageTitles" class="modal fade" id="manageTitlesModal" tabindex="-1"
-    aria-labelledby="manageTitlesModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content shadow-lg">
-        <div class="modal-header">
-          <h5 class="modal-title" id="manageTitlesModalLabel">
-            Gestionar títulos
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <!-- Crear nuevo título -->
-          <form (ngSubmit)="createTitle()" class="row g-3 align-items-end mb-4">
-            <div class="col-md-4">
-              <input type="text" class="form-control" placeholder="Título" [(ngModel)]="titleText" name="titleText"
-                required />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Color texto</label>
-              <input type="color" class="form-control form-control-color" [(ngModel)]="titleTextColor"
-                name="textColor" />
-            </div>
-            <div class="col-md-2">
-              <label class="form-label small">Color fondo</label>
-              <input type="color" class="form-control form-control-color" [(ngModel)]="titleBgColor" name="bgColor" />
-            </div>
-            <div class="col-md-2">
-              <button class="btn btn-success w-100" type="submit">Crear</button>
-            </div>
-          </form>
-
-          <!-- Lista de títulos -->
-          <div *ngIf="profile?.titles?.length">
-            <div *ngFor="let title of profile?.titles"
-              class="d-flex align-items-center justify-content-between bg-light p-2 rounded mb-2">
-              <span class="badge me-2 px-3 py-2" [ngStyle]="{
-                  'background-color': title.backgroundColor,
-                  color: title.textColor
-                }">
-                {{ title.title }}
-              </span>
-              <div>
-                <button class="btn btn-sm btn-outline-primary me-2" (click)="updateTitle(title)">
-                  Editar
-                </button>
-                <button class="btn btn-sm btn-outline-danger" (click)="deleteTitle(title.id)">
-                  Eliminar
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div *ngIf="successMessage" class="alert alert-success mt-3">
-            {{ successMessage }}
-          </div>
-          <div *ngIf="errorMessage" class="alert alert-danger mt-3">
-            {{ errorMessage }}
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">
-            Cerrar
-          </button>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Modal: asignar rol -->
-  <div *ngIf="canManageRoles" class="modal fade" id="assignRoleModal" tabindex="-1"
-    aria-labelledby="assignRoleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content shadow-lg">
-        <div class="modal-header">
-          <h5 class="modal-title" id="assignRoleModalLabel">
-            Gestionar rol del perfil
-          </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <!-- Selección de nuevo rol -->
-          <div class="mb-3">
-            <label for="roleSelect" class="form-label">Selecciona un nuevo rol:</label>
-            <select id="roleSelect" class="form-select" [(ngModel)]="selectedRoleId">
-              <option [ngValue]="null" disabled selected>
-                Selecciona un rol
-              </option>
-              <option *ngFor="let role of roles" [ngValue]="role.id">
-                {{ role.name }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Rol actual -->
-          <div *ngIf="profile?.rol">
-            <h6 class="mt-4">Rol actual</h6>
-            <p>{{ (profile?.rol)!.name }}</p>
-            <button class="btn btn-sm btn-outline-danger" (click)="removeRoleFromProfile((profile?.rol)!.id)">
-              Eliminar rol actual
-            </button>
-          </div>
-
-          <!-- Sin rol -->
-          <div *ngIf="!profile?.rol" class="text-muted mt-3">
-            Este perfil no tiene ningún rol asignado.
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">
-            Cerrar
-          </button>
-          <button class="btn btn-primary" (click)="assignRoleToProfile()" [disabled]="!selectedRoleId">
-            Asignar
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  }
 
   <hr class="my-5" />
 
-  <!-- Tabs publicaciones / comentarios -->
+  <!-- Pestañas publicaciones / comentarios -->
   <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button"
-        role="tab">
-        Publicaciones
+      <button class="nav-link active" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts" type="button" role="tab">
+        Publicaciones ({{ posts.length }})
       </button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="comments-tab" data-bs-toggle="tab" data-bs-target="#comments" type="button"
-        role="tab">
-        Comentarios
+      <button class="nav-link" id="comments-tab" data-bs-toggle="tab" data-bs-target="#comments" type="button" role="tab">
+        Comentarios ({{ comments.length }})
       </button>
     </li>
   </ul>
@@ -257,88 +233,77 @@
   <div class="tab-content">
     <!-- Publicaciones -->
     <div class="tab-pane fade show active" id="posts" role="tabpanel">
-      <div *ngIf="posts.length > 0; else noPosts">
-        <div *ngFor="let post of posts.slice().reverse()" class="card mb-3 text-start" style="cursor: pointer"
-          (click)="goToPostDetail(post.id)">
+      @for (post of posts; track post.id) {
+        <div class="card mb-3 text-start post-card" (click)="goToPostDetail(post.id)">
           <div class="card-body">
             <h5 class="card-title">{{ post.title }}</h5>
-            <div *ngIf="post.showContent" class="card card-body mb-2">
-              <div class="quill-content" [innerHTML]="post.content"></div>
-            </div>
+            @if (post.showContent) {
+              <div class="card card-body mb-2">
+                <div class="quill-content" [innerHTML]="post.content"></div>
+              </div>
+            }
             <div class="text-center">
-              <button class="btn btn-sm btn-outline-secondary mt-2"
-                (click)="toggleContent(post); $event.stopPropagation()">
-                {{ post.showContent ? "Ver menos" : "Ver más" }}
+              <button class="btn btn-sm btn-outline-secondary mt-2" (click)="toggleContent(post); $event.stopPropagation()">
+                {{ post.showContent ? 'Ver menos' : 'Ver más' }}
               </button>
             </div>
-            <div class="text-muted mt-2">
-              Etiquetas: {{ post.tags.join(", ") }}
-            </div>
+            @if (post.tags.length) {
+              <div class="text-muted mt-2">Etiquetas: {{ post.tags.join(', ') }}</div>
+            }
             <div class="text-end mt-1">
               <small class="text-muted">{{ post.likes }} 💙</small> |
-              <small class="text-muted">{{ post.coments }} 💬</small>
+              <small class="text-muted">{{ post.comments }} 💬</small>
             </div>
           </div>
         </div>
-      </div>
-      <ng-template #noPosts>
+      } @empty {
         <p>No hay publicaciones de este usuario aún.</p>
-      </ng-template>
+      }
     </div>
 
     <!-- Comentarios -->
     <div class="tab-pane fade" id="comments" role="tabpanel">
-      <form class="mb-4" *ngIf="myProfileId" (ngSubmit)="onSubmitComment()">
-        <div class="input-group">
-          <input type="text" class="form-control" [(ngModel)]="newComment" name="comment"
-            placeholder="Escribe un comentario..." />
-          <button class="btn btn-primary" type="submit">Enviar</button>
-        </div>
-      </form>
+      @if (myProfileId) {
+        <form class="mb-4" (ngSubmit)="onSubmitComment()">
+          <div class="input-group">
+            <input type="text" class="form-control" [(ngModel)]="newComment" name="comment" maxlength="2000" placeholder="Escribe un comentario..." />
+            <button class="btn btn-primary" type="submit" [disabled]="!newComment.trim()">Enviar</button>
+          </div>
+        </form>
+      }
 
-      <div *ngIf="comments.length > 0; else noComments">
-        <div *ngFor="let comment of comments" class="card mb-3 text-start">
+      @for (comment of comments; track comment.id) {
+        <div class="card mb-3 text-start">
           <div class="card-body d-flex">
-            <img [src]="
-                comment.authorProfile.profileImage ||
-                'assets/default-avatar.png'
-              " class="rounded-circle me-3" width="50" height="50" alt="avatar" />
+            <img [src]="comment.authorProfile.profileImage || 'default-avatar.svg'" class="rounded-circle me-3" width="50" height="50" alt="" />
             <div class="w-100">
-              <h6 class="mb-1">{{ comment.authorProfile.username }}</h6>
-
-              <!-- Edición -->
-              <div *ngIf="editingCommentId === comment.id">
-                <textarea [(ngModel)]="editingContent" class="form-control my-2" rows="3"></textarea>
-                <button class="btn btn-sm btn-success me-2" (click)="updateComment(comment.id)">
-                  Guardar
-                </button>
-                <button class="btn btn-sm btn-secondary" (click)="cancelEditing()">
-                  Cancelar
-                </button>
-              </div>
-
-              <!-- Vista -->
-              <div *ngIf="editingCommentId !== comment.id">
-                <p class="mb-1">{{ comment.content }}</p>
-                <div class="mt-2" *ngIf="canEdit(comment) || canDelete(comment)">
-                  <button *ngIf="canEdit(comment)" class="btn btn-sm btn-outline-secondary me-2"
-                    (click)="startEditing(comment)">
-                    Editar
-                  </button>
-                  <button *ngIf="canDelete(comment)" class="btn btn-sm btn-outline-danger"
-                    (click)="deleteComment(comment.id)">
-                    Eliminar
-                  </button>
+              <h6 class="mb-1">
+                {{ comment.authorProfile.username }}
+                @if (comment.createdAt) {
+                  <small class="text-muted fw-normal ms-2">{{ comment.createdAt | date: 'short' }}</small>
+                }
+              </h6>
+              @if (editingCommentId === comment.id) {
+                <textarea [(ngModel)]="editingContent" class="form-control my-2" rows="3" maxlength="2000"></textarea>
+                <button class="btn btn-sm btn-success me-2" (click)="updateComment(comment.id)">Guardar</button>
+                <button class="btn btn-sm btn-secondary" (click)="cancelEditing()">Cancelar</button>
+              } @else {
+                <p class="mb-1 comment-text">{{ comment.content }}</p>
+                <div class="mt-2">
+                  @if (canEdit(comment)) {
+                    <button class="btn btn-sm btn-outline-secondary me-2" (click)="startEditing(comment)">Editar</button>
+                  }
+                  @if (canDelete(comment)) {
+                    <button class="btn btn-sm btn-outline-danger" (click)="deleteComment(comment.id)">Eliminar</button>
+                  }
                 </div>
-              </div>
+              }
             </div>
           </div>
         </div>
-      </div>
-
-      <ng-template #noComments>
+      } @empty {
         <p>Este perfil no tiene comentarios aún.</p>
-      </ng-template>
+      }
     </div>
   </div>
 </div>

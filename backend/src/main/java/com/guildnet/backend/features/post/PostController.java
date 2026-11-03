@@ -4,9 +4,11 @@ import com.guildnet.backend.features.post.dto.PostCreateDTO;
 import com.guildnet.backend.features.post.dto.PostDTO;
 import com.guildnet.backend.features.post.dto.PostDetailDTO;
 import com.guildnet.backend.features.post.dto.PostUpdateDTO;
+import com.guildnet.backend.features.user.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,57 +21,43 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public ResponseEntity<PostDTO> createPost(@RequestBody PostCreateDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(postService.createPost(dto));
+    @ResponseStatus(HttpStatus.CREATED)
+    public PostDTO create(@RequestBody @Valid PostCreateDTO dto, @AuthenticationPrincipal User user) {
+        return postService.create(dto, user);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PostDTO> updatePost(@PathVariable Long id, @RequestBody PostCreateDTO dto) {
-        return ResponseEntity.ok(postService.updatePost(id, dto));
+    public PostDTO update(@PathVariable Long id, @RequestBody @Valid PostUpdateDTO dto, @AuthenticationPrincipal User user) {
+        return postService.update(id, dto, user);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
-        postService.deletePost(id);
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        postService.delete(id, user);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PostDetailDTO> getPostById(@PathVariable Long id) {
-        return ResponseEntity.ok(postService.getPostById(id));
+    public PostDetailDTO getById(@PathVariable Long id) {
+        return postService.getById(id);
     }
 
     @GetMapping("/profile/{profileId}")
-    public ResponseEntity<List<PostDTO>> getPostsByProfile(@PathVariable Long profileId) {
-        return ResponseEntity.ok(postService.getPostsByProfileId(profileId));
+    public List<PostDTO> getByProfile(@PathVariable Long profileId) {
+        return postService.getByProfile(profileId);
     }
 
     @GetMapping("/community/{communityId}")
-    public ResponseEntity<List<PostDTO>> getPostsByCommunity(@PathVariable Long communityId) {
-        return ResponseEntity.ok(postService.getPostsByCommunityId(communityId));
+    public List<PostDTO> getByCommunity(@PathVariable Long communityId) {
+        return postService.getByCommunity(communityId);
     }
 
     @GetMapping("/search/{communityId}")
-    public ResponseEntity<List<PostDTO>> searchPosts(
+    public List<PostDTO> search(
             @PathVariable Long communityId,
             @RequestParam(required = false) String title,
             @RequestParam(required = false) List<String> tag
     ) {
-        List<PostDTO> results;
-
-        if (title != null && tag != null && !tag.isEmpty()) {
-            results = postService.searchByTitleAndTagsInCommunity(communityId, title, tag);
-        } else if (title != null) {
-            results = postService.searchPostsByTitleInCommunity(communityId, title);
-        } else if (tag != null && !tag.isEmpty()) {
-            results = postService.searchByTagsInCommunity(communityId, tag);
-        } else {
-            results = postService.getAllPostsInCommunity(communityId);
-        }
-
-        return ResponseEntity.ok(results);
+        return postService.search(communityId, title, tag);
     }
-
-
 }
-

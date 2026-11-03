@@ -1,14 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PostService } from '../../../services/post.service';
 import { PostCreateDTO } from '../../../models/post/PostCreateDTO';
-import { CommunityProfileService } from '../../../services/community-profile.service';
+import { errorMessage } from '../../../core/http-error';
 
 @Component({
   selector: 'app-post-create',
   standalone: false,
   templateUrl: './post-create.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./post-create.component.css']
 })
 export class PostCreateComponent implements OnInit {
@@ -23,8 +24,7 @@ export class PostCreateComponent implements OnInit {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private postService: PostService,
-    private profileService: CommunityProfileService
+    private postService: PostService
   ) {}
 
   ngOnInit(): void {
@@ -40,7 +40,7 @@ export class PostCreateComponent implements OnInit {
   this.profileId = +profileIdParam;
 
   this.postForm = this.fb.group({
-    title: ['', Validators.required],
+    title: ['', [Validators.required, Validators.maxLength(200)]],
     content: ['', Validators.required],
     tags: ['']
   });
@@ -54,8 +54,10 @@ export class PostCreateComponent implements OnInit {
     const dto: PostCreateDTO = {
       title: this.postForm.value.title,
       content: this.postForm.value.content,
-      tags: this.postForm.value.tags.split(',').map((t: string) => t.trim()),
-      profileId: this.profileId,
+      tags: (this.postForm.value.tags as string)
+        .split(',')
+        .map((t) => t.trim())
+        .filter((t) => t.length > 0),
       communityId: this.communityId
     };
 
@@ -63,9 +65,9 @@ export class PostCreateComponent implements OnInit {
       next: () => {
         this.router.navigate(['/communities', this.communityId]);
       },
-      error: () => {
+      error: (err) => {
         this.submitting = false;
-        this.errorMessage = 'No se pudo crear el post.';
+        this.errorMessage = errorMessage(err, 'No se pudo crear el post.');
       }
     });
   }

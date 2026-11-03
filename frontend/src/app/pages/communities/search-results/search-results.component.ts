@@ -1,15 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CommunityService } from '../../../services/community.service';
 import { CommunityProfileService } from '../../../services/community-profile.service';
+import { AuthService } from '../../../services/auth.service';
+import { errorMessage } from '../../../core/http-error';
 import { CommunityResponseDTO } from '../../../models/community/CommunityResponse.dto';
 
 @Component({
   selector: 'app-search-results',
   standalone: false,
   templateUrl: './search-results.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./search-results.component.css']
 })
 export class SearchResultsComponent implements OnInit {
@@ -27,11 +30,12 @@ export class SearchResultsComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private communityService: CommunityService,
-    private communityProfileService: CommunityProfileService
+    private communityProfileService: CommunityProfileService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
-    this.isLoggedIn = !!localStorage.getItem('token');
+    this.isLoggedIn = this.authService.isAuthenticated();
 
     if (this.isLoggedIn) {
       this.communityService.getSubscribedCommunities().subscribe({
@@ -79,7 +83,7 @@ export class SearchResultsComponent implements OnInit {
       next: () => {
         this.router.navigate(['/communities', communityId]);
       },
-      error: () => alert('No se pudo unir a la comunidad.')
+      error: (err) => (this.error = errorMessage(err, 'No se pudo unir a la comunidad.'))
     });
   }
 

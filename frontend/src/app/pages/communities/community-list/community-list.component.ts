@@ -1,15 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { CommunityService } from '../../../services/community.service';
 import { CommunityResponseDTO } from '../../../models/community/CommunityResponse.dto';
 import { CommunityProfileService } from '../../../services/community-profile.service';
+import { AuthService } from '../../../services/auth.service';
+import { errorMessage } from '../../../core/http-error';
 
 @Component({
   selector: 'app-community-list',
   standalone: false,
   templateUrl: './community-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./community-list.component.css']
 })
 export class CommunityListComponent implements OnInit {
@@ -29,12 +32,13 @@ export class CommunityListComponent implements OnInit {
   constructor(
     private communityService: CommunityService,
     private communityProfileService: CommunityProfileService,
+    private authService: AuthService,
     private router: Router,
     private fb: FormBuilder
   ) {}
 
   ngOnInit(): void {
-    this.isLoggedIn = !!localStorage.getItem('token');
+    this.isLoggedIn = this.authService.isAuthenticated();
 
     this.searchForm = this.fb.group({
       name: [''],
@@ -92,7 +96,7 @@ export class CommunityListComponent implements OnInit {
       next: () => {
         this.router.navigate(['/communities', communityId]); // redirige tras unirse
       },
-      error: () => alert('No se pudo unir a la comunidad.')
+      error: (err) => (this.error = errorMessage(err, 'No se pudo unir a la comunidad.'))
     });
   }
 

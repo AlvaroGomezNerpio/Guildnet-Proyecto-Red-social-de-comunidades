@@ -1,6 +1,6 @@
 package com.guildnet.backend.features.chatMessage;
 
-import com.guildnet.backend.features.Community.Community;
+import com.guildnet.backend.features.community.Community;
 import com.guildnet.backend.features.communityProfile.CommunityProfile;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "chat_messages")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -40,5 +41,3 @@ public class ChatMessage {
         }
     }
 }
-
-

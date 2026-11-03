@@ -5,17 +5,17 @@ import com.guildnet.backend.features.communityProfile.dto.CreateCommunityProfile
 import com.guildnet.backend.features.communityProfile.dto.UpdateCommunityProfileRequest;
 import com.guildnet.backend.features.role.dto.RoleDTO;
 import com.guildnet.backend.features.user.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/v1/profiles")
 @RequiredArgsConstructor
@@ -24,119 +24,86 @@ public class CommunityProfileController {
     private final CommunityProfileService profileService;
 
     @GetMapping("/community/{communityId}")
-    public ResponseEntity<List<CommunityProfileDTO>> getProfilesByCommunity(@PathVariable Long communityId) {
-        return ResponseEntity.ok(profileService.getProfilesByCommunity(communityId));
+    public List<CommunityProfileDTO> getByCommunity(@PathVariable Long communityId) {
+        return profileService.getByCommunity(communityId);
     }
 
     @GetMapping("/{profileId}")
-    public ResponseEntity<CommunityProfileDTO> getProfileById(@PathVariable Long profileId) {
-        CommunityProfileDTO profile = profileService.getProfileDtoById(profileId);
-        return ResponseEntity.ok(profile);
+    public CommunityProfileDTO getById(@PathVariable Long profileId) {
+        return profileService.getById(profileId);
     }
 
     @GetMapping("/me/community/{communityId}")
-    public ResponseEntity<CommunityProfileDTO> getMyProfileInCommunity(
-            @PathVariable Long communityId,
-            Authentication authentication
-    ) {
-        User user = (User) authentication.getPrincipal();
-        return profileService.getProfile(user.getId(), communityId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<CommunityProfileDTO> getMine(@PathVariable Long communityId, @AuthenticationPrincipal User user) {
+        return ResponseEntity.of(profileService.getMine(user, communityId));
     }
 
+    /** Unirse a una comunidad indicando nombre y descripción. */
     @PostMapping("/{communityId}/create")
-    public ResponseEntity<CommunityProfileDTO> createProfile(
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommunityProfileDTO join(
             @PathVariable Long communityId,
-            @RequestBody CreateCommunityProfileRequest request,
-            Authentication authentication
+            @RequestBody @Valid CreateCommunityProfileRequest request,
+            @AuthenticationPrincipal User user
     ) {
-        User user = (User) authentication.getPrincipal();
-        CommunityProfileDTO profile = profileService.createProfile(request, user.getId(), communityId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(profile);
+        return profileService.join(user, communityId, request);
     }
 
+    /** Unirse a una comunidad con los datos del perfil global. */
     @PostMapping("/auto-create/community/{communityId}")
-    public ResponseEntity<CommunityProfileDTO> autoCreateProfile(
-            @PathVariable Long communityId,
-            Authentication authentication
-    ) {
-        User user = (User) authentication.getPrincipal(); // obtenemos el usuario autenticado
-        CommunityProfileDTO profile = profileService.createProfileAutomatically(user, communityId);
-        return ResponseEntity.ok(profile);
+    public CommunityProfileDTO autoJoin(@PathVariable Long communityId, @AuthenticationPrincipal User user) {
+        return profileService.join(user, communityId, null);
     }
-
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<CommunityProfileDTO> updateProfile(
+    public CommunityProfileDTO update(
             @PathVariable Long id,
-            @RequestPart("data") UpdateCommunityProfileRequest request,
-            @RequestPart(value = "image", required = false) MultipartFile imageFile
+            @RequestPart("data") @Valid UpdateCommunityProfileRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            @AuthenticationPrincipal User user
     ) {
-        CommunityProfileDTO updated = profileService.updateProfile(id, request, imageFile);
-        return ResponseEntity.ok(updated);
+        return profileService.update(id, request, image, user);
     }
 
+    /** Abandonar la comunidad. */
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteProfile(@PathVariable Long id) {
-        profileService.deleteProfile(id);
-        return ResponseEntity.ok("Perfil eliminado correctamente");
+    public String leave(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        profileService.leave(id, user);
+        return "Perfil eliminado correctamente";
     }
 
     @PostMapping("/{profileId}/titles/{titleId}")
-    public ResponseEntity<String> assignTitle(
-            @PathVariable Long profileId,
-            @PathVariable Long titleId
-    ) {
-        profileService.assignTitle(profileId, titleId);
-        return ResponseEntity.ok("Título asignado correctamente");
+    public String assignTitle(@PathVariable Long profileId, @PathVariable Long titleId, @AuthenticationPrincipal User user) {
+        profileService.assignTitle(profileId, titleId, user);
+        return "Título asignado correctamente";
     }
 
     @DeleteMapping("/{profileId}/titles/{titleId}")
-    public ResponseEntity<String> removeTitle(
-            @PathVariable Long profileId,
-            @PathVariable Long titleId
-    ) {
-        profileService.removeTitle(profileId, titleId);
-        return ResponseEntity.ok("Título eliminado correctamente");
+    public String removeTitle(@PathVariable Long profileId, @PathVariable Long titleId, @AuthenticationPrincipal User user) {
+        profileService.removeTitle(profileId, titleId, user);
+        return "Título eliminado correctamente";
     }
 
     @PutMapping("/{profileId}/featured-title/{titleId}")
-    public ResponseEntity<String> changeFeaturedTitle(
-            @PathVariable Long profileId,
-            @PathVariable Long titleId
-    ) {
-        profileService.changeFeaturedTitle(profileId, titleId);
-        return ResponseEntity.ok("Título destacado cambiado correctamente");
+    public String changeFeaturedTitle(@PathVariable Long profileId, @PathVariable Long titleId, @AuthenticationPrincipal User user) {
+        profileService.changeFeaturedTitle(profileId, titleId, user);
+        return "Título destacado cambiado correctamente";
     }
 
-    // Asignar un rol a un perfil
     @PostMapping("/{profileId}/roles/{roleId}")
-    public ResponseEntity<String> assignRoleToProfile(
-            @PathVariable Long profileId,
-            @PathVariable Long roleId
-    ) {
-        profileService.assignRole(profileId, roleId);
-        return ResponseEntity.ok("Rol asignado correctamente");
+    public String assignRole(@PathVariable Long profileId, @PathVariable Long roleId, @AuthenticationPrincipal User user) {
+        profileService.assignRole(profileId, roleId, user);
+        return "Rol asignado correctamente";
     }
 
-    // Quitar un rol a un perfil
     @DeleteMapping("/{profileId}/roles/{roleId}")
-    public ResponseEntity<String> removeRoleFromProfile(
-            @PathVariable Long profileId,
-            @PathVariable Long roleId
-    ) {
-        profileService.removeRole(profileId, roleId);
-        return ResponseEntity.ok("Rol eliminado correctamente");
+    public String removeRole(@PathVariable Long profileId, @PathVariable Long roleId, @AuthenticationPrincipal User user) {
+        profileService.removeRole(profileId, roleId, user);
+        return "Rol eliminado correctamente";
     }
 
-    // Obtener todos los roles de un perfil
     @GetMapping("/{profileId}/roles")
-    public ResponseEntity<List<RoleDTO>> getRolesOfProfile(
-            @PathVariable Long profileId
-    ) {
-        List<RoleDTO> roles = profileService.getRolesByProfile(profileId);
-        return ResponseEntity.ok(roles);
+    public List<RoleDTO> getRoles(@PathVariable Long profileId) {
+        return profileService.getRoles(profileId);
     }
-
 }

@@ -1,54 +1,30 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class LikeService {
-  private apiUrl = 'http://localhost:8080/api/likes';
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/api/v1/likes`;
 
-  constructor(private http: HttpClient) {}
-
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
-  }
-
-  // Dar like a un post
   likePost(postId: number, profileId: number): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/${postId}/${profileId}`, null, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.post<void>(`${this.apiUrl}/${postId}/${profileId}`, null);
   }
 
-  // Quitar like de un post
   unlikePost(postId: number, profileId: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${postId}/${profileId}`, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.delete<void>(`${this.apiUrl}/${postId}/${profileId}`);
   }
 
-  // Obtener número de likes de un post
   countLikes(postId: number): Observable<number> {
-    return this.http.get<number>(`${this.apiUrl}/${postId}/count`, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.get<number>(`${this.apiUrl}/${postId}/count`);
   }
 
-  // Comprobar si el perfil actual ha dado like
   hasUserLiked(postId: number, profileId: number): Observable<boolean> {
-    return this.http.get<boolean>(`${this.apiUrl}/${postId}/liked-by/${profileId}`, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.get<boolean>(`${this.apiUrl}/${postId}/liked-by/${profileId}`);
   }
 
-  // Obtener los perfiles que han dado like (opcional)
   getProfilesWhoLiked(postId: number): Observable<number[]> {
-    return this.http.get<number[]>(`${this.apiUrl}/${postId}/profiles`, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.get<number[]>(`${this.apiUrl}/${postId}/profiles`);
   }
 }

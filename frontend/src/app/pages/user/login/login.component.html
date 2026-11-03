@@ -13,6 +13,8 @@
             [(ngModel)]="email"
             name="email"
             required
+            email
+            autocomplete="email"
             placeholder="ejemplo@correo.com"
           />
         </div>
@@ -26,22 +28,26 @@
             [(ngModel)]="password"
             name="password"
             required
+            autocomplete="current-password"
             placeholder="••••••••"
           />
         </div>
 
-        <button
-          type="submit"
-          class="btn btn-primary w-100"
-          [disabled]="loginForm.invalid"
-        >
+        <button type="submit" class="btn btn-primary w-100" [disabled]="loginForm.invalid || loading">
+          @if (loading) {
+            <span class="spinner-border spinner-border-sm me-1"></span>
+          }
           Iniciar sesión
         </button>
       </form>
 
-      <div *ngIf="error" class="alert alert-danger mt-3 text-center">
-        {{ error }}
-      </div>
+      @if (error) {
+        <div class="alert alert-danger mt-3 text-center">{{ error }}</div>
+      }
+
+      <p class="text-center mt-3 mb-0 small">
+        ¿No tienes cuenta? <a routerLink="/register">Regístrate</a>
+      </p>
     </div>
   </div>
 </div>

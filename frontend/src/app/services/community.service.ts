@@ -1,127 +1,60 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { CommunityResponseDTO } from '../models/community/CommunityResponse.dto';
 import { CreateCommunityRequest } from '../models/community/CreateCommunityRequest.dto';
+import { UpdateCommunityRequest } from '../models/community/UpdateCommunityRequest';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class CommunityService {
-  private apiUrl = 'http://localhost:8080/api/v1/communities';
-
-  constructor(private http: HttpClient) {}
-
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    if (token) {
-      return new HttpHeaders({
-        Authorization: `Bearer ${token}`,
-      });
-    }
-    return new HttpHeaders(); // sin cabecera Authorization
-  }
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/api/v1/communities`;
 
   getSubscribedCommunities(): Observable<CommunityResponseDTO[]> {
-    return this.http.get<CommunityResponseDTO[]>(`${this.apiUrl}/subscribed`, {
-      headers: this.getAuthHeaders(),
-    });
+    return this.http.get<CommunityResponseDTO[]>(`${this.apiUrl}/subscribed`);
   }
 
   getSuggestedCommunities(): Observable<CommunityResponseDTO[]> {
-    return this.http.get<CommunityResponseDTO[]>(`${this.apiUrl}/suggested`, {
-      headers: this.getAuthHeaders(),
-    });
+    return this.http.get<CommunityResponseDTO[]>(`${this.apiUrl}/suggested`);
   }
 
   getPopularCommunities(): Observable<CommunityResponseDTO[]> {
-    return this.http.get<CommunityResponseDTO[]>(`${this.apiUrl}/popular`, {
-      headers: this.getAuthHeaders(),
-    });
+    return this.http.get<CommunityResponseDTO[]>(`${this.apiUrl}/popular`);
   }
 
-  createCommunity(
-    data: CreateCommunityRequest,
-    image?: File,
-    banner?: File
-  ): Observable<any> {
-    const formData = new FormData();
-
-    formData.append(
-      'community',
-      new Blob([JSON.stringify(data)], { type: 'application/json' })
-    );
-
-    if (image) {
-      formData.append('image', image);
-    }
-
-    if (banner) {
-      formData.append('banner', banner);
-    }
-
-    return this.http.post(`${this.apiUrl}/create`, formData, {
-      headers: this.getAuthHeaders(),
-    });
+  createCommunity(data: CreateCommunityRequest, image?: File | null, banner?: File | null): Observable<CommunityResponseDTO> {
+    return this.http.post<CommunityResponseDTO>(`${this.apiUrl}/create`, this.toFormData('community', data, image, banner));
   }
 
-  searchCommunities(
-    name?: string,
-    tags?: string[]
-  ): Observable<CommunityResponseDTO[]> {
-    let params: any = {};
-    if (name) params.name = name;
-    if (tags && tags.length > 0) params.tag = tags;
-
-    return this.http.get<CommunityResponseDTO[]>(`${this.apiUrl}/search`, {
-      headers: this.getAuthHeaders(),
-      params: params,
-    });
+  searchCommunities(name?: string, tags?: string[]): Observable<CommunityResponseDTO[]> {
+    let params = new HttpParams();
+    if (name) params = params.set('name', name);
+    (tags ?? []).forEach((tag) => (params = params.append('tag', tag)));
+    return this.http.get<CommunityResponseDTO[]>(`${this.apiUrl}/search`, { params });
   }
 
   getCommunityById(id: number): Observable<CommunityResponseDTO> {
-    return this.http.get<CommunityResponseDTO>(`${this.apiUrl}/${id}`, {
-      headers: this.getAuthHeaders(),
-    });
+    return this.http.get<CommunityResponseDTO>(`${this.apiUrl}/${id}`);
   }
 
-  updateCommunity(
-    id: number,
-    data: any,
-    image?: File,
-    banner?: File
-  ): Observable<string> {
+  updateCommunity(id: number, data: UpdateCommunityRequest, image?: File | null, banner?: File | null): Observable<CommunityResponseDTO> {
+    return this.http.put<CommunityResponseDTO>(`${this.apiUrl}/${id}`, this.toFormData('data', data, image, banner));
+  }
+
+  deleteCommunity(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  removeUserFromCommunity(communityId: number, profileId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${communityId}/remove-user/${profileId}`);
+  }
+
+  private toFormData(part: string, data: unknown, image?: File | null, banner?: File | null): FormData {
     const formData = new FormData();
-    formData.append(
-      'data',
-      new Blob([JSON.stringify(data)], { type: 'application/json' })
-    );
+    formData.append(part, new Blob([JSON.stringify(data)], { type: 'application/json' }));
     if (image) formData.append('image', image);
     if (banner) formData.append('banner', banner);
-
-    return this.http.put<string>(`${this.apiUrl}/${id}`, formData, {
-      headers: this.getAuthHeaders(),
-      responseType: 'text' as 'json',
-    });
-  }
-
-  deleteCommunity(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`, {
-      headers: this.getAuthHeaders(),
-      responseType: 'text' as 'json',
-    });
-  }
-
-  removeUserFromCommunity(
-    communityId: number,
-    profileId: number
-  ): Observable<string> {
-    return this.http.delete<string>(
-      `${this.apiUrl}/${communityId}/remove-user/${profileId}`,
-      {
-        headers: this.getAuthHeaders(),
-        responseType: 'text' as 'json',
-      }
-    );
+    return formData;
   }
 }

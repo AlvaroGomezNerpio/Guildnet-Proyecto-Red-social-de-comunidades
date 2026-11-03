@@ -1,36 +1,42 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NotificationService } from '../../../services/notification.service';
 import { NotificationDTO } from '../../../models/notification/NotificationDTO';
 import { forkJoin } from 'rxjs';
+import { CommunityProfileService } from '../../../services/community-profile.service';
 
 @Component({
   selector: 'app-community-notifications',
   standalone: false,
   templateUrl: './community-notifications.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './community-notifications.component.css'
 })
 export class CommunityNotificationsComponent implements OnInit {
-  myProfileId!: number;
+  communityId!: number;
+  myProfileId: number | null = null;
   notifications: NotificationDTO[] = [];
   errorMessage: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private profileService: CommunityProfileService
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParamMap.subscribe(params => {
-      const myProfileIdParam = params.get('myProfileId');
-      if (myProfileIdParam) {
-        this.myProfileId = +myProfileIdParam;
+    this.communityId = Number(this.route.snapshot.paramMap.get('id'));
+    this.profileService.getMyProfileInCommunity(this.communityId).subscribe({
+      next: (me) => {
+        this.myProfileId = me.id;
         this.loadNotifications();
-      }
+      },
+      error: () => (this.errorMessage = 'No perteneces a esta comunidad.'),
     });
   }
 
   loadNotifications(): void {
+    if (!this.myProfileId) return;
     this.notificationService.getNotificationsByProfile(this.myProfileId).subscribe({
       next: data => this.notifications = data,
       error: () => this.errorMessage = 'Error al cargar notificaciones.'

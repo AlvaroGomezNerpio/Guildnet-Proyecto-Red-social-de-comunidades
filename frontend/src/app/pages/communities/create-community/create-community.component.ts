@@ -1,12 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommunityService } from '../../../services/community.service';
 import { CreateCommunityRequest } from '../../../models/community/CreateCommunityRequest.dto';
+import { errorMessage } from '../../../core/http-error';
 
 @Component({
   selector: 'app-create-community',
   standalone: false,
   templateUrl: './create-community.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './create-community.component.css',
 })
 export class CreateCommunityComponent {
@@ -17,7 +19,9 @@ export class CreateCommunityComponent {
     tags: [],
   };
 
-  tagsInput: string = '';
+  tagsInput = '';
+  saving = false;
+  error: string | null = null;
   image: File | null = null;
   banner: File | null = null;
 
@@ -46,16 +50,14 @@ export class CreateCommunityComponent {
       .map((tag) => tag.trim())
       .filter((tag) => tag.length > 0);
 
-    this.communityService
-      .createCommunity(this.community, this.image!, this.banner!)
-      .subscribe({
-        next: () => {
-          alert('Comunidad creada correctamente');
-          this.router.navigate(['/communities']);
-        },
-        error: () => {
-          alert('No se pudo crear la comunidad');
-        },
-      });
+    this.saving = true;
+    this.error = null;
+    this.communityService.createCommunity(this.community, this.image, this.banner).subscribe({
+      next: (created) => this.router.navigate(['/communities', created.id]),
+      error: (err) => {
+        this.saving = false;
+        this.error = errorMessage(err, 'No se pudo crear la comunidad.');
+      },
+    });
   }
 }

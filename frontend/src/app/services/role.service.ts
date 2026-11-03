@@ -1,36 +1,31 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { RoleDTO } from '../models/rol/RoleDTO';
+import { environment } from '../../environments/environment';
+import { RoleDTO } from '../models/role/RoleDTO';
 
 @Injectable({ providedIn: 'root' })
 export class RoleService {
-  private baseUrl = 'http://localhost:8080/api/v1/roles';
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = `${environment.apiUrl}/api/v1/roles`;
 
-  constructor(private http: HttpClient) {}
-
-  private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return new HttpHeaders({ Authorization: `Bearer ${token}` });
-  }
-
-  createRole(role: RoleDTO): Observable<RoleDTO> {
-    return this.http.post<RoleDTO>(this.baseUrl, role, { headers: this.getHeaders() });
+  createRole(role: Partial<RoleDTO>): Observable<RoleDTO> {
+    return this.http.post<RoleDTO>(this.baseUrl, role);
   }
 
   getRolesByCommunity(communityId: number): Observable<RoleDTO[]> {
-    return this.http.get<RoleDTO[]>(`${this.baseUrl}/community/${communityId}`, { headers: this.getHeaders() });
+    return this.http.get<RoleDTO[]>(`${this.baseUrl}/community/${communityId}`);
   }
 
   getRoleById(id: number): Observable<RoleDTO> {
-    return this.http.get<RoleDTO>(`${this.baseUrl}/${id}`, { headers: this.getHeaders() });
+    return this.http.get<RoleDTO>(`${this.baseUrl}/${id}`);
   }
 
-  updateRole(id: number, role: RoleDTO): Observable<RoleDTO> {
-    return this.http.put<RoleDTO>(`${this.baseUrl}/${id}`, role, { headers: this.getHeaders() });
+  updateRole(id: number, role: Partial<RoleDTO>): Observable<RoleDTO> {
+    return this.http.put<RoleDTO>(`${this.baseUrl}/${id}`, role);
   }
 
   deleteRole(id: number): Observable<string> {
-    return this.http.delete(`${this.baseUrl}/${id}`, { headers: this.getHeaders(), responseType: 'text' });
+    return this.http.delete(`${this.baseUrl}/${id}`, { responseType: 'text' });
   }
 }

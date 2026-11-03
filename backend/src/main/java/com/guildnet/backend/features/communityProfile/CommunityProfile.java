@@ -1,6 +1,6 @@
 package com.guildnet.backend.features.communityProfile;
 
-import com.guildnet.backend.features.Community.Community;
+import com.guildnet.backend.features.community.Community;
 import com.guildnet.backend.features.chatMessage.ChatMessage;
 import com.guildnet.backend.features.like.Like;
 import com.guildnet.backend.features.notification.Notification;
@@ -17,7 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "community_profiles")
+@Table(
+        name = "community_profiles",
+        uniqueConstraints = @UniqueConstraint(name = "uk_profile_user_community", columnNames = {"user_id", "community_id"})
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -80,6 +83,7 @@ public class CommunityProfile {
     @JoinColumn(name = "role_id")
     private Role role;
 
+    @Builder.Default
     @ManyToMany
     @JoinTable(
             name = "profile_titles",
@@ -89,9 +93,11 @@ public class CommunityProfile {
     private List<Title> titles = new ArrayList<>();
 
 
+    @Builder.Default
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notification> sentNotifications = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Notification> receivedNotifications = new ArrayList<>();
 

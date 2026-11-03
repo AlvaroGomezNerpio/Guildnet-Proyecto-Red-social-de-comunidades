@@ -1,9 +1,11 @@
 package com.guildnet.backend.features.role;
 
 import com.guildnet.backend.features.role.dto.RoleDTO;
+import com.guildnet.backend.features.user.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,33 +18,29 @@ public class RoleController {
     private final RoleService roleService;
 
     @PostMapping
-    public ResponseEntity<RoleDTO> createRole(@RequestBody RoleDTO roleDTO) {
-        RoleDTO createdRole = roleService.createRole(roleDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdRole);
+    @ResponseStatus(HttpStatus.CREATED)
+    public RoleDTO create(@RequestBody @Valid RoleDTO dto, @AuthenticationPrincipal User user) {
+        return roleService.create(dto, user);
     }
 
     @GetMapping("/community/{communityId}")
-    public ResponseEntity<List<RoleDTO>> getRolesByCommunity(@PathVariable Long communityId) {
-        List<RoleDTO> roles = roleService.getRolesByCommunity(communityId);
-        return ResponseEntity.ok(roles);
+    public List<RoleDTO> getByCommunity(@PathVariable Long communityId) {
+        return roleService.getByCommunity(communityId);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RoleDTO> getRoleById(@PathVariable Long id) {
-        RoleDTO role = roleService.getRoleById(id);
-        return ResponseEntity.ok(role);
+    public RoleDTO getById(@PathVariable Long id) {
+        return roleService.getById(id);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RoleDTO> updateRole(@PathVariable Long id, @RequestBody RoleDTO roleDTO) {
-        RoleDTO updatedRole = roleService.updateRole(id, roleDTO);
-        return ResponseEntity.ok(updatedRole);
+    public RoleDTO update(@PathVariable Long id, @RequestBody @Valid RoleDTO dto, @AuthenticationPrincipal User user) {
+        return roleService.update(id, dto, user);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteRole(@PathVariable Long id) {
-        roleService.deleteRole(id);
-        return ResponseEntity.ok("Rol eliminado correctamente");
+    public String delete(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        roleService.delete(id, user);
+        return "Rol eliminado correctamente";
     }
 }
-

@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { authGuard, guestGuard } from './core/auth.guard';
 import { RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './pages/user/login/login.component';
 import { CommunityListComponent } from './pages/communities/community-list/community-list.component';
@@ -16,22 +17,28 @@ import { CreateRoleComponent } from './pages/rol/create-role/create-role.compone
 import { EditCommunityComponent } from './pages/communities/edit-community/edit-community.component';
 
 const routes: Routes = [
-  { path: 'communities', component: CommunityListComponent },
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
-  { path: 'profile', component: ProfileComponent },
-  { path: 'communities/create', component: CreateCommunityComponent },
+  { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
+  { path: 'register', component: RegisterComponent, canActivate: [guestGuard] },
   { path: 'communities/search', component: SearchResultsComponent },
-  { path: 'communities/:id', component: CommunityDetailComponent },
-  { path: 'communities/profile/:id', component: CommunityProfileDetailComponent },
-  { path: 'communities/:id/create-post/:profileId', component: PostCreateComponent },
-  { path: 'communities/:communityId/search-posts', component: SearchPostsComponent },
-  { path: 'communities/:id/notifications', component: CommunityNotificationsComponent},
-  { path: 'communities/:id/create-role',component: CreateRoleComponent},
-  { path: 'posts/:id', component: PostDetailComponent },
-  { path: 'communities/:id/edit', component: EditCommunityComponent },
-  { path: '', redirectTo: '/communities', pathMatch: 'full' },
-  { path: '**', redirectTo: '/communities' }
+  {
+    path: '',
+    canActivate: [authGuard],
+    children: [
+      { path: 'communities', component: CommunityListComponent },
+      { path: 'profile', component: ProfileComponent },
+      { path: 'communities/create', component: CreateCommunityComponent },
+      { path: 'communities/profile/:id', component: CommunityProfileDetailComponent },
+      { path: 'communities/:id', component: CommunityDetailComponent },
+      { path: 'communities/:id/edit', component: EditCommunityComponent },
+      { path: 'communities/:id/create-post/:profileId', component: PostCreateComponent },
+      { path: 'communities/:communityId/search-posts', component: SearchPostsComponent },
+      { path: 'communities/:id/notifications', component: CommunityNotificationsComponent },
+      { path: 'communities/:id/create-role', component: CreateRoleComponent },
+      { path: 'posts/:id', component: PostDetailComponent },
+      { path: '', redirectTo: 'communities', pathMatch: 'full' },
+    ],
+  },
+  { path: '**', redirectTo: 'communities' },
 ];
 
 @NgModule({

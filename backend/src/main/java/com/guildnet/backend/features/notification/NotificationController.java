@@ -1,10 +1,10 @@
 package com.guildnet.backend.features.notification;
 
-import com.guildnet.backend.features.notification.dto.NotificationCreateDTO;
 import com.guildnet.backend.features.notification.dto.NotificationDTO;
+import com.guildnet.backend.features.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,33 +17,24 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping("/profile/{profileId}")
-    public ResponseEntity<List<NotificationDTO>> getNotificationsByProfile(@PathVariable Long profileId) {
-        return ResponseEntity.ok(notificationService.getNotificationsForProfile(profileId));
+    public List<NotificationDTO> getByProfile(@PathVariable Long profileId, @AuthenticationPrincipal User user) {
+        return notificationService.getForProfile(profileId, user);
     }
 
     @GetMapping("/profile/{profileId}/unread/count")
-    public ResponseEntity<Integer> countUnreadNotifications(@PathVariable Long profileId) {
-        int count = notificationService.countUnreadNotifications(profileId);
-        return ResponseEntity.ok(count);
+    public int countUnread(@PathVariable Long profileId, @AuthenticationPrincipal User user) {
+        return notificationService.countUnread(profileId, user);
     }
 
     @PutMapping("/{notificationId}/read")
-    public ResponseEntity<Void> markAsRead(@PathVariable Long notificationId) {
-        notificationService.markAsRead(notificationId);
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void markAsRead(@PathVariable Long notificationId, @AuthenticationPrincipal User user) {
+        notificationService.markAsRead(notificationId, user);
     }
 
     @DeleteMapping("/{notificationId}")
-    public ResponseEntity<Void> deleteNotification(@PathVariable Long notificationId) {
-        notificationService.deleteNotification(notificationId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping
-    public ResponseEntity<NotificationDTO> createNotification(@RequestBody NotificationCreateDTO dto) {
-        NotificationDTO created = notificationService.createNotification(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long notificationId, @AuthenticationPrincipal User user) {
+        notificationService.delete(notificationId, user);
     }
 }
-
-

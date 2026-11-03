@@ -1,45 +1,43 @@
 package com.guildnet.backend.features.like;
 
+import com.guildnet.backend.features.user.User;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/likes")
+@RequestMapping("/api/v1/likes")
 @RequiredArgsConstructor
 public class LikeController {
 
     private final LikeService likeService;
 
     @PostMapping("/{postId}/{profileId}")
-    public ResponseEntity<Void> likePost(@PathVariable Long postId, @PathVariable Long profileId) {
-        likeService.likePost(postId, profileId);
-        return ResponseEntity.ok().build();
+    public void like(@PathVariable Long postId, @PathVariable Long profileId, @AuthenticationPrincipal User user) {
+        likeService.like(postId, profileId, user);
     }
 
     @DeleteMapping("/{postId}/{profileId}")
-    public ResponseEntity<Void> unlikePost(@PathVariable Long postId, @PathVariable Long profileId) {
-        likeService.unlikePost(postId, profileId);
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unlike(@PathVariable Long postId, @PathVariable Long profileId, @AuthenticationPrincipal User user) {
+        likeService.unlike(postId, profileId, user);
     }
 
     @GetMapping("/{postId}/count")
-    public ResponseEntity<Integer> countLikes(@PathVariable Long postId) {
-        int count = likeService.countLikesByPostId(postId);
-        return ResponseEntity.ok(count);
+    public int count(@PathVariable Long postId) {
+        return likeService.count(postId);
     }
 
     @GetMapping("/{postId}/liked-by/{profileId}")
-    public ResponseEntity<Boolean> hasUserLiked(@PathVariable Long postId, @PathVariable Long profileId) {
-        boolean liked = likeService.hasUserLikedPost(postId, profileId);
-        return ResponseEntity.ok(liked);
+    public boolean hasLiked(@PathVariable Long postId, @PathVariable Long profileId) {
+        return likeService.hasLiked(postId, profileId);
     }
 
     @GetMapping("/{postId}/profiles")
-    public ResponseEntity<List<Long>> getProfilesWhoLiked(@PathVariable Long postId) {
-        return ResponseEntity.ok(likeService.getProfileIdsWhoLikedPost(postId));
+    public List<Long> getProfileIds(@PathVariable Long postId) {
+        return likeService.getProfileIds(postId);
     }
-
 }

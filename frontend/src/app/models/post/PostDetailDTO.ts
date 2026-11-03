@@ -1,12 +1,13 @@
-import { PostComentDTO } from "../postComment/PostComentDTO";
-import { CommunityProfileDTO } from "../communityProfile/CommunityProfileDTO";
+import { CommunityProfileDTO } from '../communityProfile/CommunityProfileDTO';
+import { PostCommentDTO } from '../postComment/PostCommentDTO';
 
 export interface PostDetailDTO {
   id: number;
   title: string;
   content: string;
   tags: string[];
-  postComment: PostComentDTO[];
+  createdAt: string | null;
+  postComment: PostCommentDTO[];
   communityProfile: CommunityProfileDTO;
   communityId: number;
 }

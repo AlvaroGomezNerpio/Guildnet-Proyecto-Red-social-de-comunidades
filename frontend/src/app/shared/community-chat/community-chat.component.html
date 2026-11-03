@@ -1,0 +1,47 @@
+<div class="card chat-card">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <span><i class="bi bi-chat-dots me-1"></i>Chat de la comunidad</span>
+    <span class="badge" [class.bg-success]="connected" [class.bg-secondary]="!connected">
+      {{ connected ? 'Conectado' : 'Conectando…' }}
+    </span>
+  </div>
+
+  <div class="card-body chat-messages" #messageList>
+    @for (message of messages; track message.id) {
+      <div class="chat-message" [class.mine]="isMine(message)">
+        <img [src]="message.profileImage || 'default-avatar.svg'" alt="" class="rounded-circle" width="32" height="32" />
+        <div class="bubble">
+          <div class="meta">
+            <strong>{{ message.username }}</strong>
+            <small class="text-muted ms-2">{{ message.sentAt | date: 'short' }}</small>
+          </div>
+          <div class="content">{{ message.content }}</div>
+        </div>
+      </div>
+    } @empty {
+      <p class="text-muted text-center my-4">Todavía no hay mensajes. ¡Escribe el primero!</p>
+    }
+  </div>
+
+  @if (error) {
+    <div class="alert alert-warning m-2 py-1 small">{{ error }}</div>
+  }
+
+  <form class="card-footer" (ngSubmit)="send()">
+    <div class="input-group">
+      <input
+        type="text"
+        class="form-control"
+        name="draft"
+        [(ngModel)]="draft"
+        maxlength="2000"
+        placeholder="Escribe un mensaje…"
+        autocomplete="off"
+        [disabled]="!connected"
+      />
+      <button class="btn btn-primary" type="submit" [disabled]="!connected || !draft.trim()">
+        <i class="bi bi-send"></i>
+      </button>
+    </div>
+  </form>
+</div>

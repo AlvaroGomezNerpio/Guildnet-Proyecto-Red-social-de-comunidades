@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { HttpClientModule } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from './core/auth.interceptor';
 import { LoginComponent } from './pages/user/login/login.component';
 import { CommunityListComponent } from './pages/communities/community-list/community-list.component';
 import { RegisterComponent } from './pages/user/register/register.component';
@@ -22,6 +23,7 @@ import { PostDetailComponent } from './pages/posts/post-detail/post-detail.compo
 import { SearchPostsComponent } from './pages/posts/search-posts/search-posts.component';
 import { CommunityNotificationsComponent } from './pages/communities/community-notifications/community-notifications.component';
 import { CreateRoleComponent } from './pages/rol/create-role/create-role.component';
+import { CommunityChatComponent } from './shared/community-chat/community-chat.component';
 import { EditCommunityComponent } from './pages/communities/edit-community/edit-community.component';
 
 @NgModule({
@@ -42,17 +44,17 @@ import { EditCommunityComponent } from './pages/communities/edit-community/edit-
     SearchPostsComponent,
     CommunityNotificationsComponent,
     CreateRoleComponent,
-    EditCommunityComponent
+    EditCommunityComponent,
+    CommunityChatComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
     QuillModule.forRoot()
   ],
-  providers: [],
+  providers: [provideHttpClient(withInterceptors([authInterceptor]))],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

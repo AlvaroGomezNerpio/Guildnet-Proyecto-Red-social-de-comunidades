@@ -3,6 +3,9 @@ package com.guildnet.backend.features.profileComment;
 import com.guildnet.backend.features.communityProfile.CommunityProfile;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "profile_comments")
@@ -16,7 +19,12 @@ public class ProfileComment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String content; // Contenido del comentario
+    @Column(columnDefinition = "TEXT")
+    private String content;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 
     // Perfil de comunidad que escribe el comentario (autor)
     @ManyToOne

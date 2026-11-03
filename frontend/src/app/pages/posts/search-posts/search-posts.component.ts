@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { PostService } from '../../../services/post.service';
 import { PostDTO } from '../../../models/post/PostDTO';
@@ -13,6 +13,7 @@ interface PostWithToggle extends PostDTO {
   selector: 'app-search-posts',
   standalone: false,
   templateUrl: './search-posts.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './search-posts.component.css'
 })
 export class SearchPostsComponent implements OnInit {

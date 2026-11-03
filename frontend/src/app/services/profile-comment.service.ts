@@ -1,54 +1,28 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { ProfileCommentDTO } from '../models/profileComment/ProfileCommentDTO';
 import { ProfileCommentCreateUpdateDTO } from '../models/profileComment/ProfileCommentCreateUpdateDTO';
 
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ProfileCommentService {
-
-  private apiUrl = 'http://localhost:8080/api/profile-comments';
-
-  constructor(private http: HttpClient) {}
-
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
-  }
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/api/v1/profile-comments`;
 
   createComment(authorProfileId: number, targetProfileId: number, dto: ProfileCommentCreateUpdateDTO): Observable<ProfileCommentDTO> {
-    return this.http.post<ProfileCommentDTO>(
-      `${this.apiUrl}/${authorProfileId}/${targetProfileId}`,
-      dto,
-      { headers: this.getAuthHeaders() }
-    );
+    return this.http.post<ProfileCommentDTO>(`${this.apiUrl}/${authorProfileId}/${targetProfileId}`, dto);
   }
 
   updateComment(commentId: number, dto: ProfileCommentCreateUpdateDTO): Observable<ProfileCommentDTO> {
-    return this.http.put<ProfileCommentDTO>(
-      `${this.apiUrl}/${commentId}`,
-      dto,
-      { headers: this.getAuthHeaders() }
-    );
+    return this.http.put<ProfileCommentDTO>(`${this.apiUrl}/${commentId}`, dto);
   }
 
   getCommentsByTarget(targetProfileId: number): Observable<ProfileCommentDTO[]> {
-    return this.http.get<ProfileCommentDTO[]>(
-      `${this.apiUrl}/target/${targetProfileId}`,
-      { headers: this.getAuthHeaders() }
-    );
+    return this.http.get<ProfileCommentDTO[]>(`${this.apiUrl}/target/${targetProfileId}`);
   }
 
   deleteComment(commentId: number): Observable<void> {
-    return this.http.delete<void>(
-      `${this.apiUrl}/${commentId}`,
-      { headers: this.getAuthHeaders() }
-    );
+    return this.http.delete<void>(`${this.apiUrl}/${commentId}`);
   }
 }
-

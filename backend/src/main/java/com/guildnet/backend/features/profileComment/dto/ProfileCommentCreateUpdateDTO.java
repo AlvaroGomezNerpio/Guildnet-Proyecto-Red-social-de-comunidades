@@ -1,8 +1,11 @@
 package com.guildnet.backend.features.profileComment.dto;
 
-import lombok.Data;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-@Data
-public class ProfileCommentCreateUpdateDTO {
-    private String content;
+public record ProfileCommentCreateUpdateDTO(
+        @NotBlank(message = "El comentario no puede estar vacío")
+        @Size(max = 2000, message = "El comentario no puede superar los 2000 caracteres")
+        String content
+) {
 }

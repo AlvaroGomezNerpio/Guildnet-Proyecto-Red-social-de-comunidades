@@ -1,4 +1,4 @@
-import { CommunityProfileDTO } from "../communityProfile/CommunityProfileDTO";
+import { CommunityProfileDTO } from '../communityProfile/CommunityProfileDTO';
 
 export interface PostDTO {
   id: number;
@@ -6,7 +6,8 @@ export interface PostDTO {
   content: string;
   tags: string[];
   likes: number;
-  coments: number;
+  comments: number;
+  createdAt: string | null;
   communityProfile: CommunityProfileDTO;
   communityId: number;
 }

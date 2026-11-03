@@ -1,14 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommunityService } from '../../../services/community.service';
 import { CommunityProfileService } from '../../../services/community-profile.service';
 import { PostService } from '../../../services/post.service';
 import { NotificationService } from '../../../services/notification.service';
+import { CommunityPermissionsService, Permission } from '../../../services/community-permissions.service';
 import { CommunityResponseDTO } from '../../../models/community/CommunityResponse.dto';
 import { CommunityProfileDTO } from '../../../models/communityProfile/CommunityProfileDTO';
 import { PostDTO } from '../../../models/post/PostDTO';
-import { ActiveRoleService } from '../../../services/active-role.service';
-import { RolePermissionService } from '../../../services/role-permission.service';
+import { errorMessage } from '../../../core/http-error';
 
 interface PostWithToggle extends PostDTO {
   showContent: boolean;
@@ -18,49 +19,52 @@ interface PostWithToggle extends PostDTO {
   selector: 'app-community-detail',
   standalone: false,
   templateUrl: './community-detail.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './community-detail.component.css',
 })
-export class CommunityDetailComponent {
+export class CommunityDetailComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly communityService = inject(CommunityService);
+  private readonly profileService = inject(CommunityProfileService);
+  private readonly postService = inject(PostService);
+  private readonly notificationService = inject(NotificationService);
+  private readonly permissionsService = inject(CommunityPermissionsService);
+
   communityId!: number;
   community: CommunityResponseDTO | null = null;
+  /** Perfil del usuario en esta comunidad; null si no es miembro. */
   profile: CommunityProfileDTO | null = null;
+  profileLoaded = false;
   posts: PostWithToggle[] = [];
+  permissions: Permission[] = [];
 
-  isLoggedIn: boolean = false;
   error: string | null = null;
+  joining = false;
 
   members: CommunityProfileDTO[] = [];
   filteredMembers: CommunityProfileDTO[] = [];
-  searchTerm: string = '';
-  showMembersModal: boolean = false;
+  searchTerm = '';
+  showMembersModal = false;
 
-  unreadCount: number = 0;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private communityService: CommunityService,
-    private communityProfileService: CommunityProfileService,
-    private postService: PostService,
-    private notificationService: NotificationService,
-    private activeRoleService: ActiveRoleService,
-    private rolePermissionService: RolePermissionService
-  ) {}
+  unreadCount = 0;
 
   ngOnInit(): void {
-    this.isLoggedIn = !!localStorage.getItem('token');
-
-    this.route.paramMap.subscribe((params) => {
-      const idParam = params.get('id');
-      if (idParam) {
-        this.communityId = +idParam;
-        this.loadCommunity();
-        this.loadPosts();
-        if (this.isLoggedIn) {
-          this.loadUserProfile();
-        }
-      }
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const id = Number(params.get('id'));
+      if (!id) return;
+      this.communityId = id;
+      this.profile = null;
+      this.profileLoaded = false;
+      this.loadCommunity();
+      this.loadPosts();
+      this.loadMembership();
     });
+  }
+
+  get isMember(): boolean {
+    return this.profile !== null;
   }
 
   loadCommunity(): void {
@@ -70,41 +74,25 @@ export class CommunityDetailComponent {
     });
   }
 
-  loadUserProfile(): void {
-  this.communityProfileService.getMyProfileInCommunity(this.communityId).subscribe({
-    next: (profile) => {
-      this.profile = profile;
-
-      if (profile.rol?.id) {
-        this.rolePermissionService.getPermissionsByRole(profile.rol.id).subscribe({
-          next: (permissions) => {
-            const permissionNames = permissions.map(p => p.permissionName);
-            this.activeRoleService.setActiveRole({
-              communityId: this.communityId,
-              roleId: profile.rol.id,
-              roleName: profile.rol.name,
-              permissions: permissionNames
-            });
-
-            this.loadUnreadNotifications();
-          },
-          error: () => {
-            this.activeRoleService.clear();
-            this.loadUnreadNotifications();
-          }
-        });
-      } else {
-        this.activeRoleService.clear();
+  loadMembership(): void {
+    this.profileService.getMyProfileInCommunity(this.communityId).subscribe({
+      next: (profile) => {
+        this.profile = profile;
+        this.profileLoaded = true;
+        this.loadPermissions();
         this.loadUnreadNotifications();
-      }
-    },
-    error: () => {
-      this.profile = null;
-      this.activeRoleService.clear();
-    }
-  });
-}
+      },
+      error: () => {
+        this.profile = null;
+        this.profileLoaded = true;
+        this.permissions = [];
+      },
+    });
+  }
 
+  loadPermissions(): void {
+    this.permissionsService.getMyPermissions(this.communityId).subscribe((perms) => (this.permissions = perms));
+  }
 
   loadUnreadNotifications(): void {
     if (!this.profile) return;
@@ -116,60 +104,50 @@ export class CommunityDetailComponent {
 
   loadPosts(): void {
     this.postService.getPostsByCommunity(this.communityId).subscribe({
-      next: (data) => {
-        this.posts = data.map((post) => ({
-          ...post,
-          showContent: false,
-        }));
-      },
+      next: (data) => (this.posts = data.map((post) => ({ ...post, showContent: false }))),
       error: () => (this.error = 'No se pudieron cargar los posts.'),
     });
   }
 
-  goToProfile(): void {
-    if (this.profile) {
-      this.router.navigate(['/communities/profile', this.communityId]);
-    }
+  join(): void {
+    this.joining = true;
+    this.profileService.joinCommunity(this.communityId).subscribe({
+      next: () => {
+        this.joining = false;
+        this.loadMembership();
+      },
+      error: (err) => {
+        this.joining = false;
+        this.error = errorMessage(err, 'No se pudo unir a la comunidad.');
+      },
+    });
   }
 
   loadCommunityMembers(): void {
-    this.communityProfileService
-      .getProfilesByCommunity(this.communityId)
-      .subscribe({
-        next: (data) => {
-          this.members = data;
-          this.filteredMembers = data;
-          this.showMembersModal = true;
-        },
-        error: () => (this.error = 'No se pudieron cargar los miembros.'),
-      });
+    this.profileService.getProfilesByCommunity(this.communityId).subscribe({
+      next: (data) => {
+        this.members = data;
+        this.filteredMembers = data;
+        this.searchTerm = '';
+        this.showMembersModal = true;
+      },
+      error: () => (this.error = 'No se pudieron cargar los miembros.'),
+    });
   }
 
   filterMembers(): void {
     const term = this.searchTerm.toLowerCase();
-    this.filteredMembers = this.members.filter((m) =>
-      m.username.toLowerCase().includes(term)
-    );
+    this.filteredMembers = this.members.filter((m) => m.username.toLowerCase().includes(term));
   }
 
   viewProfile(profileId: number): void {
-    if (this.profile) {
-      this.router.navigate(['/communities/profile', profileId], {
-        queryParams: { myProfileId: this.profile.id },
-      });
-    } else {
-      this.router.navigate(['/communities/profile', profileId]);
-    }
+    this.showMembersModal = false;
+    this.router.navigate(['/communities/profile', profileId]);
   }
 
   goToCreatePost(): void {
     if (this.profile) {
-      this.router.navigate([
-        '/communities',
-        this.communityId,
-        'create-post',
-        this.profile.id,
-      ]);
+      this.router.navigate(['/communities', this.communityId, 'create-post', this.profile.id]);
     }
   }
 
@@ -182,41 +160,22 @@ export class CommunityDetailComponent {
   }
 
   goToPostDetail(postId: number): void {
-    if (this.profile) {
-      this.router.navigate(['/posts', postId], {
-        queryParams: { myProfileId: this.profile.id },
-      });
-    } else {
-      this.router.navigate(['/posts', postId]);
-    }
+    this.router.navigate(['/posts', postId]);
   }
 
   goToNotifications(): void {
-    this.router.navigate(['/communities', this.communityId, 'notifications'], {
-      queryParams: { myProfileId: this.profile?.id },
-    });
+    this.router.navigate(['/communities', this.communityId, 'notifications']);
   }
 
   goToCreateRole(): void {
     this.router.navigate(['/communities', this.communityId, 'create-role']);
   }
 
-  goToEditCommunity() {
-  this.router.navigate(['/communities', this.communityId, 'edit']);
-}
+  goToEditCommunity(): void {
+    this.router.navigate(['/communities', this.communityId, 'edit']);
+  }
 
-canAssignRoles(): boolean {
-  return (
-    this.activeRoleService.isForCommunity(this.communityId) &&
-    this.activeRoleService.hasPermission('ASSIGN_ROLES')
-  );
-}
-
-canEditCommunity(): boolean {
-  return (
-    this.activeRoleService.isForCommunity(this.communityId) &&
-    this.activeRoleService.hasPermission('MANAGE_COMMUNITY_SETTINGS')
-  );
-}
-
+  hasPermission(permission: Permission): boolean {
+    return this.permissions.includes(permission);
+  }
 }

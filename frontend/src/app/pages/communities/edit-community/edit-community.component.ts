@@ -1,92 +1,100 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FormBuilder, Validators } from '@angular/forms';
 import { CommunityService } from '../../../services/community.service';
-import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
-import { ActiveRoleService } from '../../../services/active-role.service';
+import { CommunityPermissionsService } from '../../../services/community-permissions.service';
+import { AuthService } from '../../../services/auth.service';
+import { CommunityResponseDTO } from '../../../models/community/CommunityResponse.dto';
+import { errorMessage } from '../../../core/http-error';
 
 @Component({
   selector: 'app-edit-community',
   standalone: false,
   templateUrl: './edit-community.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './edit-community.component.css'
 })
 export class EditCommunityComponent implements OnInit {
-  community: any;
-  editForm!: FormGroup;
-  imageFile?: File;
-  bannerFile?: File;
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly fb = inject(FormBuilder);
+  private readonly communityService = inject(CommunityService);
+  private readonly permissionsService = inject(CommunityPermissionsService);
+  private readonly authService = inject(AuthService);
 
-  constructor(
-    private route: ActivatedRoute,
-    private communityService: CommunityService,
-    private fb: FormBuilder,
-    private router: Router,
-    private activeRoleService: ActiveRoleService
-  ) {}
+  community: CommunityResponseDTO | null = null;
+  imageFile: File | null = null;
+  bannerFile: File | null = null;
+  saving = false;
+  error: string | null = null;
+
+  readonly editForm = this.fb.nonNullable.group({
+    name: ['', [Validators.required, Validators.maxLength(100)]],
+    description: [''],
+    rules: [''],
+    tags: [''],
+  });
 
   ngOnInit(): void {
-  const id = Number(this.route.snapshot.paramMap.get('id'));
+    const id = Number(this.route.snapshot.paramMap.get('id'));
 
-  const role = this.activeRoleService.getActiveRole();
-
-  if (!role || role.communityId !== id || !role.permissions.includes('MANAGE_COMMUNITY_SETTINGS')) {
-    this.router.navigate(['/communities']);
-    return;
-  }
-
-  this.communityService.getCommunityById(id).subscribe(c => {
-    this.community = c;
-    this.editForm = this.fb.group({
-      name: [c.name, Validators.required],
-      description: [c.description],
-      rules: [c.rules],
-      tags: [c.tags.join(', ')]
+    this.permissionsService.getMyPermissions(id).subscribe((permissions) => {
+      if (!permissions.includes('MANAGE_COMMUNITY_SETTINGS')) {
+        this.router.navigate(['/communities', id]);
+        return;
+      }
+      this.communityService.getCommunityById(id).subscribe((c) => {
+        this.community = c;
+        this.editForm.setValue({
+          name: c.name,
+          description: c.description ?? '',
+          rules: c.rules ?? '',
+          tags: c.tags.join(', '),
+        });
+      });
     });
-  });
-}
-
-  get descriptionControl(): FormControl {
-    return this.editForm.get('description') as FormControl;
   }
 
-  get rulesControl(): FormControl {
-    return this.editForm.get('rules') as FormControl;
+  /** Solo el creador puede borrar la comunidad. */
+  get isOwner(): boolean {
+    return !!this.community && this.community.ownerId === this.authService.getCurrentUserId();
   }
 
-  onImageSelected(event: any): void {
-    this.imageFile = event.target.files[0];
+  onImageSelected(event: Event): void {
+    this.imageFile = (event.target as HTMLInputElement).files?.[0] ?? null;
   }
 
-  onBannerSelected(event: any): void {
-    this.bannerFile = event.target.files[0];
+  onBannerSelected(event: Event): void {
+    this.bannerFile = (event.target as HTMLInputElement).files?.[0] ?? null;
   }
 
   onSubmit(): void {
-    const id = this.community.id;
+    if (!this.community || this.editForm.invalid) return;
+
+    const value = this.editForm.getRawValue();
     const data = {
-      name: this.editForm.value.name,
-      description: this.editForm.value.description,
-      rules: this.editForm.value.rules,
-      tags: this.editForm.value.tags.split(',').map((t: string) => t.trim())
+      name: value.name.trim(),
+      description: value.description,
+      rules: value.rules,
+      tags: value.tags.split(',').map((t) => t.trim()).filter((t) => t.length > 0),
     };
 
-    this.communityService.updateCommunity(id, data, this.imageFile, this.bannerFile).subscribe({
-      next: (res) => {
-        console.log('Actualización exitosa:', res);
-        this.router.navigate(['/communities', id]);
+    this.saving = true;
+    this.communityService.updateCommunity(this.community.id, data, this.imageFile, this.bannerFile).subscribe({
+      next: (updated) => this.router.navigate(['/communities', updated.id]),
+      error: (err) => {
+        this.saving = false;
+        this.error = errorMessage(err, 'Ocurrió un error al actualizar la comunidad.');
       },
-      error: err => {
-        console.error('Error al actualizar la comunidad:', err);
-        alert('Ocurrió un error al actualizar la comunidad');
-      }
     });
   }
 
   onDelete(): void {
-    if (confirm('¿Estás seguro de que quieres eliminar esta comunidad?')) {
-      this.communityService.deleteCommunity(this.community.id).subscribe(() => {
-        this.router.navigate(['/communities']);
-      });
-    }
+    if (!this.community || !confirm('¿Seguro que quieres eliminar esta comunidad? Se borrará todo su contenido.')) return;
+
+    this.communityService.deleteCommunity(this.community.id).subscribe({
+      next: () => this.router.navigate(['/communities']),
+      error: (err) => (this.error = errorMessage(err, 'No se pudo eliminar la comunidad.')),
+    });
   }
 }

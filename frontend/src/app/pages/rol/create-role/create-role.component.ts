@@ -1,99 +1,142 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin, of, switchMap } from 'rxjs';
 import { RoleService } from '../../../services/role.service';
 import { PermissionService } from '../../../services/permission.service';
 import { RolePermissionService } from '../../../services/role-permission.service';
-import { RoleDTO } from '../../../models/rol/RoleDTO';
-import { PermissionDTO } from '../../../models/rol/PermissionDTO';
-import { RolePermissionCreateDTO } from '../../../models/rol/RolePermissionCreateDTO';
-import { ActiveRoleService } from '../../../services/active-role.service';
+import { CommunityPermissionsService } from '../../../services/community-permissions.service';
+import { RoleDTO } from '../../../models/role/RoleDTO';
+import { PermissionDTO } from '../../../models/role/PermissionDTO';
+import { RolePermissionDTO } from '../../../models/role/RolePermissionDTO';
+import { errorMessage } from '../../../core/http-error';
 
+interface RoleWithPermissions extends RoleDTO {
+  permissions: RolePermissionDTO[];
+}
 
+/** Gestión de roles de una comunidad: listar, crear y eliminar. Requiere ASSIGN_ROLES. */
 @Component({
   selector: 'app-create-role',
   standalone: false,
   templateUrl: './create-role.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './create-role.component.css'
 })
 export class CreateRoleComponent implements OnInit {
-  roleForm!: FormGroup;
-  permissions: PermissionDTO[] = [];
-  selectedPermissions: number[] = [];
+  private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly roleService = inject(RoleService);
+  private readonly permissionService = inject(PermissionService);
+  private readonly rolePermissionService = inject(RolePermissionService);
+  private readonly communityPermissions = inject(CommunityPermissionsService);
+
   communityId!: number;
+  permissions: PermissionDTO[] = [];
+  selectedPermissions = new Set<number>();
+  roles: RoleWithPermissions[] = [];
 
-  constructor(
-    private fb: FormBuilder,
-    private roleService: RoleService,
-    private permissionService: PermissionService,
-    private rolePermissionService: RolePermissionService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private activeRoleService: ActiveRoleService
-  ) {}
+  saving = false;
+  success: string | null = null;
+  error: string | null = null;
 
-  ngOnInit(): void {
-  this.communityId = +this.route.snapshot.paramMap.get('id')!;
-
-  // Comprobar permisos
-  if (
-    !this.activeRoleService.isForCommunity(this.communityId) ||
-    !this.activeRoleService.hasPermission('ASSIGN_ROLES')
-  ) {
-    this.router.navigate(['/communities']);
-    return;
-  }
-
-  // Inicializar el formulario
-  this.roleForm = this.fb.group({
-    name: ['', Validators.required],
+  readonly roleForm = this.fb.nonNullable.group({
+    name: ['', [Validators.required, Validators.maxLength(50)]],
     textColor: ['#000000', Validators.required],
     backgroundColor: ['#ffffff', Validators.required],
   });
 
-  this.loadPermissions();
-}
+  ngOnInit(): void {
+    this.communityId = Number(this.route.snapshot.paramMap.get('id'));
 
-
-  loadPermissions(): void {
-    this.permissionService.getAllPermissions().subscribe({
-      next: (data) => this.permissions = data,
-      error: () => alert('Error al cargar los permisos')
+    this.communityPermissions.getMyPermissions(this.communityId).subscribe((perms) => {
+      if (!perms.includes('ASSIGN_ROLES')) {
+        this.router.navigate(['/communities', this.communityId]);
+        return;
+      }
+      this.permissionService.getAllPermissions().subscribe({
+        next: (data) => (this.permissions = data),
+        error: () => (this.error = 'Error al cargar los permisos.'),
+      });
+      this.loadRoles();
     });
   }
 
-  onPermissionToggle(permissionId: number, event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
+  loadRoles(): void {
+    this.roleService
+      .getRolesByCommunity(this.communityId)
+      .pipe(
+        switchMap((roles) =>
+          roles.length === 0
+            ? of([] as RoleWithPermissions[])
+            : forkJoin(
+                roles.map((role) =>
+                  this.rolePermissionService
+                    .getPermissionsByRole(role.id)
+                    .pipe(switchMap((permissions) => of({ ...role, permissions })))
+                )
+              )
+        )
+      )
+      .subscribe({
+        next: (roles) => (this.roles = roles),
+        error: () => (this.error = 'Error al cargar los roles.'),
+      });
+  }
+
+  togglePermission(permissionId: number, checked: boolean): void {
     if (checked) {
-      this.selectedPermissions.push(permissionId);
+      this.selectedPermissions.add(permissionId);
     } else {
-      this.selectedPermissions = this.selectedPermissions.filter(id => id !== permissionId);
+      this.selectedPermissions.delete(permissionId);
     }
   }
 
   onSubmit(): void {
     if (this.roleForm.invalid) return;
+    this.saving = true;
+    this.error = null;
 
-    const roleData: RoleDTO = {
-      ...this.roleForm.value,
-      communityId: this.communityId
-    };
+    this.roleService
+      .createRole({ ...this.roleForm.getRawValue(), communityId: this.communityId })
+      .pipe(
+        switchMap((created) =>
+          this.selectedPermissions.size === 0
+            ? of([])
+            : forkJoin(
+                [...this.selectedPermissions].map((permissionId) =>
+                  this.rolePermissionService.assignPermission({ roleId: created.id, permissionId })
+                )
+              )
+        )
+      )
+      .subscribe({
+        next: () => {
+          this.saving = false;
+          this.success = 'Rol creado con éxito.';
+          setTimeout(() => (this.success = null), 3000);
+          this.roleForm.reset();
+          this.selectedPermissions.clear();
+          this.loadRoles();
+        },
+        error: (err) => {
+          this.saving = false;
+          this.error = errorMessage(err, 'Error al crear el rol.');
+        },
+      });
+  }
 
-    this.roleService.createRole(roleData).subscribe({
-      next: (createdRole) => {
-        this.selectedPermissions.forEach(permissionId => {
-          const dto: RolePermissionCreateDTO = {
-            roleId: createdRole.id,
-            permissionId
-          };
-          this.rolePermissionService.assignPermission(dto).subscribe();
-        });
+  deleteRole(role: RoleDTO): void {
+    if (!confirm(`¿Eliminar el rol "${role.name}"? Se quitará a todos los miembros que lo tengan.`)) return;
 
-        alert('Rol creado con éxito');
-        this.roleForm.reset();
-        this.selectedPermissions = [];
-      },
-      error: () => alert('Error al crear el rol')
+    this.roleService.deleteRole(role.id).subscribe({
+      next: () => this.loadRoles(),
+      error: (err) => (this.error = errorMessage(err, 'No se pudo eliminar el rol.')),
     });
+  }
+
+  permissionLabel(name: string): string {
+    return this.permissions.find((p) => p.name === name)?.description ?? name;
   }
 }

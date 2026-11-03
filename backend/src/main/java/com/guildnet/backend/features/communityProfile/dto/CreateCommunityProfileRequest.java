@@ -1,13 +1,11 @@
 package com.guildnet.backend.features.communityProfile.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Size;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class CreateCommunityProfileRequest {
-    private String username;
-    private String description;
+public record CreateCommunityProfileRequest(
+        @Size(max = 50, message = "El nombre no puede superar los 50 caracteres")
+        String username,
+
+        String description
+) {
 }

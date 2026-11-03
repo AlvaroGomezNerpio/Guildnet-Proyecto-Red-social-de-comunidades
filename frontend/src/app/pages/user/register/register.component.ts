@@ -1,51 +1,42 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../../services/auth.service';
+import { errorMessage } from '../../../core/http-error';
 
 @Component({
   selector: 'app-register',
   standalone: false,
   templateUrl: './register.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './register.component.css'
 })
 export class RegisterComponent {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
   username = '';
   email = '';
   password = '';
   image: File | null = null;
   error: string | null = null;
-
-  constructor(private http: HttpClient, private router: Router) {}
+  loading = false;
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.image = input.files[0];
-    }
+    this.image = input.files?.[0] ?? null;
   }
 
   onSubmit(): void {
-    const formData = new FormData();
-    formData.append('user', JSON.stringify({
-      username: this.username,
-      email: this.email,
-      password: this.password
-    }));
-
-    if (this.image) {
-      formData.append('image', this.image);
-    }
-
-    this.http.post<any>('http://localhost:8080/api/v1/auth/register', formData)
+    this.loading = true;
+    this.error = null;
+    this.authService
+      .register({ username: this.username, email: this.email, password: this.password }, this.image)
       .subscribe({
-        next: (res) => {
-          localStorage.setItem('token', res.token);
-          this.router.navigate(['/communities']);
+        next: () => this.router.navigate(['/communities']),
+        error: (err) => {
+          this.loading = false;
+          this.error = errorMessage(err, 'No se pudo registrar el usuario.');
         },
-        error: () => {
-          this.error = 'No se pudo registrar el usuario.';
-        }
       });
   }
-
 }

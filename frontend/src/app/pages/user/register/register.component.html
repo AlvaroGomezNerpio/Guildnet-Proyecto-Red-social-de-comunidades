@@ -4,7 +4,6 @@
       <h2 class="mb-4 text-center">Registro</h2>
 
       <form (ngSubmit)="onSubmit()" #registerForm="ngForm" novalidate>
-        <!-- Nombre de usuario -->
         <div class="mb-3">
           <label for="username" class="form-label">Nombre de usuario</label>
           <input
@@ -14,11 +13,12 @@
             name="username"
             [(ngModel)]="username"
             required
+            maxlength="50"
+            autocomplete="username"
             placeholder="TuNombreDeUsuario"
           />
         </div>
 
-        <!-- Correo electrónico -->
         <div class="mb-3">
           <label for="email" class="form-label">Correo electrónico</label>
           <input
@@ -28,11 +28,12 @@
             name="email"
             [(ngModel)]="email"
             required
+            email
+            autocomplete="email"
             placeholder="ejemplo@correo.com"
           />
         </div>
 
-        <!-- Contraseña -->
         <div class="mb-3">
           <label for="password" class="form-label">Contraseña</label>
           <input
@@ -41,12 +42,18 @@
             id="password"
             name="password"
             [(ngModel)]="password"
+            #passwordInput="ngModel"
             required
+            minlength="8"
+            maxlength="100"
+            autocomplete="new-password"
             placeholder="••••••••"
           />
+          <div class="form-text" [class.text-danger]="passwordInput.touched && passwordInput.invalid">
+            Mínimo 8 caracteres.
+          </div>
         </div>
 
-        <!-- Imagen de perfil -->
         <div class="mb-3">
           <label for="image" class="form-label">Imagen de perfil (opcional)</label>
           <input
@@ -54,26 +61,27 @@
             class="form-control"
             id="image"
             (change)="onFileSelected($event)"
-            accept="image/*"
+            accept="image/png, image/jpeg, image/gif, image/webp"
           />
         </div>
 
-        <!-- Botón de envío -->
         <div class="d-grid">
-          <button
-            type="submit"
-            class="btn btn-success"
-            [disabled]="registerForm.invalid"
-          >
+          <button type="submit" class="btn btn-success" [disabled]="registerForm.invalid || loading">
+            @if (loading) {
+              <span class="spinner-border spinner-border-sm me-1"></span>
+            }
             Registrarse
           </button>
         </div>
       </form>
 
-      <!-- Error -->
-      <div *ngIf="error" class="alert alert-danger mt-3 text-center">
-        {{ error }}
-      </div>
+      @if (error) {
+        <div class="alert alert-danger mt-3 text-center">{{ error }}</div>
+      }
+
+      <p class="text-center mt-3 mb-0 small">
+        ¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a>
+      </p>
     </div>
   </div>
 </div>

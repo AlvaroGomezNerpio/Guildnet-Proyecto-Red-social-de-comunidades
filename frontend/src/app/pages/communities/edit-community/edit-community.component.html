@@ -1,96 +1,55 @@
-<div class="container mt-5" *ngIf="community">
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <h2 class="card-title mb-4">Editar comunidad</h2>
+@if (community) {
+  <div class="container mt-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title mb-4">Editar comunidad</h2>
 
-      <form (ngSubmit)="onSubmit()" [formGroup]="editForm" enctype="multipart/form-data">
+        <form (ngSubmit)="onSubmit()" [formGroup]="editForm">
+          <div class="mb-3">
+            <label for="name" class="form-label">Nombre</label>
+            <input id="name" type="text" class="form-control" formControlName="name" maxlength="100" placeholder="Nombre de la comunidad" />
+          </div>
 
-        <!-- Nombre -->
-        <div class="mb-3">
-          <label for="name" class="form-label">Nombre</label>
-          <input
-            id="name"
-            type="text"
-            class="form-control"
-            formControlName="name"
-            placeholder="Nombre de la comunidad"
-          />
-        </div>
+          <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <quill-editor formControlName="description" [styles]="{ height: '300px' }"></quill-editor>
+          </div>
 
-        <!-- Descripción -->
-        <div class="mb-3">
-          <label for="description" class="form-label">Descripción</label>
-          <quill-editor
-            id="description"
-            [formControl]="descriptionControl"
-            [style]="{ height: '400px' }"
-          ></quill-editor>
-        </div>
+          <div class="mb-3">
+            <label class="form-label">Reglas</label>
+            <quill-editor formControlName="rules" [styles]="{ height: '300px' }"></quill-editor>
+          </div>
 
-        <!-- Reglas -->
-        <div class="mb-3">
-          <label for="rules" class="form-label">Reglas</label>
-          <quill-editor
-            id="rules"
-            [formControl]="rulesControl"
-            [style]="{ height: '400px' }"
-          ></quill-editor>
-        </div>
+          <div class="mb-3">
+            <label for="tags" class="form-label">Etiquetas (separadas por comas)</label>
+            <input id="tags" type="text" class="form-control" formControlName="tags" placeholder="ej. arte, videojuegos, comunidad" />
+          </div>
 
-        <!-- Etiquetas -->
-        <div class="mb-3">
-          <label for="tags" class="form-label">Etiquetas (separadas por comas)</label>
-          <input
-            id="tags"
-            type="text"
-            class="form-control"
-            formControlName="tags"
-            placeholder="ej. arte, videojuegos, comunidad"
-          />
-        </div>
+          <div class="mb-3">
+            <label for="image" class="form-label">Imagen de la comunidad</label>
+            <input id="image" type="file" accept="image/png, image/jpeg, image/gif, image/webp" class="form-control" (change)="onImageSelected($event)" />
+          </div>
 
-        <!-- Imagen -->
-        <div class="mb-3">
-          <label for="image" class="form-label">Imagen de perfil</label>
-          <input
-            id="image"
-            type="file"
-            accept="image/*"
-            class="form-control"
-            (change)="onImageSelected($event)"
-          />
-        </div>
+          <div class="mb-3">
+            <label for="banner" class="form-label">Banner</label>
+            <input id="banner" type="file" accept="image/png, image/jpeg, image/gif, image/webp" class="form-control" (change)="onBannerSelected($event)" />
+          </div>
 
-        <!-- Banner -->
-        <div class="mb-3">
-          <label for="banner" class="form-label">Banner</label>
-          <input
-            id="banner"
-            type="file"
-            accept="image/*"
-            class="form-control"
-            (change)="onBannerSelected($event)"
-          />
-        </div>
+          @if (error) {
+            <div class="alert alert-danger">{{ error }}</div>
+          }
 
-        <!-- Botones -->
-        <div class="d-flex justify-content-between mt-4">
-          <button
-            type="submit"
-            class="btn btn-success"
-            [disabled]="editForm.invalid"
-          >
-            Guardar cambios
-          </button>
-          <button
-            type="button"
-            class="btn btn-outline-danger"
-            (click)="onDelete()"
-          >
-            Eliminar comunidad
-          </button>
-        </div>
-      </form>
+          <div class="d-flex justify-content-between mt-4">
+            <div>
+              <button type="submit" class="btn btn-success me-2" [disabled]="editForm.invalid || saving">Guardar cambios</button>
+              <a class="btn btn-outline-secondary" [routerLink]="['/communities', community.id]">Cancelar</a>
+            </div>
+            @if (isOwner) {
+              <button type="button" class="btn btn-outline-danger" (click)="onDelete()">Eliminar comunidad</button>
+            }
+          </div>
+        </form>
+      </div>
     </div>
   </div>
-</div>
+}

@@ -13,6 +13,7 @@
             class="form-control"
             formControlName="title"
             placeholder="Escribe el título del post"
+            maxlength="200"
             required
           />
         </div>
@@ -22,7 +23,7 @@
           <label for="content" class="form-label">Contenido</label>
           <quill-editor
             formControlName="content"
-            [style]="{ height: '700px' }"
+            [styles]="{ height: '400px' }"
           ></quill-editor>
         </div>
 
@@ -39,9 +40,14 @@
           <div class="form-text">Separa las etiquetas con comas.</div>
         </div>
 
+        @if (errorMessage) {
+          <div class="alert alert-danger">{{ errorMessage }}</div>
+        }
+
         <!-- Botón -->
-        <div class="text-end">
-          <button type="submit" class="btn btn-success" [disabled]="postForm.invalid">
+        <div class="d-flex justify-content-between">
+          <a class="btn btn-outline-secondary" [routerLink]="['/communities', communityId]">Cancelar</a>
+          <button type="submit" class="btn btn-success" [disabled]="postForm.invalid || submitting">
             Publicar
           </button>
         </div>

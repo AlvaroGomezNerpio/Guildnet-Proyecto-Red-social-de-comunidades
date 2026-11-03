@@ -1,90 +1,56 @@
 <div class="container mt-4">
+  @if (error) {
+    <div class="alert alert-danger alert-dismissible">
+      {{ error }}
+      <button type="button" class="btn-close" (click)="error = null"></button>
+    </div>
+  }
+
   <!-- Banner e información principal de la comunidad -->
   <div class="text-center mb-5">
-    <img
-      *ngIf="community?.banner"
-      [src]="community?.banner"
-      class="img-fluid rounded mb-3 w-100"
-      alt="Banner de comunidad"
-    />
+    @if (community?.banner) {
+      <img [src]="community!.banner" class="img-fluid rounded mb-3 w-100 community-banner" alt="Banner de la comunidad" />
+    }
 
     <div class="d-flex justify-content-center align-items-center gap-3">
-      <img
-        *ngIf="community?.image"
-        [src]="community?.image"
-        alt="Avatar"
-        class="rounded-circle border"
-        width="80"
-        height="80"
-      />
+      @if (community?.image) {
+        <img [src]="community!.image" alt="Imagen de la comunidad" class="rounded-circle border" width="80" height="80" />
+      }
       <div>
         <h2 class="mb-1">{{ community?.name }}</h2>
-        <small class="text-muted d-block"
-          >#{{ community?.tags?.join(", ") }}</small
-        >
+        @if (community?.tags?.length) {
+          <small class="text-muted d-block">#{{ community!.tags.join(' #') }}</small>
+        }
       </div>
     </div>
 
     <!-- Reglas y descripción -->
-    <div class="mt-4 accordion" id="communityAccordion">
-
+    <div class="mt-4 accordion text-start" id="communityAccordion">
       <div class="accordion-item">
         <h2 class="accordion-header" id="descHeader">
-          <button
-            class="accordion-button collapsed"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#descriptionCollapse"
-          >
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#descriptionCollapse">
             Ver descripción
           </button>
         </h2>
-        <div
-          id="descriptionCollapse"
-          class="accordion-collapse collapse"
-          aria-labelledby="descHeader"
-          data-bs-parent="#communityAccordion"
-        >
+        <div id="descriptionCollapse" class="accordion-collapse collapse" aria-labelledby="descHeader" data-bs-parent="#communityAccordion">
           <div class="accordion-body">
-            <div
-              class="quill-content"
-              [innerHTML]="
-                community?.description ||
-                'Esta comunidad no tiene descripción pública.'
-              "
-            ></div>
+            <div class="quill-content" [innerHTML]="community?.description || 'Esta comunidad no tiene descripción pública.'"></div>
           </div>
         </div>
       </div>
 
       <div class="accordion-item">
         <h2 class="accordion-header" id="rulesHeader">
-          <button
-            class="accordion-button collapsed"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#rulesCollapse"
-          >
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#rulesCollapse">
             Ver reglas
           </button>
         </h2>
-        <div
-          id="rulesCollapse"
-          class="accordion-collapse collapse"
-          aria-labelledby="rulesHeader"
-          data-bs-parent="#communityAccordion"
-        >
+        <div id="rulesCollapse" class="accordion-collapse collapse" aria-labelledby="rulesHeader" data-bs-parent="#communityAccordion">
           <div class="accordion-body">
-            <div
-              class="quill-content"
-              [innerHTML]="
-                community?.rules || 'Esta comunidad no tiene reglas públicas.'
-              "
-            ></div>
+            <div class="quill-content" [innerHTML]="community?.rules || 'Esta comunidad no tiene reglas públicas.'"></div>
           </div>
         </div>
       </div>
-
     </div>
 
     <hr class="mt-5" />
@@ -93,198 +59,147 @@
   <div class="row">
     <!-- Columna lateral -->
     <div class="col-md-3 mb-4">
-      <!-- Perfil -->
-      <div class="card text-center mb-4">
-        <div class="card-body">
-          <img
-            *ngIf="profile?.profileImage"
-            [src]="profile?.profileImage"
-            alt="Perfil"
-            class="rounded-circle mb-2"
-            width="70"
-            height="70"
-          />
-          <h5 class="card-title">{{ profile?.username }}</h5>
-          <button
-            class="btn btn-outline-primary w-100 mt-2"
-            (click)="viewProfile(profile!.id)"
-          >
-            Ver perfil
-          </button>
-        </div>
-      </div>
-
-      <!-- Opciones -->
-      <div class="card">
-        <div class="card-body">
-          <h6 class="mb-3">Opciones</h6>
-          <div class="d-grid gap-2">
-            <button class="btn btn-primary" (click)="goToCreatePost()">
-              Crear publicación
-            </button>
-            <button
-              class="btn btn-outline-primary"
-              (click)="loadCommunityMembers()"
-            >
-              Ver miembros
-            </button>
-            <button class="btn btn-outline-primary" (click)="goToSearchPosts()">
-              Buscar publicaciones
-            </button>
-            <button
-              class="btn btn-outline-primary"
-              (click)="goToNotifications()"
-            >
-              Ver notificaciones
-              <span *ngIf="unreadCount > 0" class="badge bg-danger ms-2">{{
-                unreadCount
-              }}</span>
-            </button>
-            <button
-              *ngIf="canAssignRoles()"
-              class="btn btn-outline-primary"
-              (click)="goToCreateRole()"
-            >
-              Crear rol
-            </button>
-            <button
-              *ngIf="canEditCommunity()"
-              class="btn btn-outline-warning"
-              (click)="goToEditCommunity()"
-            >
-              <i class="bi bi-pencil-square me-1"></i> Editar comunidad
-            </button>
+      @if (profile) {
+        <!-- Perfil -->
+        <div class="card text-center mb-4">
+          <div class="card-body">
+            <img [src]="profile.profileImage || 'default-avatar.svg'" alt="Perfil" class="rounded-circle mb-2" width="70" height="70" />
+            <h5 class="card-title">{{ profile.username }}</h5>
+            @if (profile.rol) {
+              <span class="badge mb-2" [style.background-color]="profile.rol.backgroundColor" [style.color]="profile.rol.textColor">
+                {{ profile.rol.name }}
+              </span>
+            }
+            <button class="btn btn-outline-primary w-100 mt-2" (click)="viewProfile(profile.id)">Ver perfil</button>
           </div>
         </div>
-      </div>
+
+        <!-- Opciones -->
+        <div class="card">
+          <div class="card-body">
+            <h6 class="mb-3">Opciones</h6>
+            <div class="d-grid gap-2">
+              <button class="btn btn-primary" (click)="goToCreatePost()">Crear publicación</button>
+              <button class="btn btn-outline-primary" (click)="loadCommunityMembers()">Ver miembros</button>
+              <button class="btn btn-outline-primary" (click)="goToSearchPosts()">Buscar publicaciones</button>
+              <button class="btn btn-outline-primary" (click)="goToNotifications()">
+                Ver notificaciones
+                @if (unreadCount > 0) {
+                  <span class="badge bg-danger ms-2">{{ unreadCount }}</span>
+                }
+              </button>
+              @if (hasPermission('ASSIGN_ROLES')) {
+                <button class="btn btn-outline-primary" (click)="goToCreateRole()">Gestionar roles</button>
+              }
+              @if (hasPermission('MANAGE_COMMUNITY_SETTINGS')) {
+                <button class="btn btn-outline-warning" (click)="goToEditCommunity()">
+                  <i class="bi bi-pencil-square me-1"></i> Editar comunidad
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      } @else if (profileLoaded) {
+        <div class="card text-center">
+          <div class="card-body">
+            <p class="mb-3">Únete para publicar, comentar y participar en el chat.</p>
+            <button class="btn btn-success w-100" (click)="join()" [disabled]="joining">
+              <i class="bi bi-person-plus me-1"></i> Unirse a la comunidad
+            </button>
+            <button class="btn btn-outline-primary w-100 mt-2" (click)="loadCommunityMembers()">Ver miembros</button>
+          </div>
+        </div>
+      }
     </div>
 
-    <!-- Columna principal con posts -->
+    <!-- Columna principal -->
     <div class="col-md-9">
+      @if (profile) {
+        <div class="mb-4">
+          <app-community-chat [communityId]="communityId" [myProfileId]="profile.id"></app-community-chat>
+        </div>
+      }
+
       <h4 class="mb-4">Publicaciones recientes</h4>
 
-      <ng-container *ngIf="posts.length > 0; else noPosts">
-        <div
-          *ngFor="let post of posts.slice().reverse()"
-          class="card mb-4"
-          (click)="goToPostDetail(post.id)"
-          style="cursor: pointer"
-        >
+      @for (post of posts; track post.id) {
+        <div class="card mb-4 post-card" (click)="goToPostDetail(post.id)">
           <div class="card-body">
             <!-- Autor -->
-            <div
-              class="d-flex align-items-center mb-3"
-              (click)="
-                viewProfile(post.communityProfile.id); $event.stopPropagation()
-              "
-            >
-              <img
-                *ngIf="post.communityProfile?.profileImage"
-                [src]="post.communityProfile.profileImage"
-                alt="Avatar"
-                class="rounded-circle me-2"
-                width="40"
-                height="40"
-              />
-              <h6 class="mb-0 text-truncate">
-                {{ post.communityProfile.username }}
-              </h6>
+            <div class="d-flex align-items-center mb-3" (click)="viewProfile(post.communityProfile.id); $event.stopPropagation()">
+              <img [src]="post.communityProfile.profileImage || 'default-avatar.svg'" alt="Avatar" class="rounded-circle me-2" width="40" height="40" />
+              <h6 class="mb-0 text-truncate">{{ post.communityProfile.username }}</h6>
+              @if (post.createdAt) {
+                <small class="text-muted ms-auto">{{ post.createdAt | date: 'medium' }}</small>
+              }
             </div>
 
-            <!-- Título -->
             <h5 class="card-title">{{ post.title }}</h5>
 
-            <!-- Contenido -->
-            <div *ngIf="post.showContent" class="card card-body bg-light mb-2">
-              <div class="quill-content" [innerHTML]="post.content"></div>
-            </div>
+            @if (post.showContent) {
+              <div class="card card-body bg-light mb-2">
+                <div class="quill-content" [innerHTML]="post.content"></div>
+              </div>
+            }
 
-            <!-- Ver más -->
             <div class="text-center">
-              <button
-                class="btn btn-sm btn-outline-secondary"
-                (click)="toggleContent(post); $event.stopPropagation()"
-              >
-                {{ post.showContent ? "Ver menos" : "Ver más" }}
+              <button class="btn btn-sm btn-outline-secondary" (click)="toggleContent(post); $event.stopPropagation()">
+                {{ post.showContent ? 'Ver menos' : 'Ver más' }}
               </button>
             </div>
 
-            <!-- Tags -->
             <div class="mt-2 mb-2">
-              <span
-                class="badge bg-primary me-1"
-                *ngFor="let tag of post.tags"
-                >{{ tag }}</span
-              >
+              @for (tag of post.tags; track tag) {
+                <span class="badge bg-primary me-1">{{ tag }}</span>
+              }
             </div>
 
-            <!-- Likes / comentarios -->
             <div class="text-end">
               <small class="text-muted">{{ post.likes }} 💙</small> |
-              <small class="text-muted">{{ post.coments }} 💬</small>
+              <small class="text-muted">{{ post.comments }} 💬</small>
             </div>
           </div>
         </div>
-      </ng-container>
-
-      <ng-template #noPosts>
-        <div class="alert alert-secondary">
-          No hay publicaciones en esta comunidad todavía.
-        </div>
-      </ng-template>
+      } @empty {
+        <div class="alert alert-secondary">No hay publicaciones en esta comunidad todavía.</div>
+      }
     </div>
   </div>
 
   <!-- Modal miembros -->
-  <div class="modal fade show d-block" tabindex="-1" *ngIf="showMembersModal">
-    <div class="modal-dialog modal-dialog-scrollable modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Miembros de la comunidad</h5>
-          <button
-            type="button"
-            class="btn-close"
-            (click)="showMembersModal = false"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <input
-            type="text"
-            class="form-control mb-3"
-            placeholder="Buscar por nombre..."
-            [(ngModel)]="searchTerm"
-            (input)="filterMembers()"
-          />
-          <div *ngIf="filteredMembers.length === 0">
-            No se encontraron miembros.
+  @if (showMembersModal) {
+    <div class="modal fade show d-block" tabindex="-1">
+      <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Miembros de la comunidad</h5>
+            <button type="button" class="btn-close" (click)="showMembersModal = false"></button>
           </div>
-          <ul class="list-group">
-            <li
-              *ngFor="let member of filteredMembers"
-              class="list-group-item d-flex align-items-center"
-            >
-              <img
-                [src]="member.profileImage"
-                width="40"
-                class="rounded-circle me-2"
-              />
-              <span class="flex-grow-1">{{ member.username }}</span>
-              <button
-                class="btn btn-sm btn-link"
-                (click)="viewProfile(member.id)"
-              >
-                Ver perfil
-              </button>
-            </li>
-          </ul>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="showMembersModal = false">
-            Cerrar
-          </button>
+          <div class="modal-body">
+            <input type="text" class="form-control mb-3" placeholder="Buscar por nombre..." [(ngModel)]="searchTerm" (input)="filterMembers()" />
+            <ul class="list-group">
+              @for (member of filteredMembers; track member.id) {
+                <li class="list-group-item d-flex align-items-center">
+                  <img [src]="member.profileImage || 'default-avatar.svg'" width="40" height="40" class="rounded-circle me-2" alt="" />
+                  <span class="flex-grow-1">{{ member.username }}</span>
+                  @if (member.rol) {
+                    <span class="badge me-2" [style.background-color]="member.rol.backgroundColor" [style.color]="member.rol.textColor">
+                      {{ member.rol.name }}
+                    </span>
+                  }
+                  <button class="btn btn-sm btn-link" (click)="viewProfile(member.id)">Ver perfil</button>
+                </li>
+              } @empty {
+                <li class="list-group-item text-muted">No se encontraron miembros.</li>
+              }
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="showMembersModal = false">Cerrar</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  <div class="modal-backdrop fade show" *ngIf="showMembersModal"></div>
+    <div class="modal-backdrop fade show"></div>
+  }
 </div>

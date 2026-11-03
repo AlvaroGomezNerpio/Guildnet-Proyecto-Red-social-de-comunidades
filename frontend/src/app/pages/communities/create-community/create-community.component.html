@@ -53,10 +53,11 @@
 
         <!-- Imagen de perfil -->
         <div class="mb-3">
-          <label for="image" class="form-label">Imagen de perfil</label>
+          <label for="image" class="form-label">Imagen de la comunidad</label>
           <input
             type="file"
             id="image"
+            accept="image/png, image/jpeg, image/gif, image/webp"
             (change)="onImageSelected($event)"
             class="form-control"
           />
@@ -68,14 +69,19 @@
           <input
             type="file"
             id="banner"
+            accept="image/png, image/jpeg, image/gif, image/webp"
             (change)="onBannerSelected($event)"
             class="form-control"
           />
         </div>
 
+        @if (error) {
+          <div class="alert alert-danger">{{ error }}</div>
+        }
+
         <!-- Botón -->
         <div class="d-grid">
-          <button type="submit" class="btn btn-success">Crear comunidad</button>
+          <button type="submit" class="btn btn-success" [disabled]="saving || !community.name.trim()">Crear comunidad</button>
         </div>
       </form>
     </div>

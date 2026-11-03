@@ -1,61 +1,62 @@
 package com.guildnet.backend.features.user;
 
 import com.guildnet.backend.features.communityProfile.CommunityProfile;
-import com.guildnet.backend.features.notification.Notification;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchConnectionDetails;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Entity
-@Table(name = "users") // Renombramos la tabla a "users"
-@Data
+@Table(name = "users")
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements org.springframework.security.core.userdetails.UserDetails {
+public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String username;
+    /** Nombre visible del usuario. */
+    @Column(name = "username")
+    private String displayName;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
+    @Getter(AccessLevel.NONE)
     private String password;
 
     private String profileImage;
 
+    @Builder.Default
     @ElementCollection
-    private List<String> tags;
+    private List<String> tags = new ArrayList<>();
 
+    // Perfiles del usuario en las distintas comunidades
+    @Builder.Default
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CommunityProfile> communityProfiles = new ArrayList<>();
 
+    /** Spring Security usa el email como identificador para el login. */
     @Override
     public String getUsername() {
         return email;
-    } // Utilizamos el correo como nombre de usuario para login
-
-    public String getTrueUsername() {
-        return username;
-    } // Devuelve el nombre visible del usuario
-
-    // No implementamos roles aún, devolvemos una lista vacía
-    @Override
-    public java.util.Collection<? extends org.springframework.security.core.GrantedAuthority> getAuthorities() {
-        return java.util.Collections.emptyList();
     }
 
-    // Relación uno a muchos con los perfiles del usuario en diferentes comunidades
-    @OneToMany(mappedBy = "user")
-    private List<CommunityProfile> communityProfiles;
+    @Override
+    public String getPassword() {
+        return password;
+    }
 
-    // Métodos obligatorios para UserDetails, devolvemos true por defecto
-    @Override public boolean isAccountNonExpired()     { return true; }
-    @Override public boolean isAccountNonLocked()      { return true; }
-    @Override public boolean isCredentialsNonExpired() { return true; }
-    @Override public boolean isEnabled()               { return true; }
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
 }
-

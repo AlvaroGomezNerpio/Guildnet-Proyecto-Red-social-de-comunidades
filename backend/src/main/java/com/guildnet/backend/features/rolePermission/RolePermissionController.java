@@ -1,10 +1,13 @@
 package com.guildnet.backend.features.rolePermission;
 
+import com.guildnet.backend.features.role.RoleService;
 import com.guildnet.backend.features.rolePermission.dto.CreateRolePermissionRequest;
 import com.guildnet.backend.features.rolePermission.dto.RolePermissionDTO;
+import com.guildnet.backend.features.user.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,28 +17,22 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RolePermissionController {
 
-    private final RolePermissionService rolePermissionService;
+    private final RoleService roleService;
 
     @PostMapping
-    public ResponseEntity<RolePermissionDTO> assignPermissionToRole(@RequestBody CreateRolePermissionRequest request) {
-        RolePermissionDTO assigned = rolePermissionService.assignPermissionToRole(
-                request.getRoleId(), request.getPermissionId()
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).body(assigned);
+    @ResponseStatus(HttpStatus.CREATED)
+    public RolePermissionDTO add(@RequestBody @Valid CreateRolePermissionRequest request, @AuthenticationPrincipal User user) {
+        return roleService.addPermission(request.roleId(), request.permissionId(), user);
     }
 
     @GetMapping("/role/{roleId}")
-    public ResponseEntity<List<RolePermissionDTO>> getPermissionsByRole(@PathVariable Long roleId) {
-        List<RolePermissionDTO> rolePermissions = rolePermissionService.getPermissionsByRole(roleId);
-        return ResponseEntity.ok(rolePermissions);
+    public List<RolePermissionDTO> getByRole(@PathVariable Long roleId) {
+        return roleService.getPermissions(roleId);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removeRolePermission(@PathVariable Long id) {
-        rolePermissionService.removeRolePermission(id);
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void remove(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        roleService.removePermission(id, user);
     }
 }
-
-
-

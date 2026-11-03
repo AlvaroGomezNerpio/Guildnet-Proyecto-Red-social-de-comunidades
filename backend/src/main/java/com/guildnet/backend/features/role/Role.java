@@ -1,10 +1,11 @@
 package com.guildnet.backend.features.role;
 
-import com.guildnet.backend.features.Community.Community;
+import com.guildnet.backend.features.community.Community;
 import com.guildnet.backend.features.rolePermission.RolePermission;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -31,6 +32,7 @@ public class Role {
     private Community community;
 
     // Lista de permisos asociados a este rol (relación uno a muchos)
+    @Builder.Default
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<RolePermission> permissions;
+    private List<RolePermission> permissions = new ArrayList<>();
 }

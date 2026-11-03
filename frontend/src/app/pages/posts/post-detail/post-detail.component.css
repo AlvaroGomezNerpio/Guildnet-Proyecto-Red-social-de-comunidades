@@ -19,3 +19,11 @@
 body {
   overflow-x: hidden;
 }
+
+.clickable {
+  cursor: pointer;
+}
+
+.comment-text {
+  white-space: pre-wrap;
+}

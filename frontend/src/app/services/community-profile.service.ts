@@ -1,123 +1,64 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { CommunityProfileDTO } from '../models/communityProfile/CommunityProfileDTO';
 import { UpdateCommunityProfileRequest } from '../models/communityProfile/UpdateCommunityProfileRequest';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class CommunityProfileService {
+  private readonly http = inject(HttpClient);
+  private readonly apiUrl = `${environment.apiUrl}/api/v1/profiles`;
 
-  private apiUrl = 'http://localhost:8080/api/v1/profiles';
-
-  constructor(private http: HttpClient) {}
-
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
-  }
-
-  // 🔹 Unirse automáticamente a una comunidad
+  /** Unirse a una comunidad con los datos del perfil global. */
   joinCommunity(communityId: number): Observable<CommunityProfileDTO> {
-    return this.http.post<CommunityProfileDTO>(
-      `${this.apiUrl}/auto-create/community/${communityId}`,
-      null,
-      { headers: this.getAuthHeaders() }
-    );
+    return this.http.post<CommunityProfileDTO>(`${this.apiUrl}/auto-create/community/${communityId}`, null);
   }
 
-  // 🔹 Obtener tu perfil en una comunidad usando el token
+  /** Perfil del usuario autenticado en la comunidad (404 si no es miembro). */
   getMyProfileInCommunity(communityId: number): Observable<CommunityProfileDTO> {
-    return this.http.get<CommunityProfileDTO>(
-      `${this.apiUrl}/me/community/${communityId}`,
-      { headers: this.getAuthHeaders() }
-    );
+    return this.http.get<CommunityProfileDTO>(`${this.apiUrl}/me/community/${communityId}`);
   }
 
-  // 🔹 Obtener todos los perfiles de una comunidad
   getProfilesByCommunity(communityId: number): Observable<CommunityProfileDTO[]> {
-    return this.http.get<CommunityProfileDTO[]>(
-      `${this.apiUrl}/community/${communityId}`,
-      { headers: this.getAuthHeaders() }
-    );
+    return this.http.get<CommunityProfileDTO[]>(`${this.apiUrl}/community/${communityId}`);
   }
 
-  // 🔹 Obtener perfil por ID
   getProfileById(profileId: number): Observable<CommunityProfileDTO> {
-    return this.http.get<CommunityProfileDTO>(
-      `${this.apiUrl}/${profileId}`,
-      { headers: this.getAuthHeaders() }
-    );
+    return this.http.get<CommunityProfileDTO>(`${this.apiUrl}/${profileId}`);
   }
 
-  // 🔹 Eliminar un perfil
+  /** Abandonar la comunidad (borra el propio perfil). */
   deleteProfile(profileId: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}/${profileId}`, {
-      headers: this.getAuthHeaders(),
-      responseType: 'text'
-    });
+    return this.http.delete(`${this.apiUrl}/${profileId}`, { responseType: 'text' });
   }
 
-  // 🔹 Asignar un título a un perfil
   assignTitle(profileId: number, titleId: number): Observable<string> {
-    return this.http.post(`${this.apiUrl}/${profileId}/titles/${titleId}`, null, {
-      headers: this.getAuthHeaders(),
-      responseType: 'text'
-    });
+    return this.http.post(`${this.apiUrl}/${profileId}/titles/${titleId}`, null, { responseType: 'text' });
   }
 
-  // 🔹 Quitar un título de un perfil
   removeTitle(profileId: number, titleId: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}/${profileId}/titles/${titleId}`, {
-      headers: this.getAuthHeaders(),
-      responseType: 'text'
-    });
+    return this.http.delete(`${this.apiUrl}/${profileId}/titles/${titleId}`, { responseType: 'text' });
   }
 
-  // 🔹 Cambiar el título destacado
   changeFeaturedTitle(profileId: number, titleId: number): Observable<string> {
-    return this.http.put(`${this.apiUrl}/${profileId}/featured-title/${titleId}`, null, {
-      headers: this.getAuthHeaders(),
-      responseType: 'text'
-    });
+    return this.http.put(`${this.apiUrl}/${profileId}/featured-title/${titleId}`, null, { responseType: 'text' });
   }
 
-  // 🔹 Asignar rol
   assignRoleToProfile(profileId: number, roleId: number): Observable<string> {
-    return this.http.post(`${this.apiUrl}/${profileId}/roles/${roleId}`, null, {
-      headers: this.getAuthHeaders(),
-      responseType: 'text'
-    });
+    return this.http.post(`${this.apiUrl}/${profileId}/roles/${roleId}`, null, { responseType: 'text' });
   }
 
-  // 🔹 Quitar rol
   removeRoleFromProfile(profileId: number, roleId: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}/${profileId}/roles/${roleId}`, {
-      headers: this.getAuthHeaders(),
-      responseType: 'text'
-    });
+    return this.http.delete(`${this.apiUrl}/${profileId}/roles/${roleId}`, { responseType: 'text' });
   }
 
-  // 🔹 Actualizar perfil de comunidad con imagen
-  updateProfile(
-    profileId: number,
-    request: UpdateCommunityProfileRequest,
-    imageFile?: File
-  ): Observable<CommunityProfileDTO> {
+  updateProfile(profileId: number, request: UpdateCommunityProfileRequest, imageFile?: File | null): Observable<CommunityProfileDTO> {
     const formData = new FormData();
     formData.append('data', new Blob([JSON.stringify(request)], { type: 'application/json' }));
-
     if (imageFile) {
       formData.append('image', imageFile);
     }
-
-    return this.http.put<CommunityProfileDTO>(
-      `${this.apiUrl}/${profileId}`,
-      formData,
-      { headers: this.getAuthHeaders() }
-    );
+    return this.http.put<CommunityProfileDTO>(`${this.apiUrl}/${profileId}`, formData);
   }
 }

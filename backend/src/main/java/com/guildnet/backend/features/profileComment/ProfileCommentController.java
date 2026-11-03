@@ -2,49 +2,47 @@ package com.guildnet.backend.features.profileComment;
 
 import com.guildnet.backend.features.profileComment.dto.ProfileCommentCreateUpdateDTO;
 import com.guildnet.backend.features.profileComment.dto.ProfileCommentDTO;
+import com.guildnet.backend.features.user.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/profile-comments")
+@RequestMapping("/api/v1/profile-comments")
 @RequiredArgsConstructor
 public class ProfileCommentController {
 
-    private final ProfileCommentService profileCommentService;
+    private final ProfileCommentService commentService;
 
     @PostMapping("/{authorProfileId}/{targetProfileId}")
-    public ResponseEntity<ProfileCommentDTO> createComment(
+    @ResponseStatus(HttpStatus.CREATED)
+    public ProfileCommentDTO create(
             @PathVariable Long authorProfileId,
             @PathVariable Long targetProfileId,
-            @RequestBody ProfileCommentCreateUpdateDTO dto
+            @RequestBody @Valid ProfileCommentCreateUpdateDTO dto,
+            @AuthenticationPrincipal User user
     ) {
-        return new ResponseEntity<>(
-                profileCommentService.createProfileComment(authorProfileId, targetProfileId, dto),
-                HttpStatus.CREATED
-        );
+        return commentService.create(authorProfileId, targetProfileId, dto, user);
     }
 
     @PutMapping("/{commentId}")
-    public ResponseEntity<ProfileCommentDTO> updateComment(
-            @PathVariable Long commentId,
-            @RequestBody ProfileCommentCreateUpdateDTO dto) {
-        return ResponseEntity.ok(profileCommentService.updateProfileComment(commentId, dto));
+    public ProfileCommentDTO update(@PathVariable Long commentId, @RequestBody @Valid ProfileCommentCreateUpdateDTO dto,
+                                    @AuthenticationPrincipal User user) {
+        return commentService.update(commentId, dto, user);
     }
 
     @GetMapping("/target/{targetProfileId}")
-    public ResponseEntity<List<ProfileCommentDTO>> getCommentsByTarget(
-            @PathVariable Long targetProfileId) {
-        return ResponseEntity.ok(profileCommentService.getCommentsByTargetProfileId(targetProfileId));
+    public List<ProfileCommentDTO> getByTarget(@PathVariable Long targetProfileId) {
+        return commentService.getByTarget(targetProfileId);
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
-        profileCommentService.deleteProfileComment(commentId);
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long commentId, @AuthenticationPrincipal User user) {
+        commentService.delete(commentId, user);
     }
 }

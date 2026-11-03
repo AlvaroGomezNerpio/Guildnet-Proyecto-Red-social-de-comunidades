@@ -3,9 +3,11 @@ package com.guildnet.backend.features.title;
 import com.guildnet.backend.features.title.dto.CreateTitleRequest;
 import com.guildnet.backend.features.title.dto.TitleDTO;
 import com.guildnet.backend.features.title.dto.UpdateTitleRequest;
+import com.guildnet.backend.features.user.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,35 +20,30 @@ public class TitleController {
     private final TitleService titleService;
 
     @PostMapping
-    public ResponseEntity<TitleDTO> createTitle(@RequestBody CreateTitleRequest request) {
-        TitleDTO created = titleService.createTitle(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    @ResponseStatus(HttpStatus.CREATED)
+    public TitleDTO create(@RequestBody @Valid CreateTitleRequest request, @AuthenticationPrincipal User user) {
+        return titleService.create(request, user);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TitleDTO> updateTitle(
-            @PathVariable Long id,
-            @RequestBody UpdateTitleRequest request
-    ) {
-        TitleDTO updated = titleService.updateTitle(id, request);
-        return ResponseEntity.ok(updated);
+    public TitleDTO update(@PathVariable Long id, @RequestBody @Valid UpdateTitleRequest request,
+                           @AuthenticationPrincipal User user) {
+        return titleService.update(id, request, user);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteTitle(@PathVariable Long id) {
-        titleService.deleteTitle(id);
-        return ResponseEntity.ok("Título eliminado correctamente");
+    public String delete(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        titleService.delete(id, user);
+        return "Título eliminado correctamente";
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TitleDTO> getTitleById(@PathVariable Long id) {
-        TitleDTO dto = titleService.getTitleById(id);
-        return ResponseEntity.ok(dto);
+    public TitleDTO getById(@PathVariable Long id) {
+        return titleService.getById(id);
     }
 
     @GetMapping("/community/{communityId}")
-    public ResponseEntity<List<TitleDTO>> getTitlesByCommunity(@PathVariable Long communityId) {
-        List<TitleDTO> titles = titleService.getTitlesByCommunity(communityId);
-        return ResponseEntity.ok(titles);
+    public List<TitleDTO> getByCommunity(@PathVariable Long communityId) {
+        return titleService.getByCommunity(communityId);
     }
 }

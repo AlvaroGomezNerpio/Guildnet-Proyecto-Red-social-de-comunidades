@@ -20,47 +20,51 @@
           <i class="bi bi-search me-1"></i>Buscar Comunidad
         </a>
       </li>
-      <li class="nav-item" *ngIf="currentUser">
-        <a class="btn btn-outline-primary d-flex align-items-center ms-3" [routerLink]="['/communities/create']">
-          <i class="bi bi-plus-circle me-1"></i>Crear comunidad
-        </a>
-      </li>
+      @if (currentUser) {
+        <li class="nav-item">
+          <a class="btn btn-outline-primary d-flex align-items-center ms-3" [routerLink]="['/communities/create']">
+            <i class="bi bi-plus-circle me-1"></i>Crear comunidad
+          </a>
+        </li>
+      }
     </ul>
   </nav>
 
   <!-- Área de usuario -->
   <div class="col-md-3 text-end">
-    <ng-container *ngIf="!currentUser; else loggedIn">
+    @if (!currentUser) {
       <button type="button" class="btn btn-outline-primary me-2" routerLink="/login">
         <i class="bi bi-box-arrow-in-right me-1"></i>Login
       </button>
       <button type="button" class="btn btn-primary" routerLink="/register">
         <i class="bi bi-person-plus-fill me-1"></i>Registrarse
       </button>
-    </ng-container>
-
-    <ng-template #loggedIn>
+    } @else {
       <div class="d-flex align-items-center justify-content-end">
         <a
           routerLink="/profile"
           class="btn btn-outline-secondary me-2 d-inline-flex align-items-center"
           style="text-decoration: none;"
-        >
-          <img
-            *ngIf="currentUser?.profileImage"
-            [src]="currentUser?.profileImage"
-            alt="Imagen de perfil"
-            class="rounded-circle me-2"
-            width="30"
-            height="30"
-          />
-          <i class="bi bi-person-circle me-1" *ngIf="!currentUser?.profileImage"></i>
+          >
+          @if (currentUser?.profileImage) {
+            <img
+              [src]="currentUser.profileImage || 'default-avatar.svg'"
+              alt="Imagen de perfil"
+              class="rounded-circle me-2"
+              width="30"
+              height="30"
+              />
+          }
+          @if (!currentUser?.profileImage) {
+            <i class="bi bi-person-circle me-1"></i>
+          }
           <span>{{ currentUser?.username || 'Perfil' }}</span>
         </a>
         <button type="button" class="btn btn-danger" (click)="logout()">
           <i class="bi bi-box-arrow-right me-1"></i>Salir
         </button>
       </div>
-    </ng-template>
+    }
+
   </div>
 </header>

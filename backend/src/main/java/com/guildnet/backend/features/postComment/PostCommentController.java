@@ -1,10 +1,13 @@
 package com.guildnet.backend.features.postComment;
 
-import com.guildnet.backend.features.postComment.dto.PostComentDTO;
 import com.guildnet.backend.features.postComment.dto.PostCommentCreateDTO;
+import com.guildnet.backend.features.postComment.dto.PostCommentDTO;
 import com.guildnet.backend.features.postComment.dto.PostCommentUpdateDTO;
+import com.guildnet.backend.features.user.User;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,32 +17,28 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostCommentController {
 
-    private final PostCommentService postCommentService;
+    private final PostCommentService commentService;
 
-    // Crear un comentario
     @PostMapping
-    public ResponseEntity<PostComentDTO> createComment(@RequestBody PostCommentCreateDTO dto) {
-        return ResponseEntity.ok(postCommentService.createComment(dto));
+    @ResponseStatus(HttpStatus.CREATED)
+    public PostCommentDTO create(@RequestBody @Valid PostCommentCreateDTO dto, @AuthenticationPrincipal User user) {
+        return commentService.create(dto, user);
     }
 
-    // Actualizar un comentario
     @PutMapping("/{id}")
-    public ResponseEntity<PostComentDTO> updateComment(@PathVariable Long id,
-                                                       @RequestBody PostCommentUpdateDTO dto) {
-        PostComentDTO updated = postCommentService.updateComment(id, dto);
-        return ResponseEntity.ok(updated);
+    public PostCommentDTO update(@PathVariable Long id, @RequestBody @Valid PostCommentUpdateDTO dto,
+                                 @AuthenticationPrincipal User user) {
+        return commentService.update(id, dto, user);
     }
 
-    // Obtener comentarios por ID de post
     @GetMapping("/post/{postId}")
-    public ResponseEntity<List<PostComentDTO>> getCommentsByPost(@PathVariable Long postId) {
-        return ResponseEntity.ok(postCommentService.getCommentsByPostId(postId));
+    public List<PostCommentDTO> getByPost(@PathVariable Long postId) {
+        return commentService.getByPost(postId);
     }
 
-    // Eliminar comentario por ID
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
-        postCommentService.deleteComment(commentId);
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long commentId, @AuthenticationPrincipal User user) {
+        commentService.delete(commentId, user);
     }
 }

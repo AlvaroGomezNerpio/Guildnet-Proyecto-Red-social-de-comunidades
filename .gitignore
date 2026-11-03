@@ -39,3 +39,6 @@
 Thumbs.db
 ehthumbs.db
 .DS_Store
+
+# Imágenes subidas en local
+/backend/uploads/

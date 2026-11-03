@@ -1,20 +1,13 @@
 package com.guildnet.backend.features.user.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
-@Data
-@AllArgsConstructor
-public class UpdateUserTagsRequest {
-    private List<String> tags;
-
-    public List<String> getTags() {
-        return tags;
-    }
-
-    public void setTags(List<String> tags) {
-        this.tags = tags;
-    }
+public record UpdateUserTagsRequest(
+        @NotNull
+        @Size(max = 20, message = "No puedes tener más de 20 etiquetas")
+        List<@Size(max = 30) String> tags
+) {
 }

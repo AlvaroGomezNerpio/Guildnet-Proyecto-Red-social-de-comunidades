@@ -4,3 +4,11 @@
   display: block;
   margin: 0 auto;
 }
+
+.post-card {
+  cursor: pointer;
+}
+
+.comment-text {
+  white-space: pre-wrap;
+}

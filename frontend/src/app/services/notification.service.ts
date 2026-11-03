@@ -1,51 +1,28 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { NotificationDTO } from '../models/notification/NotificationDTO';
-import { NotificationCreateDTO } from '../models/notification/NotificationCreateDTO';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { NotificationDTO } from '../models/notification/NotificationDTO';
 
-@Injectable({
-  providedIn: 'root'
-})
+/** Las notificaciones las genera el backend; aqui solo se consultan y gestionan. */
+@Injectable({ providedIn: 'root' })
 export class NotificationService {
-
-  private baseUrl = 'http://localhost:8080/api/v1/notifications';
-
-  constructor(private http: HttpClient) {}
-
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return new HttpHeaders({ Authorization: `Bearer ${token}` });
-  }
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = `${environment.apiUrl}/api/v1/notifications`;
 
   getNotificationsByProfile(profileId: number): Observable<NotificationDTO[]> {
-    return this.http.get<NotificationDTO[]>(`${this.baseUrl}/profile/${profileId}`, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.get<NotificationDTO[]>(`${this.baseUrl}/profile/${profileId}`);
   }
 
   countUnread(profileId: number): Observable<number> {
-    return this.http.get<number>(`${this.baseUrl}/profile/${profileId}/unread/count`, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.get<number>(`${this.baseUrl}/profile/${profileId}/unread/count`);
   }
 
   markAsRead(notificationId: number): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/${notificationId}/read`, {}, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.put<void>(`${this.baseUrl}/${notificationId}/read`, {});
   }
 
   deleteNotification(notificationId: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${notificationId}`, {
-      headers: this.getAuthHeaders()
-    });
-  }
-
-  createNotification(dto: NotificationCreateDTO): Observable<NotificationDTO> {
-    return this.http.post<NotificationDTO>(`${this.baseUrl}`, dto, {
-      headers: this.getAuthHeaders()
-    });
+    return this.http.delete<void>(`${this.baseUrl}/${notificationId}`);
   }
 }
-

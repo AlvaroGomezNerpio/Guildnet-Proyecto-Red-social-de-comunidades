@@ -1,24 +1,30 @@
-// ✅ auth.service.ts
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { UserDTO } from '../models/user/UserDTO';
 import { LoginRequest } from '../models/user/LoginRequest';
 import { LoginResponse } from '../models/user/LoginResponse';
+import { RegisterRequest } from '../models/user/RegisterRequest';
 
-@Injectable({
-  providedIn: 'root',
-})
+const TOKEN_KEY = 'token';
+
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api/v1/auth';
-  private meUrl = 'http://localhost:8080/api/v1/user/me';
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+  private readonly apiUrl = `${environment.apiUrl}/api/v1/auth`;
 
-  private currentUserSubject = new BehaviorSubject<UserDTO | null>(null);
-  currentUser$ = this.currentUserSubject.asObservable();
+  private readonly currentUserSubject = new BehaviorSubject<UserDTO | null>(null);
+  readonly currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor() {
     this.loadCurrentUser();
+  }
+
+  get currentUser(): UserDTO | null {
+    return this.currentUserSubject.value;
   }
 
   getCurrentUserId(): number | null {
@@ -28,50 +34,51 @@ export class AuthService {
   login(credentials: LoginRequest): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${this.apiUrl}/login`, credentials)
-      .pipe(
-        tap((response) => {
-          this.saveToken(response.token);
-          this.loadCurrentUser();
-        })
-      );
+      .pipe(tap((response) => this.startSession(response.token)));
   }
 
-  saveToken(token: string): void {
-    localStorage.setItem('token', token);
+  register(request: RegisterRequest, image?: File | null): Observable<LoginResponse> {
+    const formData = new FormData();
+    formData.append('user', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+    if (image) {
+      formData.append('image', image);
+    }
+    return this.http
+      .post<LoginResponse>(`${this.apiUrl}/register`, formData)
+      .pipe(tap((response) => this.startSession(response.token)));
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
-  }
-
-  logout(): void {
-    localStorage.removeItem('token');
-    this.currentUserSubject.next(null);
+    return localStorage.getItem(TOKEN_KEY);
   }
 
   isAuthenticated(): boolean {
     return !!this.getToken();
   }
 
-  private getAuthHeaders(): HttpHeaders {
-    const token = this.getToken();
-    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  /** Cierra la sesion local. Si se indica, redirige a la pantalla de login. */
+  logout(redirect = false): void {
+    localStorage.removeItem(TOKEN_KEY);
+    this.currentUserSubject.next(null);
+    if (redirect) {
+      this.router.navigate(['/login']);
+    }
   }
 
+  /** Vuelve a pedir los datos del usuario (p. ej. tras editar el perfil). */
   loadCurrentUser(): void {
-    const token = this.getToken();
-    if (!token) {
+    if (!this.getToken()) {
       this.currentUserSubject.next(null);
       return;
     }
+    this.http.get<UserDTO>(`${environment.apiUrl}/api/v1/user/me`).subscribe({
+      next: (user) => this.currentUserSubject.next(user),
+      error: () => this.currentUserSubject.next(null),
+    });
+  }
 
-    this.http
-      .get<UserDTO>(this.meUrl, {
-        headers: this.getAuthHeaders(),
-      })
-      .subscribe({
-        next: (user) => this.currentUserSubject.next(user),
-        error: () => this.currentUserSubject.next(null),
-      });
+  private startSession(token: string): void {
+    localStorage.setItem(TOKEN_KEY, token);
+    this.loadCurrentUser();
   }
 }
