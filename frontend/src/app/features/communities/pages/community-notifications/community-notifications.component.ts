@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { injectCommunityTheme } from '../../../../core/theme/community-theme.service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { NotificationService } from '../../services/notification.service';
@@ -37,6 +38,7 @@ export class CommunityNotificationsComponent implements OnInit {
   private readonly profileService = inject(CommunityProfileService);
   private readonly toast = inject(ToastService);
   private readonly confirm = inject(ConfirmService);
+  private readonly theme = injectCommunityTheme();
 
   communityId = 0;
   readonly notifications = signal<NotificationDTO[]>([]);
@@ -45,6 +47,7 @@ export class CommunityNotificationsComponent implements OnInit {
 
   ngOnInit(): void {
     this.communityId = Number(this.route.snapshot.paramMap.get('id'));
+    this.theme.useCommunity(this.communityId);
     this.profileService.getMyProfileInCommunity(this.communityId).subscribe({
       next: (me) => this.load(me.id),
       error: () => {

@@ -105,6 +105,8 @@ public class CommunityService {
                 .description(HtmlSanitizer.sanitize(request.description()))
                 .rules(HtmlSanitizer.sanitize(request.rules()))
                 .tags(cleanTags(request.tags()))
+                .primaryColor(CommunityColors.normalize(request.primaryColor(), CommunityColors.DEFAULT_PRIMARY))
+                .accentColor(CommunityColors.normalize(request.accentColor(), CommunityColors.DEFAULT_ACCENT))
                 .owner(owner)
                 .image(fileStorageService.storeImage(image, FileStorageService.Folder.COMMUNITIES))
                 .banner(fileStorageService.storeImage(banner, FileStorageService.Folder.COMMUNITIES))
@@ -115,8 +117,8 @@ public class CommunityService {
 
         Role leader = roleRepository.save(Role.builder()
                 .name(LEADER_ROLE_NAME)
-                .textColor("#ffffff")
-                .backgroundColor("#000000")
+                .textColor(CommunityColors.readableOn(community.getPrimaryColor()))
+                .backgroundColor(community.getPrimaryColor())
                 .community(community)
                 .build());
         permissionRepository.findAll().forEach(permission ->
@@ -139,6 +141,8 @@ public class CommunityService {
         community.setRules(HtmlSanitizer.sanitize(request.rules()));
         community.getTags().clear();
         community.getTags().addAll(cleanTags(request.tags()));
+        community.setPrimaryColor(CommunityColors.normalize(request.primaryColor(), community.getPrimaryColor()));
+        community.setAccentColor(CommunityColors.normalize(request.accentColor(), community.getAccentColor()));
 
         String imageUrl = fileStorageService.storeImage(image, FileStorageService.Folder.COMMUNITIES);
         if (imageUrl != null) {

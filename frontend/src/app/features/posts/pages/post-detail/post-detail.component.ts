@@ -16,6 +16,7 @@ import { TagBadgeComponent } from '../../../../shared/ui/tag-badge/tag-badge.com
 import { RelativeTimePipe } from '../../../../shared/pipes/relative-time.pipe';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { ConfirmService } from '../../../../shared/ui/confirm/confirm.service';
+import { injectCommunityTheme } from '../../../../core/theme/community-theme.service';
 
 @Component({
   selector: 'app-post-detail',
@@ -35,6 +36,7 @@ export class PostDetailComponent implements OnInit {
   private readonly permissionsService = inject(CommunityPermissionsService);
   private readonly toast = inject(ToastService);
   private readonly confirm = inject(ConfirmService);
+  private readonly theme = injectCommunityTheme();
 
   postId = 0;
   readonly post = signal<PostDetailDTO | null>(null);
@@ -86,6 +88,7 @@ export class PostDetailComponent implements OnInit {
   }
 
   private loadViewerContext(communityId: number): void {
+    this.theme.useCommunity(communityId);
     this.permissionsService.getMyPermissions(communityId).subscribe((perms) => this.permissions.set(perms));
     this.profileService.getMyProfileInCommunity(communityId).subscribe({
       next: (me) => {

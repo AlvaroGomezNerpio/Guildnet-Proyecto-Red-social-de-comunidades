@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { injectCommunityTheme } from '../../../../core/theme/community-theme.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -20,6 +21,7 @@ export class SearchPostsComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly postService = inject(PostService);
+  private readonly theme = injectCommunityTheme();
 
   communityId = 0;
   readonly titleControl = new FormControl('', { nonNullable: true });
@@ -34,6 +36,7 @@ export class SearchPostsComponent implements OnInit {
 
   ngOnInit(): void {
     this.communityId = Number(this.route.snapshot.paramMap.get('communityId'));
+    this.theme.useCommunity(this.communityId);
     this.search();
     merge(this.titleControl.valueChanges, this.tagsControl.valueChanges)
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))

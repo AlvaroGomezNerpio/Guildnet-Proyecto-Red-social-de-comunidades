@@ -24,6 +24,9 @@ import { PostCardComponent } from '../../../posts/components/post-card/post-card
 import { RelativeTimePipe } from '../../../../shared/pipes/relative-time.pipe';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { ConfirmService } from '../../../../shared/ui/confirm/confirm.service';
+import { injectCommunityTheme } from '../../../../core/theme/community-theme.service';
+import { DEFAULT_PALETTE, readableOn } from '../../../../core/theme/community-palette';
+import { BadgeColorPickerComponent } from '../../../../shared/ui/badge-color-picker/badge-color-picker.component';
 
 type Tab = 'posts' | 'comments';
 type Dialog = 'edit' | 'titles' | 'role' | null;
@@ -42,6 +45,7 @@ type Dialog = 'edit' | 'titles' | 'role' | null;
     EmptyStateComponent,
     PostCardComponent,
     RelativeTimePipe,
+    BadgeColorPickerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './community-profile-detail.component.html',
@@ -61,6 +65,7 @@ export class CommunityProfileDetailComponent implements OnInit {
   private readonly permissionsService = inject(CommunityPermissionsService);
   private readonly toast = inject(ToastService);
   private readonly confirm = inject(ConfirmService);
+  private readonly theme = injectCommunityTheme();
 
   profileId = 0;
   /** Perfil que se está visitando. */
@@ -98,8 +103,19 @@ export class CommunityProfileDetailComponent implements OnInit {
   private selectedImage: File | null = null;
 
   titleText = '';
-  titleTextColor = '#ffffff';
-  titleBgColor = '#6f42c1';
+  /** Los títulos nuevos empiezan con el color de la comunidad (ver titleColorsFor). */
+  titleTextColor: string | null = null;
+  titleBgColor: string | null = null;
+  readonly communityColor = computed(() => this.theme.palette()?.primary ?? null);
+
+  /** Fondo del título nuevo: el elegido, o el color de la comunidad mientras no se elija otro. */
+  get titleBackground(): string {
+    return this.titleBgColor ?? this.communityColor() ?? DEFAULT_PALETTE.primary;
+  }
+
+  get titleForeground(): string {
+    return this.titleTextColor ?? readableOn(this.titleBackground);
+  }
   selectedRoleId: number | null = null;
 
   ngOnInit(): void {
@@ -126,6 +142,7 @@ export class CommunityProfileDetailComponent implements OnInit {
 
   /** Perfil del usuario autenticado en esta comunidad, sus permisos y los roles disponibles. */
   private loadViewerContext(communityId: number): void {
+    this.theme.useCommunity(communityId);
     this.profileService.getMyProfileInCommunity(communityId).subscribe({
       next: (me) => this.myProfile.set(me),
       error: () => this.myProfile.set(null),
@@ -289,12 +306,14 @@ export class CommunityProfileDetailComponent implements OnInit {
     if (!p || !title) return;
 
     this.titleService
-      .createTitle({ title, textColor: this.titleTextColor, backgroundColor: this.titleBgColor, communityId: p.communityId })
+      .createTitle({ title, textColor: this.titleForeground, backgroundColor: this.titleBackground, communityId: p.communityId })
       .subscribe({
         next: (created) => {
           this.profileService.assignTitle(p.id, created.id).subscribe({
             next: () => {
               this.titleText = '';
+              this.titleTextColor = null;
+              this.titleBgColor = null;
               this.toast.success('Título creado y asignado.');
               this.loadProfile();
             },

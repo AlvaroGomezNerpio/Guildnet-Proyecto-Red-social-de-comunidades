@@ -9,6 +9,8 @@ public record CommunityResponseDTO(
         String rules,
         String image,
         String banner,
+        String primaryColor,
+        String accentColor,
         List<String> tags,
         Long ownerId
 ) {

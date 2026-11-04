@@ -162,26 +162,24 @@
 
     <!-- Títulos -->
     <app-modal [open]="dialog() === 'titles'" title="Títulos de {{ p.username }}" size="lg" (closed)="dialog.set(null)">
-      <form class="row g-2 align-items-end mb-4" (ngSubmit)="createTitle()">
-        <div class="col-md-5">
-          <label class="form-label small" for="titleText">Nuevo título</label>
-          <input id="titleText" type="text" class="form-control" name="titleText" maxlength="50" placeholder="Ej. Veterano" [(ngModel)]="titleText" />
+      <form class="border rounded-3 p-3 mb-4" (ngSubmit)="createTitle()">
+        <div class="row g-2 align-items-end mb-3">
+          <div class="col">
+            <label class="form-label small fw-semibold" for="titleText">Nuevo título</label>
+            <input id="titleText" type="text" class="form-control" name="titleText" maxlength="50" placeholder="Ej. Veterano" [(ngModel)]="titleText" />
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-primary" type="submit" [disabled]="!titleText.trim()"><i class="bi bi-plus-lg me-1"></i>Crear y asignar</button>
+          </div>
         </div>
-        <div class="col-4 col-md-2">
-          <label class="form-label small" for="titleBg">Fondo</label>
-          <input id="titleBg" type="color" class="form-control form-control-color w-100" name="titleBg" [(ngModel)]="titleBgColor" />
-        </div>
-        <div class="col-4 col-md-2">
-          <label class="form-label small" for="titleFg">Texto</label>
-          <input id="titleFg" type="color" class="form-control form-control-color w-100" name="titleFg" [(ngModel)]="titleTextColor" />
-        </div>
-        <div class="col-4 col-md-3">
-          <button class="btn btn-success w-100" type="submit" [disabled]="!titleText.trim()">Crear</button>
-        </div>
-        <div class="col-12">
-          <small class="text-body-secondary me-2">Vista previa:</small>
-          <app-tag-badge [label]="titleText || 'Título'" [background]="titleBgColor" [color]="titleTextColor" />
-        </div>
+        <app-badge-color-picker
+          [label]="titleText"
+          [communityColor]="communityColor()"
+          [text]="titleForeground"
+          (textChange)="titleTextColor = $event"
+          [background]="titleBackground"
+          (backgroundChange)="titleBgColor = $event"
+        />
       </form>
 
       @for (title of p.titles; track title.id) {

@@ -78,6 +78,24 @@ public class FileStorageService {
     }
 
     /**
+     * Guarda una imagen generada por el propio servidor (p. ej. los datos de ejemplo),
+     * con la misma comprobación de formato que las subidas.
+     *
+     * @return la URL pública de la imagen.
+     */
+    public String storeImage(byte[] data, Folder folder) {
+        ImageType type = ImageType.detect(Arrays.copyOf(data, Math.min(data.length, 12)))
+                .orElseThrow(() -> new BadRequestException("Formato de imagen no soportado (usa PNG, JPG, GIF o WEBP)"));
+        String filename = UUID.randomUUID() + "." + type.extension;
+        try {
+            Files.write(resolveFolder(folder).resolve(filename), data);
+        } catch (IOException e) {
+            throw new UncheckedIOException("No se pudo guardar la imagen", e);
+        }
+        return publicBaseUrl + folder.path + "/" + filename;
+    }
+
+    /**
      * Copia una imagen ya almacenada (identificada por su URL pública) a otra carpeta.
      *
      * @return la URL de la copia, o {@code null} si la URL no corresponde a un archivo existente.

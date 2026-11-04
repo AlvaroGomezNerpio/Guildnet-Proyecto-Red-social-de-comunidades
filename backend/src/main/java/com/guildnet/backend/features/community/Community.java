@@ -46,6 +46,16 @@ public class Community {
     @Column(length = 500)
     private String banner;
 
+    /** Color principal de la comunidad (#rrggbb). */
+    @Builder.Default
+    @Column(name = "primary_color", nullable = false, length = 7)
+    private String primaryColor = CommunityColors.DEFAULT_PRIMARY;
+
+    /** Color de acento, usado junto al principal en los degradados (#rrggbb). */
+    @Builder.Default
+    @Column(name = "accent_color", nullable = false, length = 7)
+    private String accentColor = CommunityColors.DEFAULT_ACCENT;
+
     @Builder.Default
     @ElementCollection
     @CollectionTable(name = "community_tags", joinColumns = @JoinColumn(name = "community_id"))

@@ -71,6 +71,7 @@ $link-hover-color-dark: #c4b5fd;
   --gn-shadow-lg: 0 10px 30px rgb(60 30 140 / 0.16);
   --gn-header-bg: rgb(255 255 255 / 0.85);
   --gn-radius: 1rem;
+  --gn-on-gradient: #fff;
   --bs-card-bg: #ffffff;
 }
 
@@ -183,7 +184,7 @@ h3,
     place-items: center;
     border-radius: 0.9rem;
     font-size: 1.4rem;
-    color: #fff;
+    color: var(--gn-on-gradient);
     background: var(--gn-gradient);
     box-shadow: var(--gn-shadow-lg);
   }
@@ -250,7 +251,7 @@ h3,
 
 .gn-join-card {
   background: var(--gn-gradient);
-  color: #fff;
+  color: var(--gn-on-gradient);
   border: 0;
 }
 
@@ -269,7 +270,7 @@ h3,
 
     &.active {
       background: var(--gn-gradient);
-      color: #fff;
+      color: var(--gn-on-gradient);
 
       .badge {
         background: rgb(255 255 255 / 0.25) !important;
@@ -435,5 +436,91 @@ h3,
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+// =====================================================================
+// Paleta propia de cada comunidad
+// PaletteDirective calcula las variables --gn-c-* (con contraste ya
+// ajustado al tema activo) y esta clase las conecta con Bootstrap.
+// =====================================================================
+.gn-themed {
+  --bs-primary: var(--gn-c-ui);
+  --bs-primary-rgb: var(--gn-c-ui-rgb);
+  --bs-primary-text-emphasis: var(--gn-c-emphasis);
+  --bs-primary-bg-subtle: var(--gn-c-subtle);
+  --bs-primary-border-subtle: var(--gn-c-border-subtle);
+  --bs-link-color: var(--gn-c-emphasis);
+  --bs-link-color-rgb: var(--gn-c-emphasis-rgb);
+  --bs-link-hover-color: var(--gn-c-emphasis);
+  --bs-link-hover-color-rgb: var(--gn-c-emphasis-rgb);
+  --bs-focus-ring-color: rgba(var(--gn-c-ui-rgb), 0.25);
+  --gn-gradient: var(--gn-c-gradient);
+  --gn-on-gradient: var(--gn-c-on-gradient);
+  --gn-shadow-lg: 0 10px 30px var(--gn-c-glow);
+
+  .btn-primary {
+    --bs-btn-color: var(--gn-c-on-primary);
+    --bs-btn-bg: var(--gn-c-primary);
+    --bs-btn-border-color: var(--gn-c-primary);
+    --bs-btn-hover-color: var(--gn-c-on-primary);
+    --bs-btn-hover-bg: var(--gn-c-primary-hover);
+    --bs-btn-hover-border-color: var(--gn-c-primary-hover);
+    --bs-btn-active-color: var(--gn-c-on-primary);
+    --bs-btn-active-bg: var(--gn-c-primary-hover);
+    --bs-btn-disabled-color: var(--gn-c-on-primary);
+    --bs-btn-disabled-bg: var(--gn-c-primary);
+    --bs-btn-disabled-border-color: var(--gn-c-primary);
+    --bs-btn-focus-shadow-rgb: var(--gn-c-ui-rgb);
+    background-image: none;
+    box-shadow: 0 4px 14px var(--gn-c-glow);
+
+    &:hover {
+      background-image: none;
+    }
+  }
+
+  .btn-outline-primary {
+    --bs-btn-color: var(--gn-c-emphasis);
+    --bs-btn-border-color: var(--gn-c-ui);
+    --bs-btn-hover-color: var(--gn-c-on-primary);
+    --bs-btn-hover-bg: var(--gn-c-primary);
+    --bs-btn-hover-border-color: var(--gn-c-primary);
+    --bs-btn-active-color: var(--gn-c-on-primary);
+    --bs-btn-active-bg: var(--gn-c-primary-hover);
+    --bs-btn-active-border-color: var(--gn-c-primary-hover);
+    --bs-btn-disabled-color: var(--gn-c-emphasis);
+    --bs-btn-disabled-border-color: var(--gn-c-ui);
+    --bs-btn-focus-shadow-rgb: var(--gn-c-ui-rgb);
+  }
+
+  .nav-pills {
+    --bs-nav-pills-link-active-bg: var(--gn-c-primary);
+    --bs-nav-pills-link-active-color: var(--gn-c-on-primary);
+  }
+
+  .form-control:focus,
+  .form-select:focus,
+  .form-check-input:focus {
+    border-color: rgba(var(--gn-c-ui-rgb), 0.6);
+    box-shadow: 0 0 0 0.2rem rgba(var(--gn-c-ui-rgb), 0.25);
+  }
+
+  .form-check-input:checked {
+    background-color: var(--gn-c-primary);
+    border-color: var(--gn-c-primary);
+  }
+
+  .pagination {
+    --bs-pagination-color: var(--gn-c-emphasis);
+    --bs-pagination-hover-color: var(--gn-c-emphasis);
+    --bs-pagination-active-bg: var(--gn-c-primary);
+    --bs-pagination-active-border-color: var(--gn-c-primary);
+    --bs-pagination-active-color: var(--gn-c-on-primary);
+  }
+
+  .spinner-border.text-primary,
+  .text-primary {
+    color: var(--gn-c-emphasis) !important;
   }
 }

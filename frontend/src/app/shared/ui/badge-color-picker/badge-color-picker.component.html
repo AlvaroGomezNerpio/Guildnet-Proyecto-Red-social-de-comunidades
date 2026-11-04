@@ -1,0 +1,54 @@
+<!-- Atajos: cada uno se muestra ya como quedará la etiqueta -->
+<div class="d-flex flex-wrap gap-2 mb-3" role="radiogroup" aria-label="Colores predefinidos">
+  @for (preset of presets(); track preset.name) {
+    <button
+      type="button"
+      class="gn-badge-preset"
+      role="radio"
+      [attr.aria-checked]="isActive(preset)"
+      [class.active]="isActive(preset)"
+      [style.background-color]="preset.background"
+      [style.color]="textFor(preset.background)"
+      (click)="choose(preset)"
+    >
+      @if (preset.name === 'Comunidad') {
+        <i class="bi bi-stars me-1"></i>
+      }
+      {{ preset.name }}
+    </button>
+  }
+</div>
+
+<!-- Colores exactos -->
+<div class="row g-2 mb-2">
+  <div class="col-sm-6">
+    <label class="form-label small fw-semibold" [for]="uid + '-bg'">Fondo</label>
+    <div class="input-group input-group-sm">
+      <input type="color" class="form-control form-control-color" aria-label="Elegir color de fondo" [value]="background()" (input)="setBackground($any($event.target).value)" />
+      <input [id]="uid + '-bg'" type="text" class="form-control font-monospace" maxlength="7" spellcheck="false" [value]="background()" (input)="setBackground($any($event.target).value)" />
+    </div>
+  </div>
+  <div class="col-sm-6">
+    <label class="form-label small fw-semibold" [for]="uid + '-fg'">Texto</label>
+    <div class="input-group input-group-sm">
+      <input type="color" class="form-control form-control-color" aria-label="Elegir color del texto" [value]="text()" (input)="setText($any($event.target).value)" />
+      <input [id]="uid + '-fg'" type="text" class="form-control font-monospace" maxlength="7" spellcheck="false" [value]="text()" (input)="setText($any($event.target).value)" />
+    </div>
+  </div>
+</div>
+
+<div class="form-check form-switch small mb-3">
+  <input class="form-check-input" type="checkbox" role="switch" [id]="uid + '-auto'" [checked]="autoText()" (change)="toggleAuto($any($event.target).checked)" />
+  <label class="form-check-label" [for]="uid + '-auto'">Ajustar el texto automáticamente para que se lea</label>
+</div>
+
+<!-- Vista previa -->
+<div class="d-flex flex-wrap align-items-center gap-2">
+  <span class="small text-body-secondary">Vista previa:</span>
+  <app-tag-badge [label]="label() || 'Etiqueta'" [background]="background()" [color]="text()" />
+  @if (lowContrast()) {
+    <span class="small text-warning-emphasis">
+      <i class="bi bi-exclamation-triangle me-1"></i>Poco contraste ({{ ratio().toFixed(1) }}:1): puede costar leerla.
+    </span>
+  }
+</div>

@@ -127,6 +127,63 @@ class BackendApplicationTests {
     }
 
     @Test
+    void communityPaletteHasDefaultsCanBeChangedAndIsValidated() throws Exception {
+        String owner = register("Owner", uniqueEmail());
+        long communityId = createCommunity(owner, "Colores " + UUID.randomUUID());
+
+        // Sin colores: se usa la paleta de GuildNet
+        mvc.perform(auth(get("/api/v1/communities/" + communityId), owner))
+                .andExpect(jsonPath("$.primaryColor").value("#7c3aed"))
+                .andExpect(jsonPath("$.accentColor").value("#06b6d4"));
+
+        // Colores exactos elegidos por la comunidad (se guardan en minúsculas)
+        mvc.perform(auth(multipart("/api/v1/communities/" + communityId)
+                        .file(json("data", "{\"name\":\"Paleta\",\"primaryColor\":\"#EA580C\",\"accentColor\":\"#db2777\"}"))
+                        .with(r -> { r.setMethod("PUT"); return r; }), owner))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.primaryColor").value("#ea580c"))
+                .andExpect(jsonPath("$.accentColor").value("#db2777"));
+
+        // Si no se envían, se conservan
+        mvc.perform(auth(multipart("/api/v1/communities/" + communityId)
+                        .file(json("data", "{\"name\":\"Paleta\"}"))
+                        .with(r -> { r.setMethod("PUT"); return r; }), owner))
+                .andExpect(jsonPath("$.primaryColor").value("#ea580c"));
+
+        // Formato no válido (podría usarse para inyectar CSS)
+        mvc.perform(auth(multipart("/api/v1/communities/" + communityId)
+                        .file(json("data", "{\"name\":\"Paleta\",\"primaryColor\":\"red; background:url(x)\"}"))
+                        .with(r -> { r.setMethod("PUT"); return r; }), owner))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void rolesAndTitlesDefaultToTheCommunityColour() throws Exception {
+        String owner = register("Owner", uniqueEmail());
+        String body = mvc.perform(auth(multipart("/api/v1/communities/create")
+                        .file(json("community", "{\"name\":\"Naranja " + UUID.randomUUID() + "\",\"primaryColor\":\"#ea580c\"}")), owner))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        long communityId = ((Number) JsonPath.read(body, "$.id")).longValue();
+
+        // El rol "Líder" que se crea con la comunidad lleva su color
+        mvc.perform(auth(get("/api/v1/profiles/me/community/" + communityId), owner))
+                .andExpect(jsonPath("$.rol.backgroundColor").value("#ea580c"));
+
+        // Un rol o un título sin colores toma el de la comunidad, con texto legible encima
+        mvc.perform(auth(post("/api/v1/roles").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Moderador\",\"communityId\":" + communityId + "}"), owner))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.backgroundColor").value("#ea580c"))
+                .andExpect(jsonPath("$.textColor").value("#111322"));
+        mvc.perform(auth(post("/api/v1/titles").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"Veterano\",\"backgroundColor\":\"#1E3A8A\",\"communityId\":" + communityId + "}"), owner))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.backgroundColor").value("#1e3a8a"))
+                .andExpect(jsonPath("$.textColor").value("#ffffff"));
+    }
+
+    @Test
     void myPermissionsReflectOwnershipAndRole() throws Exception {
         String owner = register("Owner", uniqueEmail());
         String member = register("Member", uniqueEmail());

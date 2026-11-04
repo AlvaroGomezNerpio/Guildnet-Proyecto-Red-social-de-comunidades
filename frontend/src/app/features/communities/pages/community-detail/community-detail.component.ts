@@ -18,6 +18,8 @@ import { TagBadgeComponent } from '../../../../shared/ui/tag-badge/tag-badge.com
 import { ModalComponent } from '../../../../shared/ui/modal/modal.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
+import { injectCommunityTheme } from '../../../../core/theme/community-theme.service';
+import { paletteOf } from '../../../../core/theme/community-palette';
 
 type Tab = 'posts' | 'chat';
 
@@ -47,6 +49,7 @@ export class CommunityDetailComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
   private readonly permissionsService = inject(CommunityPermissionsService);
   private readonly toast = inject(ToastService);
+  private readonly theme = injectCommunityTheme();
 
   communityId = 0;
   readonly community = signal<CommunityResponseDTO | null>(null);
@@ -91,7 +94,10 @@ export class CommunityDetailComponent implements OnInit {
 
   private loadCommunity(): void {
     this.communityService.getCommunityById(this.communityId).subscribe({
-      next: (data) => this.community.set(data),
+      next: (data) => {
+        this.community.set(data);
+        this.theme.apply(data.id, paletteOf(data));
+      },
       error: () => this.toast.error('No se pudo cargar la comunidad.'),
     });
   }

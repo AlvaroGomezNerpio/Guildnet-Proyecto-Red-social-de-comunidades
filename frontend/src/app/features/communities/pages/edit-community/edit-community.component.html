@@ -42,6 +42,17 @@
       </section>
 
       <section class="gn-form-section">
+        <h2>Apariencia</h2>
+        <p class="gn-form-hint">Elige una paleta o tus colores exactos. La página cambia al momento para que veas cómo queda.</p>
+        <app-palette-picker
+          [primary]="editForm.controls.primaryColor.value"
+          (primaryChange)="editForm.controls.primaryColor.setValue($event)"
+          [accent]="editForm.controls.accentColor.value"
+          (accentChange)="editForm.controls.accentColor.setValue($event)"
+        />
+      </section>
+
+      <section class="gn-form-section">
         <h2>Imágenes</h2>
         <p class="gn-form-hint">Sube un archivo solo si quieres reemplazar la imagen actual.</p>
         <div class="row g-3">

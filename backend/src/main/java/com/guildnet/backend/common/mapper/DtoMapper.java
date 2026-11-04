@@ -41,6 +41,8 @@ public final class DtoMapper {
                 community.getRules(),
                 community.getImage(),
                 community.getBanner(),
+                community.getPrimaryColor(),
+                community.getAccentColor(),
                 community.getTags() != null ? List.copyOf(community.getTags()) : List.of(),
                 community.getOwner() != null ? community.getOwner().getId() : null
         );

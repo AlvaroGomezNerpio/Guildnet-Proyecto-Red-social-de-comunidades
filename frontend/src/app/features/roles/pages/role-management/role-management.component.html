@@ -60,21 +60,16 @@
             <label for="name">Nombre del rol</label>
           </div>
 
-          <div class="d-flex align-items-end gap-3 mb-3">
-            <div>
-              <label for="textColor" class="form-label small fw-semibold">Texto</label>
-              <input id="textColor" formControlName="textColor" type="color" class="form-control form-control-color" />
-            </div>
-            <div>
-              <label for="backgroundColor" class="form-label small fw-semibold">Fondo</label>
-              <input id="backgroundColor" formControlName="backgroundColor" type="color" class="form-control form-control-color" />
-            </div>
-            <div class="ms-auto text-end">
-              <span class="form-label small fw-semibold d-block">Vista previa</span>
-              <span class="badge px-3 py-2" [style.background-color]="roleForm.value.backgroundColor" [style.color]="roleForm.value.textColor">
-                {{ roleForm.value.name || 'Nuevo rol' }}
-              </span>
-            </div>
+          <div class="mb-4">
+            <span class="form-label small fw-semibold d-block mb-2">Colores</span>
+            <app-badge-color-picker
+              [label]="roleForm.value.name || 'Nuevo rol'"
+              [communityColor]="communityColor()"
+              [text]="roleForm.controls.textColor.value"
+              (textChange)="setTextColor($event)"
+              [background]="roleForm.controls.backgroundColor.value"
+              (backgroundChange)="setBackgroundColor($event)"
+            />
           </div>
 
           <span class="form-label small fw-semibold d-block">Permisos</span>

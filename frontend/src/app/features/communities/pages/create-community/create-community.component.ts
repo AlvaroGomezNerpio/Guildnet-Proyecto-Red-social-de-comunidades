@@ -6,13 +6,16 @@ import { errorMessage } from '../../../../core/http/http-error';
 import { FormsModule } from '@angular/forms';
 import { QuillEditorComponent } from 'ngx-quill';
 import { RouterLink } from '@angular/router';
+import { PalettePickerComponent } from '../../components/palette-picker/palette-picker.component';
+import { injectCommunityTheme } from '../../../../core/theme/community-theme.service';
+import { DEFAULT_PALETTE } from '../../../../core/theme/community-palette';
 
 @Component({
     selector: 'app-create-community',
     templateUrl: './create-community.component.html',
     changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './create-community.component.css',
-    imports: [FormsModule, QuillEditorComponent, RouterLink],
+    imports: [FormsModule, QuillEditorComponent, RouterLink, PalettePickerComponent],
 })
 export class CreateCommunityComponent {
   community: CreateCommunityRequest = {
@@ -20,7 +23,17 @@ export class CreateCommunityComponent {
     description: '',
     rules: '',
     tags: [],
+    primaryColor: DEFAULT_PALETTE.primary,
+    accentColor: DEFAULT_PALETTE.accent,
   };
+
+  private readonly theme = injectCommunityTheme();
+
+  /** Cambia un color y aplica la vista previa en toda la página. */
+  setColor(which: 'primaryColor' | 'accentColor', value: string): void {
+    this.community = { ...this.community, [which]: value };
+    this.theme.set({ primary: this.community.primaryColor, accent: this.community.accentColor });
+  }
 
   tagsInput = '';
   saving = false;

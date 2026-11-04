@@ -3,6 +3,8 @@ package com.guildnet.backend.config;
 import com.guildnet.backend.auth.AuthService;
 import com.guildnet.backend.auth.RegisterRequest;
 import com.guildnet.backend.features.chat.ChatService;
+import com.guildnet.backend.features.community.Community;
+import com.guildnet.backend.features.community.CommunityRepository;
 import com.guildnet.backend.features.community.CommunityService;
 import com.guildnet.backend.features.community.dto.CreateCommunityRequest;
 import com.guildnet.backend.features.like.LikeService;
@@ -12,6 +14,8 @@ import com.guildnet.backend.features.post.PostService;
 import com.guildnet.backend.features.post.dto.PostCreateDTO;
 import com.guildnet.backend.features.postcomment.PostCommentService;
 import com.guildnet.backend.features.postcomment.dto.PostCommentCreateDTO;
+import com.guildnet.backend.features.profile.CommunityProfile;
+import com.guildnet.backend.features.profile.CommunityProfileRepository;
 import com.guildnet.backend.features.profile.CommunityProfileService;
 import com.guildnet.backend.features.profile.dto.CommunityProfileDTO;
 import com.guildnet.backend.features.profilecomment.ProfileCommentService;
@@ -22,14 +26,17 @@ import com.guildnet.backend.features.title.TitleService;
 import com.guildnet.backend.features.title.dto.CreateTitleRequest;
 import com.guildnet.backend.features.user.User;
 import com.guildnet.backend.features.user.UserRepository;
+import com.guildnet.backend.storage.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Rellena una base de datos vacía con datos de ejemplo para poder probar la aplicación
@@ -37,6 +44,11 @@ import java.util.List;
  * <p>
  * Usuarios de ejemplo (contraseña {@value #PASSWORD}): ana@guildnet.local, bruno@guildnet.local
  * y carla@guildnet.local.
+ * <p>
+ * Si existe la carpeta de imágenes de ejemplo ({@code guildnet.demo-images.dir}),
+ * además rellena en cada arranque las imágenes que falten (avatares de usuarios,
+ * iconos y banners de comunidades, fotos de perfil), también en bases de datos
+ * que ya tenían datos.
  */
 @Slf4j
 @Component
@@ -58,12 +70,21 @@ public class DemoDataLoader implements ApplicationRunner {
     private final RoleService roleService;
     private final TitleService titleService;
     private final ChatService chatService;
+    private final CommunityRepository communityRepository;
+    private final CommunityProfileRepository communityProfileRepository;
+    private final FileStorageService fileStorageService;
+    private final DemoImages demoImages;
+    private final TransactionTemplate transactionTemplate;
 
     @Override
     public void run(ApplicationArguments args) {
-        if (userRepository.count() > 0) {
-            return;
+        if (userRepository.count() == 0) {
+            createDemoData();
         }
+        transactionTemplate.executeWithoutResult(status -> fillMissingImages());
+    }
+
+    private void createDemoData() {
         log.info("Base de datos vacía: creando datos de ejemplo (contraseña de los usuarios: {})", PASSWORD);
 
         User ana = user("Ana", "ana@guildnet.local");
@@ -75,19 +96,19 @@ public class DemoDataLoader implements ApplicationRunner {
                 "Juegos de mesa",
                 "<p>Un lugar para hablar de <strong>juegos de mesa</strong>: novedades, reseñas y quedadas.</p>",
                 "<ol><li>Respeta a los demás.</li><li>Marca los spoilers de campañas.</li><li>Nada de spam.</li></ol>",
-                List.of("juegos", "mesa", "ocio")), null, null, ana).id();
+                List.of("juegos", "mesa", "ocio"), "#ea580c", "#db2777"), null, null, ana).id();
 
         long photography = communityService.create(new CreateCommunityRequest(
                 "Fotografía",
                 "<p>Comparte tus fotos, pide consejo sobre equipo y aprende técnicas nuevas.</p>",
                 "<p>Indica siempre si la foto es tuya.</p>",
-                List.of("fotografía", "arte", "cámaras")), null, null, bruno).id();
+                List.of("fotografía", "arte", "cámaras"), "#0284c7", "#22d3ee"), null, null, bruno).id();
 
         long programming = communityService.create(new CreateCommunityRequest(
                 "Programación",
                 "<p>Dudas, proyectos y recursos para aprender a programar.</p>",
                 "<p>Comparte el código como bloque de código, no como captura.</p>",
-                List.of("programación", "tecnología", "java", "angular")), null, null, carla).id();
+                List.of("programación", "tecnología", "java", "angular"), "#059669", "#14b8a6"), null, null, carla).id();
 
         // ------------------------------------------------------------ Miembros
         CommunityProfileDTO brunoInGames = profileService.join(bruno, boardGames, null);
@@ -151,6 +172,57 @@ public class DemoDataLoader implements ApplicationRunner {
         chatService.send(boardGames, "Genial, nos vemos allí 🙌", ana);
 
         log.info("Datos de ejemplo creados: 3 usuarios, 3 comunidades y 4 publicaciones");
+    }
+
+    /** Pone una imagen de ejemplo en todo lo que no tenga, para que la página no se vea vacía. */
+    private void fillMissingImages() {
+        if (!demoImages.available()) {
+            return;
+        }
+        int filled = 0;
+        for (User user : userRepository.findAll()) {
+            if (user.getProfileImage() == null) {
+                Optional<String> url = demoImages.avatar(FileStorageService.Folder.USERS);
+                if (url.isPresent()) {
+                    user.setProfileImage(url.get());
+                    userRepository.save(user);
+                    filled++;
+                }
+            }
+        }
+        for (Community community : communityRepository.findAll()) {
+            boolean changed = false;
+            if (community.getImage() == null) {
+                Optional<String> url = demoImages.avatar(FileStorageService.Folder.COMMUNITIES);
+                if (url.isPresent()) {
+                    community.setImage(url.get());
+                    changed = true;
+                }
+            }
+            if (community.getBanner() == null) {
+                Optional<String> url = demoImages.banner(FileStorageService.Folder.COMMUNITIES);
+                if (url.isPresent()) {
+                    community.setBanner(url.get());
+                    changed = true;
+                }
+            }
+            if (changed) {
+                communityRepository.save(community);
+                filled++;
+            }
+        }
+        // Los perfiles de comunidad usan la misma imagen que su usuario, como al unirse normalmente
+        for (CommunityProfile profile : communityProfileRepository.findAll()) {
+            if (profile.getProfileImage() == null && profile.getUser().getProfileImage() != null) {
+                profile.setProfileImage(fileStorageService.copyImage(
+                        profile.getUser().getProfileImage(), FileStorageService.Folder.COMMUNITY_PROFILES));
+                communityProfileRepository.save(profile);
+                filled++;
+            }
+        }
+        if (filled > 0) {
+            log.info("Imágenes de ejemplo: completados {} elementos sin imagen", filled);
+        }
     }
 
     private User user(String name, String email) {

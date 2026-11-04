@@ -37,6 +37,17 @@
     </section>
 
     <section class="gn-form-section">
+      <h2>Apariencia</h2>
+      <p class="gn-form-hint">Elige una paleta o tus colores exactos. La página cambia al momento para que veas cómo queda.</p>
+      <app-palette-picker
+        [primary]="community.primaryColor"
+        (primaryChange)="setColor('primaryColor', $event)"
+        [accent]="community.accentColor"
+        (accentChange)="setColor('accentColor', $event)"
+      />
+    </section>
+
+    <section class="gn-form-section">
       <h2>Imágenes</h2>
       <p class="gn-form-hint">Opcionales. PNG, JPG, GIF o WebP.</p>
       <div class="row g-3">

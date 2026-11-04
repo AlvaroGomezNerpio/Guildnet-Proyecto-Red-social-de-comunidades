@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { injectCommunityTheme } from '../../../../core/theme/community-theme.service';
 import { FormBuilder, FormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { PostService } from '../../services/post.service';
@@ -21,6 +22,8 @@ export class PostCreateComponent implements OnInit {
   communityId!: number;
   profileId!: number;
 
+  private readonly theme = injectCommunityTheme();
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
@@ -38,6 +41,7 @@ export class PostCreateComponent implements OnInit {
   }
 
   this.communityId = +idParam;
+  this.theme.useCommunity(this.communityId);
   this.profileId = +profileIdParam;
 
   this.postForm = this.fb.group({

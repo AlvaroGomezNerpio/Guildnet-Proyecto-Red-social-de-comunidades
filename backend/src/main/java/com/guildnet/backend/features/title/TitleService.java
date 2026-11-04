@@ -4,6 +4,7 @@ import com.guildnet.backend.common.exception.ConflictException;
 import com.guildnet.backend.common.exception.NotFoundException;
 import com.guildnet.backend.common.mapper.DtoMapper;
 import com.guildnet.backend.features.community.Community;
+import com.guildnet.backend.features.community.CommunityColors;
 import com.guildnet.backend.features.community.CommunityRepository;
 import com.guildnet.backend.features.profile.CommunityProfile;
 import com.guildnet.backend.features.profile.CommunityProfileRepository;
@@ -42,10 +43,12 @@ public class TitleService {
             throw new ConflictException("Ya existe un título con ese nombre en la comunidad");
         }
 
+        // Sin colores: el color de la comunidad, con el texto que mejor se lea encima
+        String background = CommunityColors.normalize(request.backgroundColor(), community.getPrimaryColor());
         Title title = titleRepository.save(Title.builder()
                 .title(text)
-                .textColor(request.textColor())
-                .backgroundColor(request.backgroundColor())
+                .textColor(CommunityColors.normalize(request.textColor(), CommunityColors.readableOn(background)))
+                .backgroundColor(background)
                 .community(community)
                 .build());
         return DtoMapper.toTitleDTO(title);
@@ -60,8 +63,8 @@ public class TitleService {
             }
             title.setTitle(text);
         }
-        if (request.textColor() != null) title.setTextColor(request.textColor());
-        if (request.backgroundColor() != null) title.setBackgroundColor(request.backgroundColor());
+        title.setTextColor(CommunityColors.normalize(request.textColor(), title.getTextColor()));
+        title.setBackgroundColor(CommunityColors.normalize(request.backgroundColor(), title.getBackgroundColor()));
         return DtoMapper.toTitleDTO(title);
     }
 

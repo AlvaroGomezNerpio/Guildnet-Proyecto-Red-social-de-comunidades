@@ -8,11 +8,13 @@
 }
 
 .gn-member-avatar {
+  position: relative;
+  z-index: 1;
   margin-top: -76px;
 }
 
 .gn-member-avatar ::ng-deep img {
-  border: 4px solid var(--bs-body-bg) !important;
+  border: 4px solid var(--bs-card-bg) !important;
   box-shadow: var(--gn-shadow, 0 0.25rem 0.75rem rgb(0 0 0 / 0.15));
 }
 

@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, computed, effect, inject } from '@angular/core';
+import { injectCommunityTheme } from '../../../../core/theme/community-theme.service';
 import { FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin, of, switchMap } from 'rxjs';
@@ -10,6 +11,8 @@ import { RoleDTO, PermissionDTO, RolePermissionDTO } from '../../models/role.mod
 import { errorMessage } from '../../../../core/http/http-error';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { ConfirmService } from '../../../../shared/ui/confirm/confirm.service';
+import { BadgeColorPickerComponent } from '../../../../shared/ui/badge-color-picker/badge-color-picker.component';
+import { DEFAULT_PALETTE, readableOn } from '../../../../core/theme/community-palette';
 
 interface RoleWithPermissions extends RoleDTO {
   permissions: RolePermissionDTO[];
@@ -21,7 +24,7 @@ interface RoleWithPermissions extends RoleDTO {
     templateUrl: './role-management.component.html',
     changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './role-management.component.css',
-    imports: [RouterLink, FormsModule, ReactiveFormsModule]
+    imports: [RouterLink, FormsModule, ReactiveFormsModule, BadgeColorPickerComponent]
 })
 export class RoleManagementComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
@@ -33,6 +36,7 @@ export class RoleManagementComponent implements OnInit {
   private readonly communityPermissions = inject(CommunityPermissionsService);
   private readonly toast = inject(ToastService);
   private readonly confirm = inject(ConfirmService);
+  private readonly theme = injectCommunityTheme();
 
   communityId!: number;
   permissions: PermissionDTO[] = [];
@@ -44,12 +48,39 @@ export class RoleManagementComponent implements OnInit {
 
   readonly roleForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(50)]],
-    textColor: ['#000000', Validators.required],
-    backgroundColor: ['#ffffff', Validators.required],
+    textColor: [readableOn(DEFAULT_PALETTE.primary), Validators.required],
+    backgroundColor: [DEFAULT_PALETTE.primary, Validators.required],
   });
+
+  /** Color principal de la comunidad: color inicial de los roles nuevos. */
+  readonly communityColor = computed(() => this.theme.palette()?.primary ?? null);
+  /** Si el usuario ya ha tocado los colores, no se le pisan al cargar la paleta. */
+  private colorsTouched = false;
+
+  constructor() {
+    effect(() => {
+      const color = this.communityColor();
+      if (color && !this.colorsTouched) this.applyDefaultColors(color);
+    });
+  }
+
+  setTextColor(value: string): void {
+    this.colorsTouched = true;
+    this.roleForm.controls.textColor.setValue(value);
+  }
+
+  setBackgroundColor(value: string): void {
+    this.colorsTouched = true;
+    this.roleForm.controls.backgroundColor.setValue(value);
+  }
+
+  private applyDefaultColors(color: string): void {
+    this.roleForm.patchValue({ backgroundColor: color, textColor: readableOn(color) });
+  }
 
   ngOnInit(): void {
     this.communityId = Number(this.route.snapshot.paramMap.get('id'));
+    this.theme.useCommunity(this.communityId);
 
     this.communityPermissions.getMyPermissions(this.communityId).subscribe((perms) => {
       if (!perms.includes('ASSIGN_ROLES')) {
@@ -117,6 +148,8 @@ export class RoleManagementComponent implements OnInit {
           this.saving = false;
           this.toast.success('Rol creado.');
           this.roleForm.reset();
+          this.colorsTouched = false;
+          this.applyDefaultColors(this.communityColor() ?? DEFAULT_PALETTE.primary);
           this.selectedPermissions.clear();
           this.loadRoles();
         },

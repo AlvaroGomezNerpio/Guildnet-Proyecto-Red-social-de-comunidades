@@ -1,0 +1,88 @@
+<!-- Paletas predefinidas -->
+<div class="gn-presets mb-4" role="radiogroup" aria-label="Paletas predefinidas">
+  @for (preset of presets; track preset.id) {
+    <button
+      type="button"
+      class="gn-preset"
+      role="radio"
+      [attr.aria-checked]="activePreset() === preset.id"
+      [class.active]="activePreset() === preset.id"
+      (click)="choose(preset)"
+    >
+      <span class="gn-preset-swatch" [style.background]="'linear-gradient(135deg, ' + preset.primary + ', ' + preset.accent + ')'">
+        @if (activePreset() === preset.id) {
+          <i class="bi bi-check-lg"></i>
+        }
+      </span>
+      <span class="gn-preset-name">{{ preset.name }}</span>
+    </button>
+  }
+</div>
+
+<!-- Colores exactos -->
+<div class="row g-3 align-items-end mb-3">
+  <div class="col-sm">
+    <label class="form-label small fw-semibold" for="gn-primary-hex">Color principal</label>
+    <div class="input-group">
+      <input type="color" class="form-control form-control-color" aria-label="Elegir color principal" [value]="primary()" (input)="picked('primary', $event)" />
+      <input
+        id="gn-primary-hex"
+        type="text"
+        class="form-control font-monospace"
+        maxlength="7"
+        spellcheck="false"
+        [value]="primary()"
+        (input)="typed('primary', $any($event.target).value)"
+      />
+    </div>
+    <div class="form-text">Botones, enlaces y etiquetas.</div>
+  </div>
+
+  <div class="col-sm-auto text-center pb-sm-4">
+    <button type="button" class="btn btn-sm btn-outline-secondary" title="Intercambiar colores" aria-label="Intercambiar colores" (click)="swap()">
+      <i class="bi bi-arrow-left-right"></i>
+    </button>
+  </div>
+
+  <div class="col-sm">
+    <label class="form-label small fw-semibold" for="gn-accent-hex">Color de acento</label>
+    <div class="input-group">
+      <input type="color" class="form-control form-control-color" aria-label="Elegir color de acento" [value]="accent()" (input)="picked('accent', $event)" />
+      <input
+        id="gn-accent-hex"
+        type="text"
+        class="form-control font-monospace"
+        maxlength="7"
+        spellcheck="false"
+        [value]="accent()"
+        (input)="typed('accent', $any($event.target).value)"
+      />
+    </div>
+    <div class="form-text">Se combina con el principal en los degradados.</div>
+  </div>
+</div>
+
+@for (warning of warnings(); track warning.mode) {
+  <div class="alert alert-warning small py-2 mb-2"><i class="bi bi-exclamation-triangle me-1"></i>{{ warning.message }}</div>
+}
+
+<!-- Vista previa en los dos temas -->
+<span class="form-label small fw-semibold d-block mt-3">Vista previa</span>
+<div class="row g-3">
+  @for (mode of ['light', 'dark']; track mode) {
+    <div class="col-md-6">
+      <div class="gn-preview" [attr.data-bs-theme]="mode" [gnPalette]="palette()" [gnPaletteMode]="$any(mode)">
+        <div class="gn-preview-banner"></div>
+        <div class="p-3">
+          <div class="small text-body-secondary mb-2">{{ mode === 'light' ? 'Tema claro' : 'Tema oscuro' }}</div>
+          <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+            <span class="btn btn-sm btn-primary pe-none">Unirme</span>
+            <span class="btn btn-sm btn-outline-primary pe-none">Publicar</span>
+            <span class="badge gn-chip">#etiqueta</span>
+          </div>
+          <span class="small">Texto con un <a class="pe-none" href="#">enlace</a> de la comunidad.</span>
+        </div>
+      </div>
+    </div>
+  }
+</div>

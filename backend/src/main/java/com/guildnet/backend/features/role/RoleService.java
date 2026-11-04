@@ -6,6 +6,7 @@ import com.guildnet.backend.common.exception.ForbiddenException;
 import com.guildnet.backend.common.exception.NotFoundException;
 import com.guildnet.backend.common.mapper.DtoMapper;
 import com.guildnet.backend.features.community.Community;
+import com.guildnet.backend.features.community.CommunityColors;
 import com.guildnet.backend.features.community.CommunityRepository;
 import com.guildnet.backend.features.profile.CommunityProfileRepository;
 import com.guildnet.backend.features.permission.Permission;
@@ -53,10 +54,12 @@ public class RoleService {
             throw new ConflictException("Ya existe un rol con ese nombre en la comunidad");
         }
 
+        // Sin colores: el color de la comunidad, con el texto que mejor se lea encima
+        String background = CommunityColors.normalize(dto.backgroundColor(), community.getPrimaryColor());
         Role role = roleRepository.save(Role.builder()
                 .name(name)
-                .textColor(dto.textColor())
-                .backgroundColor(dto.backgroundColor())
+                .textColor(CommunityColors.normalize(dto.textColor(), CommunityColors.readableOn(background)))
+                .backgroundColor(background)
                 .community(community)
                 .build());
         return DtoMapper.toRoleDTO(role);
@@ -79,8 +82,8 @@ public class RoleService {
             throw new ConflictException("Ya existe un rol con ese nombre en la comunidad");
         }
         role.setName(name);
-        role.setTextColor(dto.textColor());
-        role.setBackgroundColor(dto.backgroundColor());
+        role.setTextColor(CommunityColors.normalize(dto.textColor(), role.getTextColor()));
+        role.setBackgroundColor(CommunityColors.normalize(dto.backgroundColor(), role.getBackgroundColor()));
         return DtoMapper.toRoleDTO(role);
     }
 

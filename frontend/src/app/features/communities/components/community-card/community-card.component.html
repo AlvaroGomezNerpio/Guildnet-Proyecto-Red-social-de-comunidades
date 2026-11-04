@@ -1,5 +1,5 @@
 @let c = community();
-<button type="button" class="card gn-community-card h-100 text-start w-100" (click)="selected.emit(c)">
+<button type="button" class="card gn-community-card h-100 text-start w-100" [gnPalette]="palette()" (click)="selected.emit(c)">
   <div class="gn-community-banner" [style.background-image]="c.banner ? 'url(' + c.banner + ')' : null">
     @if (member()) {
       <span class="badge gn-member-badge"><i class="bi bi-check2-circle me-1"></i>Miembro</span>
