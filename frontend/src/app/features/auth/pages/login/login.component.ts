@@ -3,13 +3,14 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { errorMessage } from '../../../../core/http/http-error';
 import { FormsModule } from '@angular/forms';
+import { AuthShellComponent } from '../../components/auth-shell/auth-shell.component';
 
 @Component({
     selector: 'app-login',
     templateUrl: './login.component.html',
     changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './login.component.css',
-    imports: [FormsModule, RouterLink]
+    imports: [FormsModule, RouterLink, AuthShellComponent]
 })
 export class LoginComponent {
   private readonly authService = inject(AuthService);

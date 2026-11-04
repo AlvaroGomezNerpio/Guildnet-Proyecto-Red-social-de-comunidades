@@ -1,0 +1,4 @@
+.gn-footer {
+  border-top: 1px solid var(--bs-border-color);
+  background: var(--gn-surface);
+}

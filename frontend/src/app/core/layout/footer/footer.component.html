@@ -1,11 +1,10 @@
-<footer class="bg-dark text-light text-center py-4 mt-5">
-  <div class="container">
-    <p class="mb-1">&copy; 2025 <strong>Guildnet</strong>. Todos los derechos reservados.</p>
-    <div class="d-flex justify-content-center gap-3 small">
-      <a href="/terminos" class="text-light text-decoration-none">Términos</a>
-      <a href="/privacidad" class="text-light text-decoration-none">Privacidad</a>
-      <a href="/contacto" class="text-light text-decoration-none">Contacto</a>
+<footer class="gn-footer mt-5">
+  <div class="container py-4 d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <app-logo [size]="22" />
+      <span class="fw-semibold">GuildNet</span>
+      <span class="text-body-secondary small">· Comunidades temáticas</span>
     </div>
+    <small class="text-body-secondary">&copy; {{ year }} GuildNet</small>
   </div>
 </footer>
-

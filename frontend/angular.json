@@ -37,17 +37,32 @@
               }
             ],
             "styles": [
-              "node_modules/quill/dist/quill.snow.css",
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "node_modules/@fontsource-variable/inter/index.css",
+              "node_modules/@fontsource-variable/space-grotesk/index.css",
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
-              "src/styles.css"
+              "node_modules/quill/dist/quill.snow.css",
+              "src/styles.scss"
             ],
             "scripts": [
               "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
             ],
             "allowedCommonJsDependencies": [
               "quill-delta"
-            ]
+            ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "node_modules"
+              ],
+              "sass": {
+                "silenceDeprecations": [
+                  "import",
+                  "global-builtin",
+                  "color-functions",
+                  
+                  "if-function"
+                ]
+              }
+            }
           },
           "configurations": {
             "production": {

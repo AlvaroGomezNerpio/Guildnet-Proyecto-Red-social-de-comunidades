@@ -1,93 +1,103 @@
-<div class="container mt-4">
+<div class="container py-4">
   <a class="btn btn-link px-0 mb-3" [routerLink]="['/communities', communityId]">
     <i class="bi bi-arrow-left me-1"></i>Volver a la comunidad
   </a>
 
+  <header class="gn-page-header">
+    <span class="gn-page-icon"><i class="bi bi-shield-lock-fill"></i></span>
+    <div>
+      <h1>Roles y permisos</h1>
+      <p class="text-body-secondary mb-0">Define qué puede hacer cada miembro de la comunidad.</p>
+    </div>
+  </header>
+
   @if (error) {
-    <div class="alert alert-danger">{{ error }}</div>
+    <div class="alert alert-danger"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
   }
 
   <div class="row g-4">
     <!-- Roles existentes -->
-    <div class="col-lg-6">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h4 class="card-title mb-3">Roles de la comunidad</h4>
+    <div class="col-lg-7">
+      <div class="card h-100">
+        <div class="card-body p-4">
+          <h2 class="gn-section-title">Roles de la comunidad</h2>
           @for (role of roles; track role.id) {
-            <div class="border rounded p-2 mb-2">
-              <div class="d-flex align-items-center justify-content-between">
+            <div class="border rounded-3 p-3 mb-3">
+              <div class="d-flex align-items-center justify-content-between gap-2">
                 <span class="badge px-3 py-2" [style.background-color]="role.backgroundColor" [style.color]="role.textColor">
                   {{ role.name }}
                 </span>
-                <button class="btn btn-sm btn-outline-danger" (click)="deleteRole(role)">Eliminar</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteRole(role)" [attr.aria-label]="'Eliminar el rol ' + role.name">
+                  <i class="bi bi-trash"></i>
+                </button>
               </div>
-              <div class="small text-muted mt-2">
+              <div class="d-flex flex-wrap gap-1 mt-2">
                 @for (perm of role.permissions; track perm.id) {
-                  <span class="badge text-bg-light border me-1 mb-1">{{ permissionLabel(perm.permissionName) }}</span>
+                  <span class="badge gn-chip">{{ permissionLabel(perm.permissionName) }}</span>
                 } @empty {
-                  Sin permisos
+                  <span class="small text-body-secondary">Sin permisos</span>
                 }
               </div>
             </div>
           } @empty {
-            <p class="text-muted">Esta comunidad todavía no tiene roles.</p>
+            <div class="text-center text-body-secondary py-5">
+              <i class="bi bi-shield fs-1 d-block mb-2"></i>
+              Esta comunidad todavía no tiene roles.
+            </div>
           }
         </div>
       </div>
     </div>
 
     <!-- Crear rol -->
-    <div class="col-lg-6">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h4 class="card-title mb-3">Crear nuevo rol</h4>
+    <div class="col-lg-5">
+      <form class="card" [formGroup]="roleForm" (ngSubmit)="onSubmit()">
+        <div class="card-body p-4">
+          <h2 class="gn-section-title">Nuevo rol</h2>
 
-          <form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
-            <div class="mb-3">
-              <label for="name" class="form-label">Nombre del rol</label>
-              <input id="name" formControlName="name" type="text" class="form-control" maxlength="50" placeholder="Introduce el nombre del rol" />
+          <div class="form-floating mb-3">
+            <input id="name" formControlName="name" type="text" class="form-control" maxlength="50" placeholder="Nombre" />
+            <label for="name">Nombre del rol</label>
+          </div>
+
+          <div class="d-flex align-items-end gap-3 mb-3">
+            <div>
+              <label for="textColor" class="form-label small fw-semibold">Texto</label>
+              <input id="textColor" formControlName="textColor" type="color" class="form-control form-control-color" />
             </div>
-
-            <div class="row mb-3">
-              <div class="col-6">
-                <label for="textColor" class="form-label">Color del texto</label>
-                <input id="textColor" formControlName="textColor" type="color" class="form-control form-control-color" />
-              </div>
-              <div class="col-6">
-                <label for="backgroundColor" class="form-label">Color de fondo</label>
-                <input id="backgroundColor" formControlName="backgroundColor" type="color" class="form-control form-control-color" />
-              </div>
+            <div>
+              <label for="backgroundColor" class="form-label small fw-semibold">Fondo</label>
+              <input id="backgroundColor" formControlName="backgroundColor" type="color" class="form-control form-control-color" />
             </div>
-
-            <div class="mb-3">
-              <span class="form-label d-block">Vista previa</span>
+            <div class="ms-auto text-end">
+              <span class="form-label small fw-semibold d-block">Vista previa</span>
               <span class="badge px-3 py-2" [style.background-color]="roleForm.value.backgroundColor" [style.color]="roleForm.value.textColor">
                 {{ roleForm.value.name || 'Nuevo rol' }}
               </span>
             </div>
+          </div>
 
-            <div class="mb-3">
-              <span class="form-label d-block">Permisos</span>
-              @for (permission of permissions; track permission.id) {
-                <div class="form-check">
-                  <input
-                    type="checkbox"
-                    class="form-check-input"
-                    [id]="'perm-' + permission.id"
-                    [checked]="selectedPermissions.has(permission.id)"
-                    (change)="togglePermission(permission.id, $any($event.target).checked)"
-                  />
-                  <label class="form-check-label" [for]="'perm-' + permission.id">
-                    {{ permission.description || permission.name }}
-                  </label>
-                </div>
-              }
-            </div>
+          <span class="form-label small fw-semibold d-block">Permisos</span>
+          <div class="list-group mb-4">
+            @for (permission of permissions; track permission.id) {
+              <label class="list-group-item d-flex gap-2 align-items-start" [for]="'perm-' + permission.id">
+                <input
+                  type="checkbox"
+                  class="form-check-input flex-shrink-0 mt-1"
+                  [id]="'perm-' + permission.id"
+                  [checked]="selectedPermissions.has(permission.id)"
+                  (change)="togglePermission(permission.id, $any($event.target).checked)"
+                />
+                <span class="small">{{ permission.description || permission.name }}</span>
+              </label>
+            }
+          </div>
 
-            <button type="submit" class="btn btn-success w-100" [disabled]="roleForm.invalid || saving">Crear rol</button>
-          </form>
+          <button type="submit" class="btn btn-primary w-100" [disabled]="roleForm.invalid || saving">
+            <i class="bi bi-plus-lg me-1"></i>Crear rol
+          </button>
         </div>
-      </div>
+      </form>
     </div>
   </div>
 </div>

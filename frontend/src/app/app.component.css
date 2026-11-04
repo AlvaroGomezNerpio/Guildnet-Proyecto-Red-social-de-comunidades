@@ -1,0 +1,10 @@
+/* El contenido ocupa todo el alto disponible para que el pie quede abajo en páginas cortas. */
+:host {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-container {
+  flex: 1 0 auto;
+}

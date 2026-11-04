@@ -1,89 +1,67 @@
-<div class="container mt-5">
-  <div class="card shadow-sm">
-    <div class="card-body">
-      <h2 class="card-title mb-4">Crear nueva comunidad</h2>
-
-      <form (ngSubmit)="onSubmit()" #form="ngForm">
-        <!-- Nombre -->
-        <div class="mb-3">
-          <label for="name" class="form-label">Nombre</label>
-          <input
-            type="text"
-            id="name"
-            class="form-control"
-            [(ngModel)]="community.name"
-            name="name"
-            required
-          />
-        </div>
-
-        <!-- Descripción -->
-        <div class="mb-3">
-          <label for="description" class="form-label">Descripción</label>
-          <quill-editor
-            id="description"
-            [(ngModel)]="community.description"
-            name="description"
-            [style]="{ height: '600px' }"
-          ></quill-editor>
-        </div>
-
-        <!-- Reglas -->
-        <div class="mb-3">
-          <label for="rules" class="form-label">Reglas</label>
-          <quill-editor
-            id="rules"
-            [(ngModel)]="community.rules"
-            name="rules"
-            [style]="{ height: '600px' }"
-          ></quill-editor>
-        </div>
-
-        <!-- Etiquetas -->
-        <div class="mb-3">
-          <label for="tags" class="form-label">Etiquetas (separadas por comas)</label>
-          <input
-            type="text"
-            id="tags"
-            class="form-control"
-            [(ngModel)]="tagsInput"
-            name="tags"
-          />
-        </div>
-
-        <!-- Imagen de perfil -->
-        <div class="mb-3">
-          <label for="image" class="form-label">Imagen de la comunidad</label>
-          <input
-            type="file"
-            id="image"
-            accept="image/png, image/jpeg, image/gif, image/webp"
-            (change)="onImageSelected($event)"
-            class="form-control"
-          />
-        </div>
-
-        <!-- Banner -->
-        <div class="mb-3">
-          <label for="banner" class="form-label">Banner</label>
-          <input
-            type="file"
-            id="banner"
-            accept="image/png, image/jpeg, image/gif, image/webp"
-            (change)="onBannerSelected($event)"
-            class="form-control"
-          />
-        </div>
-
-        @if (error) {
-          <div class="alert alert-danger">{{ error }}</div>
-        }
-
-        <!-- Botón -->
-        <div class="d-grid">
-          <button type="submit" class="btn btn-success" [disabled]="saving || !community.name.trim()">Crear comunidad</button>
-        </div>
-      </form>
+<div class="container py-4 gn-narrow">
+  <header class="gn-page-header">
+    <span class="gn-page-icon"><i class="bi bi-people-fill"></i></span>
+    <div>
+      <h1>Crear comunidad</h1>
+      <p class="text-body-secondary mb-0">Reúne a gente con tus mismos intereses. Serás su propietario.</p>
     </div>
-  </div>
+  </header>
+
+  <form class="card" (ngSubmit)="onSubmit()" #form="ngForm" novalidate>
+    <section class="gn-form-section">
+      <h2>Información básica</h2>
+      <p class="gn-form-hint">El nombre es único y es lo primero que verán los demás.</p>
+
+      <div class="form-floating mb-3">
+        <input type="text" id="name" class="form-control" placeholder="Nombre" maxlength="100" required [(ngModel)]="community.name" name="name" />
+        <label for="name">Nombre de la comunidad</label>
+      </div>
+
+      <div class="form-floating">
+        <input type="text" id="tags" class="form-control" placeholder="Etiquetas" [(ngModel)]="tagsInput" name="tags" />
+        <label for="tags">Etiquetas</label>
+      </div>
+      <div class="form-text">Sepáralas con comas. Ejemplo: rol, estrategia, cooperativos.</div>
+    </section>
+
+    <section class="gn-form-section gn-editor">
+      <h2>Descripción</h2>
+      <p class="gn-form-hint">Cuenta de qué trata la comunidad y a quién va dirigida.</p>
+      <quill-editor [(ngModel)]="community.description" name="description" [styles]="{ height: '220px' }" />
+    </section>
+
+    <section class="gn-form-section gn-editor">
+      <h2>Reglas</h2>
+      <p class="gn-form-hint">Normas de convivencia que deben respetar los miembros.</p>
+      <quill-editor [(ngModel)]="community.rules" name="rules" [styles]="{ height: '180px' }" />
+    </section>
+
+    <section class="gn-form-section">
+      <h2>Imágenes</h2>
+      <p class="gn-form-hint">Opcionales. PNG, JPG, GIF o WebP.</p>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="image" class="form-label small fw-semibold">Icono</label>
+          <input type="file" id="image" class="form-control" accept="image/png, image/jpeg, image/gif, image/webp" (change)="onImageSelected($event)" />
+        </div>
+        <div class="col-md-6">
+          <label for="banner" class="form-label small fw-semibold">Banner</label>
+          <input type="file" id="banner" class="form-control" accept="image/png, image/jpeg, image/gif, image/webp" (change)="onBannerSelected($event)" />
+        </div>
+      </div>
+    </section>
+
+    <div class="card-footer d-flex flex-column flex-sm-row gap-2 justify-content-end align-items-sm-center p-3">
+      @if (error) {
+        <div class="alert alert-danger py-2 mb-0 me-sm-auto"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+      }
+      <a class="btn btn-outline-secondary" routerLink="/communities">Cancelar</a>
+      <button type="submit" class="btn btn-primary" [disabled]="saving || !community.name.trim()">
+        @if (saving) {
+          <span class="spinner-border spinner-border-sm me-2"></span>
+        }
+        Crear comunidad
+      </button>
+    </div>
+  </form>
 </div>

@@ -5,13 +5,14 @@ import { CreateCommunityRequest } from '../../models/community.models';
 import { errorMessage } from '../../../../core/http/http-error';
 import { FormsModule } from '@angular/forms';
 import { QuillEditorComponent } from 'ngx-quill';
+import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'app-create-community',
     templateUrl: './create-community.component.html',
     changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './create-community.component.css',
-    imports: [FormsModule, QuillEditorComponent],
+    imports: [FormsModule, QuillEditorComponent, RouterLink],
 })
 export class CreateCommunityComponent {
   community: CreateCommunityRequest = {

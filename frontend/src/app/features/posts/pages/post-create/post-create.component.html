@@ -1,57 +1,54 @@
-<div class="container mt-5 d-flex justify-content-center">
-  <div class="card shadow p-4 w-100" style="max-width: 800px;">
-    <div class="card-body">
-      <h3 class="card-title mb-4 text-center">Crear nueva publicación</h3>
+<div class="container py-4 gn-narrow">
+  <a class="btn btn-link px-0 mb-3" [routerLink]="['/communities', communityId]">
+    <i class="bi bi-arrow-left me-1"></i>Volver a la comunidad
+  </a>
 
-      <form [formGroup]="postForm" (ngSubmit)="onSubmit()" novalidate>
-        <!-- Título -->
-        <div class="mb-3">
-          <label for="title" class="form-label">Título</label>
-          <input
-            type="text"
-            id="title"
-            class="form-control"
-            formControlName="title"
-            placeholder="Escribe el título del post"
-            maxlength="200"
-            required
-          />
-        </div>
-
-        <!-- Contenido -->
-        <div class="mb-3">
-          <label for="content" class="form-label">Contenido</label>
-          <quill-editor
-            formControlName="content"
-            [styles]="{ height: '400px' }"
-          ></quill-editor>
-        </div>
-
-        <!-- Etiquetas -->
-        <div class="mb-3">
-          <label for="tags" class="form-label">Etiquetas</label>
-          <input
-            type="text"
-            id="tags"
-            class="form-control"
-            formControlName="tags"
-            placeholder="Ejemplo: noticias, análisis, opinión"
-          />
-          <div class="form-text">Separa las etiquetas con comas.</div>
-        </div>
-
-        @if (errorMessage) {
-          <div class="alert alert-danger">{{ errorMessage }}</div>
-        }
-
-        <!-- Botón -->
-        <div class="d-flex justify-content-between">
-          <a class="btn btn-outline-secondary" [routerLink]="['/communities', communityId]">Cancelar</a>
-          <button type="submit" class="btn btn-success" [disabled]="postForm.invalid || submitting">
-            Publicar
-          </button>
-        </div>
-      </form>
+  <header class="gn-page-header">
+    <span class="gn-page-icon"><i class="bi bi-pencil-square"></i></span>
+    <div>
+      <h1>Nueva publicación</h1>
+      <p class="text-body-secondary mb-0">Comparte algo con la comunidad.</p>
     </div>
-  </div>
+  </header>
+
+  @if (postForm) {
+    <form class="card" [formGroup]="postForm" (ngSubmit)="onSubmit()" novalidate>
+      <section class="gn-form-section">
+        <input
+          type="text"
+          class="form-control form-control-lg fw-semibold mb-3"
+          formControlName="title"
+          placeholder="Título de la publicación"
+          aria-label="Título"
+          maxlength="200"
+          required
+        />
+
+        <div class="gn-editor mb-3">
+          <quill-editor formControlName="content" placeholder="Escribe aquí el contenido…" [styles]="{ height: '360px' }" />
+        </div>
+
+        <div class="form-floating">
+          <input type="text" id="tags" class="form-control" formControlName="tags" placeholder="Etiquetas" />
+          <label for="tags">Etiquetas</label>
+        </div>
+        <div class="form-text">Sepáralas con comas. Ejemplo: noticias, análisis, opinión.</div>
+      </section>
+
+      <div class="card-footer d-flex flex-column flex-sm-row gap-2 justify-content-end align-items-sm-center p-3">
+        @if (errorMessage) {
+          <div class="alert alert-danger py-2 mb-0 me-sm-auto"><i class="bi bi-exclamation-circle me-1"></i>{{ errorMessage }}</div>
+        }
+        <a class="btn btn-outline-secondary" [routerLink]="['/communities', communityId]">Cancelar</a>
+        <button type="submit" class="btn btn-primary" [disabled]="postForm.invalid || submitting">
+          @if (submitting) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+          }
+          <i class="bi bi-send me-1"></i>Publicar
+        </button>
+      </div>
+    </form>
+  } @else if (errorMessage) {
+    <div class="alert alert-danger">{{ errorMessage }}</div>
+  }
 </div>

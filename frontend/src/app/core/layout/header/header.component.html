@@ -1,70 +1,72 @@
-<header class="d-flex flex-wrap align-items-center justify-content-between py-3 mb-4 border-bottom px-4 bg-white shadow-sm">
-  <!-- Logo -->
-  <div class="col-md-3 mb-2 mb-md-0 d-flex align-items-center">
-    <a routerLink="/" class="d-inline-flex align-items-center link-body-emphasis text-decoration-none">
-      <i class="bi bi-fire me-2 fs-3 text-danger"></i>
-      <span class="fs-4 fw-bold">Guildnet</span>
-    </a>
-  </div>
+<header class="gn-header sticky-top">
+  <nav class="navbar navbar-expand-md">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/">
+        <app-logo [size]="34" />
+        <span class="gn-wordmark">Guild<span class="text-gradient">Net</span></span>
+      </a>
 
-  <!-- Navegación -->
-  <nav class="col-12 col-md-auto mb-2 justify-content-center mb-md-0">
-    <ul class="nav nav-pills">
-      <li class="nav-item">
-        <a routerLink="/communities" class="nav-link px-3 link-secondary" aria-current="page">
-          <i class="bi bi-house-door me-1"></i>Inicio
-        </a>
-      </li>
-      <li class="nav-item">
-        <a routerLink="/communities/search" class="nav-link px-3">
-          <i class="bi bi-search me-1"></i>Buscar Comunidad
-        </a>
-      </li>
-      @if (currentUser) {
-        <li class="nav-item">
-          <a class="btn btn-outline-primary d-flex align-items-center ms-3" [routerLink]="['/communities/create']">
-            <i class="bi bi-plus-circle me-1"></i>Crear comunidad
-          </a>
-        </li>
-      }
-    </ul>
-  </nav>
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Abrir menú">
+        <i class="bi bi-list fs-3"></i>
+      </button>
 
-  <!-- Área de usuario -->
-  <div class="col-md-3 text-end">
-    @if (!currentUser) {
-      <button type="button" class="btn btn-outline-primary me-2" routerLink="/login">
-        <i class="bi bi-box-arrow-in-right me-1"></i>Login
-      </button>
-      <button type="button" class="btn btn-primary" routerLink="/register">
-        <i class="bi bi-person-plus-fill me-1"></i>Registrarse
-      </button>
-    } @else {
-      <div class="d-flex align-items-center justify-content-end">
-        <a
-          routerLink="/profile"
-          class="btn btn-outline-secondary me-2 d-inline-flex align-items-center"
-          style="text-decoration: none;"
-          >
-          @if (currentUser?.profileImage) {
-            <img
-              [src]="currentUser.profileImage || 'default-avatar.svg'"
-              alt="Imagen de perfil"
-              class="rounded-circle me-2"
-              width="30"
-              height="30"
-              />
+      <div class="collapse navbar-collapse" id="mainNav">
+        <ul class="navbar-nav me-auto ms-md-4 gap-md-1">
+          @if (user()) {
+            <li class="nav-item">
+              <a class="nav-link" routerLink="/communities" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+                <i class="bi bi-house-door me-1"></i>Inicio
+              </a>
+            </li>
           }
-          @if (!currentUser?.profileImage) {
-            <i class="bi bi-person-circle me-1"></i>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/communities/search" routerLinkActive="active">
+              <i class="bi bi-compass me-1"></i>Explorar
+            </a>
+          </li>
+        </ul>
+
+        <div class="d-flex align-items-center gap-2 mt-3 mt-md-0">
+          <!-- Selector de tema -->
+          <div class="dropdown">
+            <button class="btn btn-icon" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Cambiar tema" title="Tema">
+              <i class="bi" [class.bi-sun]="theme.active() === 'light'" [class.bi-moon-stars]="theme.active() === 'dark'"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              @for (option of themeOptions; track option.value) {
+                <li>
+                  <button type="button" class="dropdown-item d-flex align-items-center gap-2" [class.active]="theme.preference() === option.value" (click)="theme.set(option.value)">
+                    <i class="bi bi-{{ option.icon }}"></i>{{ option.label }}
+                  </button>
+                </li>
+              }
+            </ul>
+          </div>
+
+          @if (user(); as u) {
+            <a class="btn btn-primary d-none d-lg-inline-flex align-items-center" routerLink="/communities/create">
+              <i class="bi bi-plus-lg me-1"></i>Crear comunidad
+            </a>
+            <div class="dropdown">
+              <button class="btn gn-user-btn d-flex align-items-center gap-2" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <app-avatar [src]="u.profileImage" [size]="32" [alt]="u.username" />
+                <span class="d-md-none d-xl-inline fw-semibold">{{ u.username }}</span>
+                <i class="bi bi-chevron-down small"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><h6 class="dropdown-header">{{ u.email }}</h6></li>
+                <li><a class="dropdown-item" routerLink="/profile"><i class="bi bi-person me-2"></i>Mi perfil</a></li>
+                <li><a class="dropdown-item d-lg-none" routerLink="/communities/create"><i class="bi bi-plus-circle me-2"></i>Crear comunidad</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><button type="button" class="dropdown-item text-danger" (click)="logout()"><i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión</button></li>
+              </ul>
+            </div>
+          } @else {
+            <a class="btn btn-outline-primary" routerLink="/login">Iniciar sesión</a>
+            <a class="btn btn-primary" routerLink="/register">Registrarse</a>
           }
-          <span>{{ currentUser?.username || 'Perfil' }}</span>
-        </a>
-        <button type="button" class="btn btn-danger" (click)="logout()">
-          <i class="bi bi-box-arrow-right me-1"></i>Salir
-        </button>
+        </div>
       </div>
-    }
-
-  </div>
+    </div>
+  </nav>
 </header>

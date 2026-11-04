@@ -4,8 +4,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { UserDTO, LoginRequest, LoginResponse, RegisterRequest } from './auth.models';
-
-const TOKEN_KEY = 'token';
+import { tokenStorage } from './token.storage';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -46,7 +45,7 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem(TOKEN_KEY);
+    return tokenStorage.get();
   }
 
   isAuthenticated(): boolean {
@@ -55,7 +54,7 @@ export class AuthService {
 
   /** Cierra la sesion local. Si se indica, redirige a la pantalla de login. */
   logout(redirect = false): void {
-    localStorage.removeItem(TOKEN_KEY);
+    tokenStorage.clear();
     this.currentUserSubject.next(null);
     if (redirect) {
       this.router.navigate(['/login']);
@@ -75,7 +74,7 @@ export class AuthService {
   }
 
   private startSession(token: string): void {
-    localStorage.setItem(TOKEN_KEY, token);
+    tokenStorage.set(token);
     this.loadCurrentUser();
   }
 }

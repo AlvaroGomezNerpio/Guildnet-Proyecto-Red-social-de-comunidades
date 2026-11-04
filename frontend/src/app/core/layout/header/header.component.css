@@ -1,3 +1,52 @@
-header {
-  background-color: #f8f9fa;
+.gn-header {
+  background: var(--gn-header-bg);
+  backdrop-filter: saturate(160%) blur(12px);
+  border-bottom: 1px solid var(--bs-border-color);
+  z-index: 1030;
+}
+
+.gn-wordmark {
+  font-family: 'Space Grotesk Variable', sans-serif;
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  color: var(--bs-body-color);
+}
+
+.nav-link {
+  font-weight: 600;
+  border-radius: 999px;
+  padding-inline: 0.9rem !important;
+  color: var(--bs-secondary-color);
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--bs-primary-text-emphasis);
+  background: var(--bs-primary-bg-subtle);
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--bs-body-color);
+  border: 1px solid var(--bs-border-color);
+}
+
+.btn-icon:hover {
+  background: var(--bs-secondary-bg);
+}
+
+.gn-user-btn {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 999px;
+  padding: 0.2rem 0.75rem 0.2rem 0.2rem;
+  color: var(--bs-body-color);
+}
+
+.gn-user-btn:hover {
+  background: var(--bs-secondary-bg);
 }

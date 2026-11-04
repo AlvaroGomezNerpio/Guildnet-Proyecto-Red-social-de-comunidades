@@ -1,11 +1,24 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-bs-theme="light">
 <head>
   <meta charset="utf-8">
-  <title>GuildNet</title>
+  <title>GuildNet · Comunidades temáticas</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <meta name="description" content="GuildNet: crea y únete a comunidades temáticas, publica, comenta y chatea en tiempo real.">
+  <meta name="theme-color" content="#7c3aed">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="alternate icon" href="favicon.ico">
+  <script>
+    // Aplica el tema guardado antes de pintar la página (evita el parpadeo claro/oscuro)
+    (function () {
+      try {
+        var pref = localStorage.getItem('gn-theme') || 'auto';
+        var dark = pref === 'dark' || (pref === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>

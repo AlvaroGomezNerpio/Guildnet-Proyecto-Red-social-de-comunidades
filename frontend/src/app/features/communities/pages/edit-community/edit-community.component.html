@@ -1,55 +1,85 @@
 @if (community) {
-  <div class="container mt-5">
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <h2 class="card-title mb-4">Editar comunidad</h2>
+  <div class="container py-4 gn-narrow">
+    <a class="btn btn-link px-0 mb-3" [routerLink]="['/communities', community.id]">
+      <i class="bi bi-arrow-left me-1"></i>Volver a la comunidad
+    </a>
 
-        <form (ngSubmit)="onSubmit()" [formGroup]="editForm">
-          <div class="mb-3">
-            <label for="name" class="form-label">Nombre</label>
-            <input id="name" type="text" class="form-control" formControlName="name" maxlength="100" placeholder="Nombre de la comunidad" />
-          </div>
+    <header class="gn-page-header">
+      <span class="gn-page-icon"><i class="bi bi-gear-fill"></i></span>
+      <div>
+        <h1>Ajustes de la comunidad</h1>
+        <p class="text-body-secondary mb-0">{{ community.name }}</p>
+      </div>
+    </header>
 
-          <div class="mb-3">
-            <label class="form-label">Descripción</label>
-            <quill-editor formControlName="description" [styles]="{ height: '300px' }"></quill-editor>
-          </div>
+    <form class="card mb-4" (ngSubmit)="onSubmit()" [formGroup]="editForm" novalidate>
+      <section class="gn-form-section">
+        <h2>Información básica</h2>
+        <p class="gn-form-hint">El nombre debe ser único en GuildNet.</p>
 
-          <div class="mb-3">
-            <label class="form-label">Reglas</label>
-            <quill-editor formControlName="rules" [styles]="{ height: '300px' }"></quill-editor>
-          </div>
+        <div class="form-floating mb-3">
+          <input id="name" type="text" class="form-control" formControlName="name" maxlength="100" placeholder="Nombre" />
+          <label for="name">Nombre de la comunidad</label>
+        </div>
 
-          <div class="mb-3">
-            <label for="tags" class="form-label">Etiquetas (separadas por comas)</label>
-            <input id="tags" type="text" class="form-control" formControlName="tags" placeholder="ej. arte, videojuegos, comunidad" />
-          </div>
+        <div class="form-floating">
+          <input id="tags" type="text" class="form-control" formControlName="tags" placeholder="Etiquetas" />
+          <label for="tags">Etiquetas</label>
+        </div>
+        <div class="form-text">Sepáralas con comas.</div>
+      </section>
 
-          <div class="mb-3">
-            <label for="image" class="form-label">Imagen de la comunidad</label>
+      <section class="gn-form-section gn-editor">
+        <h2>Descripción</h2>
+        <p class="gn-form-hint">De qué trata la comunidad y a quién va dirigida.</p>
+        <quill-editor formControlName="description" [styles]="{ height: '220px' }" />
+      </section>
+
+      <section class="gn-form-section gn-editor">
+        <h2>Reglas</h2>
+        <p class="gn-form-hint">Normas de convivencia para los miembros.</p>
+        <quill-editor formControlName="rules" [styles]="{ height: '180px' }" />
+      </section>
+
+      <section class="gn-form-section">
+        <h2>Imágenes</h2>
+        <p class="gn-form-hint">Sube un archivo solo si quieres reemplazar la imagen actual.</p>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="image" class="form-label small fw-semibold">Icono</label>
             <input id="image" type="file" accept="image/png, image/jpeg, image/gif, image/webp" class="form-control" (change)="onImageSelected($event)" />
           </div>
-
-          <div class="mb-3">
-            <label for="banner" class="form-label">Banner</label>
+          <div class="col-md-6">
+            <label for="banner" class="form-label small fw-semibold">Banner</label>
             <input id="banner" type="file" accept="image/png, image/jpeg, image/gif, image/webp" class="form-control" (change)="onBannerSelected($event)" />
           </div>
+        </div>
+      </section>
 
-          @if (error) {
-            <div class="alert alert-danger">{{ error }}</div>
+      <div class="card-footer d-flex flex-column flex-sm-row gap-2 justify-content-end align-items-sm-center p-3">
+        @if (error) {
+          <div class="alert alert-danger py-2 mb-0 me-sm-auto"><i class="bi bi-exclamation-circle me-1"></i>{{ error }}</div>
+        }
+        <a class="btn btn-outline-secondary" [routerLink]="['/communities', community.id]">Cancelar</a>
+        <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid || saving">
+          @if (saving) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
           }
-
-          <div class="d-flex justify-content-between mt-4">
-            <div>
-              <button type="submit" class="btn btn-success me-2" [disabled]="editForm.invalid || saving">Guardar cambios</button>
-              <a class="btn btn-outline-secondary" [routerLink]="['/communities', community.id]">Cancelar</a>
-            </div>
-            @if (isOwner) {
-              <button type="button" class="btn btn-outline-danger" (click)="onDelete()">Eliminar comunidad</button>
-            }
-          </div>
-        </form>
+          Guardar cambios
+        </button>
       </div>
-    </div>
+    </form>
+
+    @if (isOwner) {
+      <div class="card border-danger-subtle">
+        <div class="card-body d-flex flex-column flex-sm-row gap-3 align-items-sm-center">
+          <div class="me-sm-auto">
+            <h2 class="h6 fw-bold text-danger mb-1">Zona peligrosa</h2>
+            <p class="small text-body-secondary mb-0">Se borrarán la comunidad, sus publicaciones, perfiles y mensajes. No se puede deshacer.</p>
+          </div>
+          <button type="button" class="btn btn-outline-danger" (click)="onDelete()"><i class="bi bi-trash me-1"></i>Eliminar comunidad</button>
+        </div>
+      </div>
+    }
   </div>
 }
