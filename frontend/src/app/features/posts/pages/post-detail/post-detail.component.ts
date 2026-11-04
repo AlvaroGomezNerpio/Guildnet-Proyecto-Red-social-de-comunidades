@@ -3,10 +3,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { QuillEditorComponent } from 'ngx-quill';
+import { CategorySelectComponent } from '../../components/category-select/category-select.component';
+import { PostCategoryService } from '../../services/post-category.service';
+
 import { PostService } from '../../services/post.service';
 import { PostCommentService } from '../../services/post-comment.service';
 import { LikeService } from '../../services/like.service';
-import { PostDetailDTO } from '../../models/post.models';
+import { PostDetailDTO, PostCategoryDTO } from '../../models/post.models';
 import { PostCommentDTO } from '../../models/post-comment.models';
 import { CommunityProfileService } from '../../../profiles/services/community-profile.service';
 import { CommunityPermissionsService, Permission } from '../../../communities/services/community-permissions.service';
@@ -20,7 +23,7 @@ import { injectCommunityTheme } from '../../../../core/theme/community-theme.ser
 
 @Component({
   selector: 'app-post-detail',
-  imports: [FormsModule, RouterLink, QuillEditorComponent, AvatarComponent, TagBadgeComponent, RelativeTimePipe],
+  imports: [FormsModule, RouterLink, QuillEditorComponent, AvatarComponent, TagBadgeComponent, RelativeTimePipe, CategorySelectComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './post-detail.component.html',
   styleUrl: './post-detail.component.css',
@@ -37,6 +40,10 @@ export class PostDetailComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly confirm = inject(ConfirmService);
   private readonly theme = injectCommunityTheme();
+  private readonly categoryService = inject(PostCategoryService);
+
+  /** Categorías de la comunidad, para cambiarla al editar. */
+  readonly categories = signal<PostCategoryDTO[]>([]);
 
   postId = 0;
   readonly post = signal<PostDetailDTO | null>(null);
@@ -51,6 +58,7 @@ export class PostDetailComponent implements OnInit {
   editTitle = '';
   editContent = '';
   editTags = '';
+  editCategoryId: number | null = null;
 
   newComment = '';
   readonly editingCommentId = signal<number | null>(null);
@@ -90,6 +98,7 @@ export class PostDetailComponent implements OnInit {
 
   private loadViewerContext(communityId: number): void {
     this.theme.useCommunity(communityId);
+    this.categoryService.getByCommunity(communityId).subscribe((list) => this.categories.set(list));
     this.permissionsService.getMyPermissions(communityId).subscribe((perms) => this.permissions.set(perms));
     this.profileService.getMyProfileInCommunity(communityId).subscribe({
       next: (me) => {
@@ -108,6 +117,7 @@ export class PostDetailComponent implements OnInit {
     this.editTitle = p.title;
     this.editContent = p.content;
     this.editTags = p.tags.join(', ');
+    this.editCategoryId = p.category?.id ?? null;
     this.editing.set(true);
   }
 
@@ -116,7 +126,8 @@ export class PostDetailComponent implements OnInit {
       .split(',')
       .map((t) => t.trim())
       .filter((t) => t.length > 0);
-    this.postService.updatePost(this.postId, { title: this.editTitle.trim(), content: this.editContent, tags }).subscribe({
+    this.postService
+      .updatePost(this.postId, { title: this.editTitle.trim(), content: this.editContent, tags, categoryId: this.editCategoryId }).subscribe({
       next: () => {
         this.editing.set(false);
         this.toast.success('Publicación actualizada.');

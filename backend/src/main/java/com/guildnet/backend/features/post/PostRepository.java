@@ -18,6 +18,8 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
     /** Muro de la comunidad: las fijadas se muestran aparte, encima. */
     Page<Post> findByCommunityIdAndPinnedAtIsNull(Long communityId, Pageable pageable);
 
+    Page<Post> findByCommunityIdAndCategoryIdAndPinnedAtIsNull(Long communityId, Long categoryId, Pageable pageable);
+
     List<Post> findByCommunityIdAndPinnedAtIsNotNullOrderByPinnedAtDesc(Long communityId);
 
     long countByCommunityIdAndPinnedAtIsNotNull(Long communityId);

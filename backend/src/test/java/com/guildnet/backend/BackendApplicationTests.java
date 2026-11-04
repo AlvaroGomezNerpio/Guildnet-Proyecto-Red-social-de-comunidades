@@ -257,6 +257,60 @@ class BackendApplicationTests {
     }
 
     @Test
+    void postCategoriesAreManagedFilteredAndScopedToTheirCommunity() throws Exception {
+        String owner = register("Owner", uniqueEmail());
+        String member = register("Member", uniqueEmail());
+        long communityId = createCommunity(owner, "Categorías " + UUID.randomUUID());
+        long otherCommunity = createCommunity(owner, "Otra " + UUID.randomUUID());
+        joinCommunity(member, communityId);
+
+        // Solo quien gestiona la comunidad crea categorías; sin colores usa el de la comunidad
+        mvc.perform(auth(post("/api/v1/communities/" + communityId + "/categories"), member)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Guía\"}"))
+                .andExpect(status().isForbidden());
+        String body = mvc.perform(auth(post("/api/v1/communities/" + communityId + "/categories"), owner)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Guía\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.backgroundColor").value("#7c3aed"))
+                .andExpect(jsonPath("$.textColor").value("#ffffff"))
+                .andReturn().getResponse().getContentAsString();
+        long guide = ((Number) JsonPath.read(body, "$.id")).longValue();
+        mvc.perform(auth(post("/api/v1/communities/" + communityId + "/categories"), owner)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"guía\"}"))
+                .andExpect(status().isConflict());
+        String foreign = mvc.perform(auth(post("/api/v1/communities/" + otherCommunity + "/categories"), owner)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Ajena\"}"))
+                .andReturn().getResponse().getContentAsString();
+        long foreignId = ((Number) JsonPath.read(foreign, "$.id")).longValue();
+
+        // Publicar con categoría (una de otra comunidad se rechaza) y filtrar el muro
+        String postJson = "{\"title\":\"Cómo empezar\",\"content\":\"<p>x</p>\",\"communityId\":" + communityId
+                + ",\"categoryId\":%d}";
+        mvc.perform(auth(post("/api/v1/posts"), member).contentType(MediaType.APPLICATION_JSON)
+                        .content(postJson.formatted(foreignId)))
+                .andExpect(status().isBadRequest());
+        String created = mvc.perform(auth(post("/api/v1/posts"), member).contentType(MediaType.APPLICATION_JSON)
+                        .content(postJson.formatted(guide)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.category.name").value("Guía"))
+                .andReturn().getResponse().getContentAsString();
+        long postId = ((Number) JsonPath.read(created, "$.id")).longValue();
+        createPost(member, communityId, "Sin categoría", "<p>y</p>");
+
+        mvc.perform(auth(get("/api/v1/posts/community/" + communityId).param("category", "" + guide), member))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].title").value("Cómo empezar"));
+        mvc.perform(auth(get("/api/v1/posts/community/" + communityId), member))
+                .andExpect(jsonPath("$.totalElements").value(2));
+
+        // Al borrar la categoría la publicación se conserva, sin categoría
+        mvc.perform(auth(delete("/api/v1/categories/" + guide), owner)).andExpect(status().isNoContent());
+        mvc.perform(auth(get("/api/v1/posts/" + postId), member))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.category").doesNotExist());
+    }
+
+    @Test
     void myPermissionsReflectOwnershipAndRole() throws Exception {
         String owner = register("Owner", uniqueEmail());
         String member = register("Member", uniqueEmail());

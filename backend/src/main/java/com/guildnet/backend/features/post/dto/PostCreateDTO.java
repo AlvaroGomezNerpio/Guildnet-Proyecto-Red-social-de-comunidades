@@ -24,6 +24,9 @@ public record PostCreateDTO(
         Long profileId,
 
         @NotNull(message = "La comunidad es obligatoria")
-        Long communityId
+        Long communityId,
+
+        /** Categoría de la comunidad (opcional). */
+        Long categoryId
 ) {
 }

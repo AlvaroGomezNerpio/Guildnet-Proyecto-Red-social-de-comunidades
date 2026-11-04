@@ -1,5 +1,6 @@
 package com.guildnet.backend.features.post.dto;
 
+import com.guildnet.backend.features.category.PostCategoryDTO;
 import com.guildnet.backend.features.profile.dto.CommunityProfileDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,4 +24,5 @@ public class PostDTO {
     private CommunityProfileDTO communityProfile;
     private Long communityId;
     private boolean pinned;
+    private PostCategoryDTO category;
 }

@@ -7,9 +7,10 @@ import { NotificationService } from '../../services/notification.service';
 import { CommunityPermissionsService, Permission } from '../../services/community-permissions.service';
 import { CommunityProfileService } from '../../../profiles/services/community-profile.service';
 import { PostService } from '../../../posts/services/post.service';
+import { PostCategoryService } from '../../../posts/services/post-category.service';
 import { CommunityResponseDTO } from '../../models/community.models';
 import { CommunityProfileDTO } from '../../../profiles/models/profile.models';
-import { PostDTO } from '../../../posts/models/post.models';
+import { PostCategoryDTO, PostDTO } from '../../../posts/models/post.models';
 import { errorMessage } from '../../../../core/http/http-error';
 import { CommunityChatComponent } from '../../components/community-chat/community-chat.component';
 import { PostCardComponent } from '../../../posts/components/post-card/post-card.component';
@@ -50,6 +51,7 @@ export class CommunityDetailComponent implements OnInit {
   private readonly notificationService = inject(NotificationService);
   private readonly permissionsService = inject(CommunityPermissionsService);
   private readonly toast = inject(ToastService);
+  private readonly categoryService = inject(PostCategoryService);
   private readonly theme = injectCommunityTheme();
 
   communityId = 0;
@@ -79,6 +81,10 @@ export class CommunityDetailComponent implements OnInit {
   readonly canManageRoles = computed(() => this.permissions().includes('ASSIGN_ROLES'));
   readonly canEditCommunity = computed(() => this.permissions().includes('MANAGE_COMMUNITY_SETTINGS'));
 
+  /** Categorías de la comunidad y la elegida para filtrar el muro (null: todas). */
+  readonly categories = signal<PostCategoryDTO[]>([]);
+  readonly categoryFilter = signal<number | null>(null);
+
   /** Publicaciones fijadas, encima del muro. */
   readonly pinnedPosts = signal<PostDTO[]>([]);
   /** Diálogo de normas al unirse (si la comunidad lo exige). */
@@ -105,8 +111,10 @@ export class CommunityDetailComponent implements OnInit {
       this.profile.set(null);
       this.membershipLoaded.set(false);
       this.tab.set('posts');
+      this.categoryFilter.set(null);
       this.loadCommunity();
       this.loadPinned();
+      this.loadCategories();
       this.loadPosts();
       this.loadMembership();
     });
@@ -142,7 +150,7 @@ export class CommunityDetailComponent implements OnInit {
   loadPosts(more = false): void {
     const page = more ? this.postsPage + 1 : 0;
     this.loadingPosts.set(true);
-    this.postService.getPostsByCommunity(this.communityId, page).subscribe({
+    this.postService.getPostsByCommunity(this.communityId, page, undefined, this.categoryFilter()).subscribe({
       next: (result) => {
         this.posts.update((current) => (more ? [...current, ...result.content] : result.content));
         this.postsPage = result.page;
@@ -155,6 +163,18 @@ export class CommunityDetailComponent implements OnInit {
         this.toast.error('No se pudieron cargar las publicaciones.');
       },
     });
+  }
+
+  private loadCategories(): void {
+    this.categoryService.getByCommunity(this.communityId).subscribe({
+      next: (list) => this.categories.set(list),
+      error: () => this.categories.set([]),
+    });
+  }
+
+  filterBy(categoryId: number | null): void {
+    this.categoryFilter.set(categoryId);
+    this.loadPosts();
   }
 
   loadPinned(): void {

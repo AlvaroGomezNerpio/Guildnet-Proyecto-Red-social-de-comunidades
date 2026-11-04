@@ -72,6 +72,14 @@
       </div>
     </form>
 
+    <section class="card mb-4">
+      <div class="gn-form-section">
+        <h2>Categorías de publicaciones</h2>
+        <p class="gn-form-hint">Etiquetas oficiales que se eligen al publicar y sirven para filtrar el muro. Se guardan al momento.</p>
+        <app-category-manager [communityId]="community.id" [communityColor]="customization().primaryColor" />
+      </div>
+    </section>
+
     @if (isOwner) {
       <div class="card border-danger-subtle">
         <div class="card-body d-flex flex-column flex-sm-row gap-3 align-items-sm-center">

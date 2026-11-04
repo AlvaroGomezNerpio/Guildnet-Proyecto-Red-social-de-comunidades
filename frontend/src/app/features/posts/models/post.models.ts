@@ -1,6 +1,15 @@
 import { CommunityProfileDTO } from '../../profiles/models/profile.models';
 import { PostCommentDTO } from './post-comment.models';
 
+/** Categoría oficial de publicaciones de una comunidad ("Guía", "Pregunta"...). */
+export interface PostCategoryDTO {
+  id: number;
+  name: string;
+  textColor: string;
+  backgroundColor: string;
+  communityId: number;
+}
+
 export interface PostDTO {
   id: number;
   title: string;
@@ -14,6 +23,7 @@ export interface PostDTO {
   communityId: number;
   /** Fijada en lo alto de la comunidad. */
   pinned: boolean;
+  category: PostCategoryDTO | null;
 }
 
 export interface PostDetailDTO {
@@ -27,6 +37,7 @@ export interface PostDetailDTO {
   communityProfile: CommunityProfileDTO;
   communityId: number;
   pinned: boolean;
+  category: PostCategoryDTO | null;
 }
 
 export interface PostCreateDTO {
@@ -34,10 +45,12 @@ export interface PostCreateDTO {
   content: string;
   tags: string[];
   communityId: number;
+  categoryId: number | null;
 }
 
 export interface PostUpdateDTO {
   title: string;
   content: string;
   tags: string[];
+  categoryId: number | null;
 }

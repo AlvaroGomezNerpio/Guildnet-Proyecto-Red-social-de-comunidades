@@ -28,6 +28,13 @@
           <quill-editor formControlName="content" placeholder="Escribe aquí el contenido…" [styles]="{ height: '360px' }" />
         </div>
 
+        @if (categories.length) {
+          <span class="form-label small fw-semibold d-block">Categoría</span>
+          <div class="mb-3">
+            <app-category-select [categories]="categories" [(selected)]="categoryId" />
+          </div>
+        }
+
         <div class="form-floating">
           <input type="text" id="tags" class="form-control" formControlName="tags" placeholder="Etiquetas" />
           <label for="tags">Etiquetas</label>

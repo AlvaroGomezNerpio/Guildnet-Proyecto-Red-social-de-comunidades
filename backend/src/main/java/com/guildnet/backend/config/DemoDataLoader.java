@@ -2,6 +2,8 @@ package com.guildnet.backend.config;
 
 import com.guildnet.backend.auth.AuthService;
 import com.guildnet.backend.auth.RegisterRequest;
+import com.guildnet.backend.features.category.PostCategoryDTO;
+import com.guildnet.backend.features.category.PostCategoryService;
 import com.guildnet.backend.features.chat.ChatService;
 import com.guildnet.backend.features.community.Community;
 import com.guildnet.backend.features.community.CommunityRepository;
@@ -75,6 +77,7 @@ public class DemoDataLoader implements ApplicationRunner {
     private final CommunityProfileRepository communityProfileRepository;
     private final FileStorageService fileStorageService;
     private final DemoImages demoImages;
+    private final PostCategoryService categoryService;
     private final TransactionTemplate transactionTemplate;
 
     @Override
@@ -137,12 +140,21 @@ public class DemoDataLoader implements ApplicationRunner {
         var veteran = titleService.create(new CreateTitleRequest("Veterano", "#212529", "#ffc107", boardGames), ana);
         profileService.assignTitle(brunoInGames.getId(), veteran.getId(), ana);
 
+        // ------------------------------------------------------------ Categorías de publicaciones
+        long question = category(boardGames, "Pregunta", "#2563eb", ana);
+        long event = category(boardGames, "Evento", "#f59e0b", ana);
+        category(boardGames, "Reseña", "#059669", ana);
+        long tip = category(photography, "Consejo", "#0284c7", bruno);
+        category(photography, "Mi foto", "#db2777", bruno);
+        long resource = category(programming, "Recurso", "#059669", carla);
+        category(programming, "Duda", "#7c3aed", carla);
+
         // ------------------------------------------------------------ Publicaciones, comentarios y likes
         long post1 = postService.create(new PostCreateDTO(
                 "¿Qué juego recomendáis para empezar?",
                 "<p>Quiero introducir a mis amigos en los juegos de mesa modernos. "
                         + "¿Algo sencillo de explicar pero con decisiones interesantes?</p>",
-                List.of("recomendaciones", "principiantes"), null, boardGames), ana).getId();
+                List.of("recomendaciones", "principiantes"), null, boardGames, question), ana).getId();
         commentService.create(new PostCommentCreateDTO(post1, null,
                 "Cualquier juego de colocación de losetas es perfecto para empezar."), bruno);
         commentService.create(new PostCommentCreateDTO(post1, null,
@@ -153,13 +165,13 @@ public class DemoDataLoader implements ApplicationRunner {
         long post2 = postService.create(new PostCreateDTO(
                 "Quedada el sábado",
                 "<p>Este sábado a las <strong>17:00</strong> en la ludoteca del barrio. ¡Traed vuestros juegos!</p>",
-                List.of("quedada"), null, boardGames), bruno).getId();
+                List.of("quedada"), null, boardGames, event), bruno).getId();
         likeService.like(post2, carlaInGames.getId(), carla);
 
         long post3 = postService.create(new PostCreateDTO(
                 "Consejos para fotografía nocturna",
                 "<p>Trípode, ISO bajo y exposiciones largas. ¿Qué más añadiríais?</p>",
-                List.of("consejos", "noche"), null, photography), bruno).getId();
+                List.of("consejos", "noche"), null, photography, tip), bruno).getId();
         commentService.create(new PostCommentCreateDTO(post3, null,
                 "Disparar en RAW para poder recuperar sombras después."), ana);
         likeService.like(post3, anaInPhoto.getId(), ana);
@@ -167,7 +179,7 @@ public class DemoDataLoader implements ApplicationRunner {
         long post4 = postService.create(new PostCreateDTO(
                 "Recursos para aprender Angular",
                 "<p>Estoy empezando con Angular. La documentación oficial y su tutorial me están sirviendo mucho.</p>",
-                List.of("angular", "recursos"), null, programming), bruno).getId();
+                List.of("angular", "recursos"), null, programming, resource), bruno).getId();
         commentService.create(new PostCommentCreateDTO(post4, null,
                 "Mira también las señales (signals), simplifican mucho el estado."), carla);
         likeService.like(post4, brunoInCode.getId(), bruno);
@@ -231,6 +243,10 @@ public class DemoDataLoader implements ApplicationRunner {
         if (filled > 0) {
             log.info("Imágenes de ejemplo: completados {} elementos sin imagen", filled);
         }
+    }
+
+    private long category(long communityId, String name, String background, User owner) {
+        return categoryService.create(communityId, new PostCategoryDTO(null, name, null, background, null), owner).id();
     }
 
     private User user(String name, String email) {

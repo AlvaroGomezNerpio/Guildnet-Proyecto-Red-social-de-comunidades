@@ -139,7 +139,28 @@
       @if (tab() === 'chat' && me) {
         <app-community-chat [communityId]="communityId" [myProfileId]="me.id" />
       } @else {
-        @if (pinnedPosts().length) {
+        @if (categories().length) {
+          <div class="d-flex flex-wrap gap-2 mb-3" role="radiogroup" aria-label="Filtrar por categoría">
+            <button type="button" class="gn-filter-chip" role="radio" [attr.aria-checked]="categoryFilter() === null" [class.active]="categoryFilter() === null" (click)="filterBy(null)">
+              Todas
+            </button>
+            @for (cat of categories(); track cat.id) {
+              <button
+                type="button"
+                class="gn-filter-chip"
+                role="radio"
+                [attr.aria-checked]="categoryFilter() === cat.id"
+                [class.active]="categoryFilter() === cat.id"
+                [style.--gn-chip-bg]="cat.backgroundColor"
+                [style.--gn-chip-fg]="cat.textColor"
+                (click)="filterBy(cat.id)"
+              >
+                {{ cat.name }}
+              </button>
+            }
+          </div>
+        }
+        @if (pinnedPosts().length && categoryFilter() === null) {
           <div class="gn-pinned mb-3">
             <div class="small fw-bold text-uppercase text-body-secondary mb-2"><i class="bi bi-pin-angle-fill me-1"></i>Fijadas</div>
             @for (post of pinnedPosts(); track post.id) {
@@ -150,7 +171,11 @@
         @for (post of posts(); track post.id) {
           <app-post-card [post]="post" />
         } @empty {
-          @if (!loadingPosts()) {
+          @if (!loadingPosts() && categoryFilter() !== null) {
+            <app-empty-state icon="funnel" message="No hay publicaciones en esta categoría.">
+              <button class="btn btn-outline-primary" (click)="filterBy(null)">Ver todas</button>
+            </app-empty-state>
+          } @else if (!loadingPosts() && !pinnedPosts().length) {
             <app-empty-state icon="card-text" message="Aún no hay publicaciones en esta comunidad.">
               @if (me) {
                 <button class="btn btn-primary" (click)="goToCreatePost()">Escribe la primera</button>

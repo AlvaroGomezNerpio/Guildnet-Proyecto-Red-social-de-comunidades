@@ -1,5 +1,6 @@
 package com.guildnet.backend.features.post.dto;
 
+import com.guildnet.backend.features.category.PostCategoryDTO;
 import com.guildnet.backend.features.profile.dto.CommunityProfileDTO;
 import com.guildnet.backend.features.postcomment.dto.PostCommentDTO;
 
@@ -16,6 +17,7 @@ public record PostDetailDTO(
         List<PostCommentDTO> postComment,
         CommunityProfileDTO communityProfile,
         Long communityId,
-        boolean pinned
+        boolean pinned,
+        PostCategoryDTO category
 ) {
 }

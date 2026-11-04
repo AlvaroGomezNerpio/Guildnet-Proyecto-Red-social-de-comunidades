@@ -57,6 +57,12 @@
         @if (editing()) {
           <input class="form-control form-control-lg fw-semibold mb-3" maxlength="200" placeholder="Título" aria-label="Título" [(ngModel)]="editTitle" />
           <quill-editor class="d-block mb-3" [(ngModel)]="editContent" [styles]="{ height: '300px' }" />
+          @if (categories().length) {
+            <span class="form-label small d-block">Categoría</span>
+            <div class="mb-3">
+              <app-category-select [categories]="categories()" [(selected)]="editCategoryId" />
+            </div>
+          }
           <label class="form-label small" for="editTags">Etiquetas (separadas por comas)</label>
           <input id="editTags" class="form-control mb-3" [(ngModel)]="editTags" />
           <div class="d-flex gap-2">
@@ -64,8 +70,15 @@
             <button class="btn btn-outline-secondary" (click)="editing.set(false)">Cancelar</button>
           </div>
         } @else {
-          @if (p.pinned) {
-            <span class="badge gn-chip mb-2"><i class="bi bi-pin-angle-fill me-1"></i>Fijada en la comunidad</span>
+          @if (p.pinned || p.category) {
+            <div class="d-flex flex-wrap gap-2 mb-2">
+              @if (p.category; as cat) {
+                <app-tag-badge [label]="cat.name" [background]="cat.backgroundColor" [color]="cat.textColor" />
+              }
+              @if (p.pinned) {
+                <span class="badge gn-chip"><i class="bi bi-pin-angle-fill me-1"></i>Fijada en la comunidad</span>
+              }
+            </div>
           }
           <h1 class="h3 fw-bold mb-3">{{ p.title }}</h1>
           <div class="quill-content gn-post-body mb-3" [innerHTML]="p.content"></div>

@@ -29,3 +29,9 @@
   font-size: 0.7rem;
   vertical-align: 0.2em;
 }
+
+.gn-category-badge {
+  font-family: var(--bs-body-font-family);
+  font-size: 0.7rem;
+  vertical-align: 0.2em;
+}

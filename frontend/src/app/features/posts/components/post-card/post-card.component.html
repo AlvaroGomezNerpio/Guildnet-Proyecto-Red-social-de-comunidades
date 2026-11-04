@@ -25,6 +25,9 @@
         @if (p.pinned) {
           <span class="badge gn-chip gn-pinned-badge me-1" title="Publicación fijada"><i class="bi bi-pin-angle-fill"></i> Fijada</span>
         }
+        @if (p.category; as cat) {
+          <app-tag-badge class="gn-category-badge me-1" [label]="cat.name" [background]="cat.backgroundColor" [color]="cat.textColor" />
+        }
         {{ p.title }}
       </h5>
     </a>

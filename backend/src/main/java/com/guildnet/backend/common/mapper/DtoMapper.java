@@ -1,5 +1,6 @@
 package com.guildnet.backend.common.mapper;
 
+import com.guildnet.backend.features.category.PostCategoryDTO;
 import com.guildnet.backend.features.community.Community;
 import com.guildnet.backend.features.community.dto.CommunityLinkDTO;
 import com.guildnet.backend.features.community.dto.CommunityResponseDTO;
@@ -117,6 +118,7 @@ public final class DtoMapper {
         dto.setCommunityId(post.getCommunity().getId());
         dto.setCommunityProfile(toProfileDTO(post.getProfile()));
         dto.setPinned(post.getPinnedAt() != null);
+        dto.setCategory(PostCategoryDTO.of(post.getCategory()));
         return dto;
     }
 

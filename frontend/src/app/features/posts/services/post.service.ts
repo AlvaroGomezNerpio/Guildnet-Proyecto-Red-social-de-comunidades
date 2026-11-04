@@ -33,8 +33,11 @@ export class PostService {
     return this.http.get<Page<PostDTO>>(`${this.apiUrl}/profile/${profileId}`, { params: { page, size } });
   }
 
-  getPostsByCommunity(communityId: number, page = 0, size = PAGE_SIZE): Observable<Page<PostDTO>> {
-    return this.http.get<Page<PostDTO>>(`${this.apiUrl}/community/${communityId}`, { params: { page, size } });
+  /** Muro de la comunidad (sin las fijadas); opcionalmente, solo de una categoría. */
+  getPostsByCommunity(communityId: number, page = 0, size = PAGE_SIZE, categoryId: number | null = null): Observable<Page<PostDTO>> {
+    let params = new HttpParams().set('page', page).set('size', size);
+    if (categoryId !== null) params = params.set('category', categoryId);
+    return this.http.get<Page<PostDTO>>(`${this.apiUrl}/community/${communityId}`, { params });
   }
 
   /** Publicaciones fijadas de la comunidad (no aparecen en el muro normal). */

@@ -5,6 +5,8 @@ import com.guildnet.backend.common.exception.NotFoundException;
 import com.guildnet.backend.common.html.HtmlSanitizer;
 import com.guildnet.backend.common.mapper.DtoMapper;
 import com.guildnet.backend.common.web.PageResponse;
+import com.guildnet.backend.features.category.PostCategoryDTO;
+import com.guildnet.backend.features.category.PostCategoryService;
 import com.guildnet.backend.features.profile.CommunityProfile;
 import com.guildnet.backend.features.permission.PermissionType;
 import com.guildnet.backend.features.post.dto.PostCreateDTO;
@@ -31,6 +33,7 @@ public class PostService {
     static final int MAX_PINNED = 3;
 
     private final PostRepository postRepository;
+    private final PostCategoryService categoryService;
     private final AccessGuard accessGuard;
 
     /** Publica en la comunidad como el perfil del usuario autenticado (debe ser miembro). */
@@ -41,6 +44,7 @@ public class PostService {
                 .title(dto.title().trim())
                 .content(HtmlSanitizer.sanitize(dto.content()))
                 .tags(cleanTags(dto.tags()))
+                .category(categoryService.resolveForPost(dto.categoryId(), dto.communityId()))
                 .profile(author)
                 .community(author.getCommunity())
                 .build();
@@ -56,6 +60,7 @@ public class PostService {
         post.setContent(HtmlSanitizer.sanitize(dto.content()));
         post.getTags().clear();
         post.getTags().addAll(cleanTags(dto.tags()));
+        post.setCategory(categoryService.resolveForPost(dto.categoryId(), post.getCommunity().getId()));
         return DtoMapper.toPostDTO(post);
     }
 
@@ -79,7 +84,8 @@ public class PostService {
                 post.getComments().stream().map(DtoMapper::toPostCommentDTO).toList(),
                 DtoMapper.toProfileDTO(post.getProfile()),
                 post.getCommunity().getId(),
-                post.getPinnedAt() != null
+                post.getPinnedAt() != null,
+                PostCategoryDTO.of(post.getCategory())
         );
     }
 
@@ -94,9 +100,12 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<PostDTO> getByCommunity(Long communityId, int page, int size) {
+    public PageResponse<PostDTO> getByCommunity(Long communityId, Long categoryId, int page, int size) {
+        var request = PageResponse.request(page, size, NEWEST_FIRST);
         return PageResponse.of(
-                postRepository.findByCommunityIdAndPinnedAtIsNull(communityId, PageResponse.request(page, size, NEWEST_FIRST)),
+                categoryId == null
+                        ? postRepository.findByCommunityIdAndPinnedAtIsNull(communityId, request)
+                        : postRepository.findByCommunityIdAndCategoryIdAndPinnedAtIsNull(communityId, categoryId, request),
                 DtoMapper::toPostDTO);
     }
 

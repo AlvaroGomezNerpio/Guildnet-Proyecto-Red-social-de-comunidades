@@ -1,0 +1,54 @@
+<div class="d-flex flex-wrap gap-2 mb-3">
+  @for (category of categories(); track category.id) {
+    <div class="btn-group btn-group-sm align-items-center border rounded-pill ps-1 pe-0 py-1" [class.border-primary]="editingId() === category.id">
+      <app-tag-badge [label]="category.name" [background]="category.backgroundColor" [color]="category.textColor" />
+      <button type="button" class="btn btn-sm btn-link px-2 text-body-secondary" [attr.aria-label]="'Editar ' + category.name" (click)="edit(category)">
+        <i class="bi bi-pencil"></i>
+      </button>
+      <button type="button" class="btn btn-sm btn-link ps-0 pe-2 text-danger" [attr.aria-label]="'Eliminar ' + category.name" (click)="remove(category)">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  } @empty {
+    <span class="small text-body-secondary">Todavía no hay categorías. Crea la primera, por ejemplo «Guía», «Pregunta» o «Evento».</span>
+  }
+</div>
+
+@if (editingId() !== null || categories().length < maxCategories) {
+  <div class="border rounded-3 p-3">
+    <div class="row g-2 align-items-end mb-3">
+      <div class="col">
+        <label class="form-label small fw-semibold" for="categoryName">{{ editingId() === null ? 'Nueva categoría' : 'Editar categoría' }}</label>
+        <input
+          id="categoryName"
+          type="text"
+          class="form-control"
+          maxlength="30"
+          placeholder="Ej. Guía"
+          [ngModel]="name()"
+          (ngModelChange)="name.set($event)"
+          (keydown.enter)="$event.preventDefault(); save()"
+        />
+      </div>
+      <div class="col-auto d-flex gap-2">
+        @if (editingId() !== null) {
+          <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">Cancelar</button>
+        }
+        <button type="button" class="btn btn-primary" [disabled]="!name().trim() || saving()" (click)="save()">
+          <i class="bi me-1" [class.bi-plus-lg]="editingId() === null" [class.bi-check-lg]="editingId() !== null"></i>
+          {{ editingId() === null ? 'Crear' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+    <app-badge-color-picker
+      [label]="name()"
+      [communityColor]="communityColor()"
+      [text]="text()"
+      (textChange)="text.set($event)"
+      [background]="background()"
+      (backgroundChange)="background.set($event)"
+    />
+  </div>
+} @else {
+  <p class="small text-body-secondary mb-0">Has llegado al máximo de {{ maxCategories }} categorías.</p>
+}

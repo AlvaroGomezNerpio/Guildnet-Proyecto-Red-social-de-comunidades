@@ -1,5 +1,6 @@
 package com.guildnet.backend.features.post;
 
+import com.guildnet.backend.features.category.PostCategory;
 import com.guildnet.backend.features.community.Community;
 import com.guildnet.backend.features.like.Like;
 import com.guildnet.backend.features.postcomment.PostComment;
@@ -49,6 +50,11 @@ public class Post {
     @ManyToOne(optional = false)
     @JoinColumn(name = "community_id", nullable = false)
     private Community community;
+
+    /** Categoría oficial de la comunidad (opcional). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private PostCategory category;
 
     @Builder.Default
     @OrderBy("id ASC")

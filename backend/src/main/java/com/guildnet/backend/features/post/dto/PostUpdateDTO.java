@@ -14,6 +14,9 @@ public record PostUpdateDTO(
         String content,
 
         @Size(max = 10, message = "No puedes añadir más de 10 etiquetas")
-        List<@Size(max = 30) String> tags
+        List<@Size(max = 30) String> tags,
+
+        /** Categoría de la comunidad (opcional). */
+        Long categoryId
 ) {
 }

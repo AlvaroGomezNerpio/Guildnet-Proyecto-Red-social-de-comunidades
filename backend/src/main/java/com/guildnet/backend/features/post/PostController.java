@@ -55,10 +55,11 @@ public class PostController {
     @GetMapping("/community/{communityId}")
     public PageResponse<PostDTO> getByCommunity(
             @PathVariable Long communityId,
+            @RequestParam(required = false) Long category,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "" + PageResponse.DEFAULT_SIZE) int size
     ) {
-        return postService.getByCommunity(communityId, page, size);
+        return postService.getByCommunity(communityId, category, page, size);
     }
 
     @GetMapping("/community/{communityId}/pinned")

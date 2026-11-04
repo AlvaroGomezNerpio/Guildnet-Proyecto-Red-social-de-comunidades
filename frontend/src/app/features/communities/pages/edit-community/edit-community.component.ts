@@ -16,6 +16,7 @@ import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { ConfirmService } from '../../../../shared/ui/confirm/confirm.service';
 import { QuillEditorComponent } from 'ngx-quill';
 import { CommunityCustomizationComponent } from '../../components/community-customization/community-customization.component';
+import { CategoryManagerComponent } from '../../components/category-manager/category-manager.component';
 import { injectCommunityTheme } from '../../../../core/theme/community-theme.service';
 import { paletteOf } from '../../../../core/theme/community-palette';
 
@@ -24,7 +25,7 @@ import { paletteOf } from '../../../../core/theme/community-palette';
     templateUrl: './edit-community.component.html',
     changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './edit-community.component.css',
-    imports: [FormsModule, ReactiveFormsModule, QuillEditorComponent, RouterLink, CommunityCustomizationComponent]
+    imports: [FormsModule, ReactiveFormsModule, QuillEditorComponent, RouterLink, CommunityCustomizationComponent, CategoryManagerComponent]
 })
 export class EditCommunityComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);

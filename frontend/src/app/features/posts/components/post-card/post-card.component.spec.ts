@@ -14,6 +14,7 @@ const post: PostDTO = {
   updatedAt: null,
   communityId: 1,
   pinned: false,
+  category: null,
   communityProfile: {
     id: 5,
     username: 'Bruno',
