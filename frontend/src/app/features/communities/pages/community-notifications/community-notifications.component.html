@@ -1,86 +1,53 @@
-<div class="container mt-4">
+<div class="container py-4 gn-narrow">
   <a class="btn btn-link px-0 mb-2" [routerLink]="['/communities', communityId]">
     <i class="bi bi-arrow-left me-1"></i>Volver a la comunidad
   </a>
-  <h3 class="mb-3">Notificaciones</h3>
 
-  <!-- Error -->
-  @if (errorMessage) {
-    <div class="alert alert-danger">
-      {{ errorMessage }}
-    </div>
-  }
-
-  <!-- Acciones -->
-  @if (notifications.length > 0) {
-    <div class="mb-3 d-flex flex-wrap gap-2">
-      <button class="btn btn-outline-success" (click)="markAllAsRead()">
-        <i class="bi bi-check2-all me-1"></i> Marcar todas como leídas
+  <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+    <h1 class="h3 fw-bold mb-0 me-auto">
+      Notificaciones
+      @if (unread()) {
+        <span class="badge rounded-pill bg-danger fs-6 align-middle">{{ unread() }}</span>
+      }
+    </h1>
+    @if (notifications().length) {
+      <button class="btn btn-sm btn-outline-primary" (click)="markAllAsRead()" [disabled]="!unread()">
+        <i class="bi bi-check2-all me-1"></i>Marcar todas como leídas
       </button>
-      <button class="btn btn-outline-danger" (click)="deleteAll()">
-        <i class="bi bi-trash3 me-1"></i> Eliminar todas
+      <button class="btn btn-sm btn-outline-danger" (click)="deleteAll()">
+        <i class="bi bi-trash3 me-1"></i>Eliminar todas
       </button>
-    </div>
-  }
-
-  <!-- Vacío -->
-  @if (notifications.length === 0) {
-    <div class="text-muted">
-      No tienes notificaciones.
-    </div>
-  }
-
-  <!-- Lista -->
-  <ul class="list-group">
-    @for (n of notifications; track n.id) {
-      <li
-        class="list-group-item d-flex justify-content-between align-items-start"
-        [class.bg-light]="!n.read"
-        >
-        <div class="d-flex align-items-center">
-          @if (n.sender?.profileImage) {
-            <img
-              [src]="n.sender!.profileImage"
-              class="rounded-circle me-3"
-              alt="Imagen"
-              width="45"
-              height="45"
-              />
-          }
-          <div>
-            <div>
-              @if (!n.read) {
-                <span class="badge bg-success me-1">●</span>
-              }
-              @if (n.sender) {
-                <strong>{{ n.sender.username }}</strong>
-              }
-              @if (n.sender) {
-                <span>:</span>
-              }
-              {{ n.message }}
-            </div>
-            <small class="text-muted">{{ n.createdAt | date: 'short' }}</small>
-          </div>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-          <button
-            class="btn btn-sm btn-outline-success"
-            (click)="markAsRead(n.id)"
-            [disabled]="n.read"
-            title="Marcar como leída"
-            >
-            <i class="bi bi-check-lg"></i>
-          </button>
-          <button
-            class="btn btn-sm btn-outline-danger"
-            (click)="deleteNotification(n.id)"
-            title="Eliminar notificación"
-            >
-            <i class="bi bi-trash"></i>
-          </button>
-        </div>
-      </li>
     }
-  </ul>
+  </div>
+
+  <div class="list-group">
+    @for (n of notifications(); track n.id) {
+      <div class="list-group-item d-flex align-items-start gap-3 py-3 gn-notification" [class.gn-unread]="!n.read" (click)="markAsRead(n)">
+        <div class="position-relative">
+          @if (n.sender) {
+            <app-avatar [src]="n.sender.profileImage" [size]="44" [alt]="n.sender.username" />
+          } @else {
+            <div class="gn-system-icon"><i class="bi bi-{{ icon(n.type) }}"></i></div>
+          }
+          <span class="gn-type-icon"><i class="bi bi-{{ icon(n.type) }}"></i></span>
+        </div>
+        <div class="flex-grow-1">
+          <div>
+            @if (n.sender) {
+              <a class="fw-semibold text-reset text-decoration-none" [routerLink]="['/communities/profile', n.sender.id]" (click)="$event.stopPropagation()">{{ n.sender.username }}</a>
+            }
+            {{ n.message }}
+          </div>
+          <small class="text-body-secondary">{{ n.createdAt | relativeTime }}</small>
+        </div>
+        <button type="button" class="btn btn-sm btn-link text-body-secondary" title="Eliminar" (click)="remove(n); $event.stopPropagation()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (loaded() && !notifications().length) {
+    <app-empty-state icon="bell-slash" message="No tienes notificaciones." />
+  }
 </div>

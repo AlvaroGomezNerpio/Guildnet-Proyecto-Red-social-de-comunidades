@@ -1,69 +1,67 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { debounceTime, distinctUntilChanged, merge } from 'rxjs';
 import { PostService } from '../../services/post.service';
 import { PostDTO } from '../../models/post.models';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { PostCardComponent } from '../../components/post-card/post-card.component';
+import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
 
-interface PostWithToggle extends PostDTO {
-  showContent: boolean;
-}
-
+/** Búsqueda de publicaciones dentro de una comunidad por título y etiquetas. */
 @Component({
-    selector: 'app-search-posts',
-    templateUrl: './search-posts.component.html',
-    changeDetection: ChangeDetectionStrategy.Eager,
-    styleUrl: './search-posts.component.css',
-    imports: [FormsModule, ReactiveFormsModule, RouterLink]
+  selector: 'app-search-posts',
+  imports: [ReactiveFormsModule, RouterLink, PostCardComponent, EmptyStateComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './search-posts.component.html',
+  styleUrl: './search-posts.component.css',
 })
 export class SearchPostsComponent implements OnInit {
-  searchTitleControl = new FormControl('');
-  searchTagsControl = new FormControl('');
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly postService = inject(PostService);
 
-  results: PostWithToggle[] = [];
-  error: string | null = null;
+  communityId = 0;
+  readonly titleControl = new FormControl('', { nonNullable: true });
+  readonly tagsControl = new FormControl('', { nonNullable: true });
 
-  communityId!: number;
-
-  constructor(
-    private postService: PostService,
-    private route: ActivatedRoute
-  ) {}
+  readonly results = signal<PostDTO[]>([]);
+  readonly total = signal(0);
+  readonly hasMore = signal(false);
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+  private page = 0;
 
   ngOnInit(): void {
-    this.communityId = +this.route.snapshot.paramMap.get('communityId')!;
-
-    this.performSearch();
-
-    this.searchTitleControl.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged())
-      .subscribe(() => this.performSearch());
-
-    this.searchTagsControl.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged())
-      .subscribe(() => this.performSearch());
+    this.communityId = Number(this.route.snapshot.paramMap.get('communityId'));
+    this.search();
+    merge(this.titleControl.valueChanges, this.tagsControl.valueChanges)
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.search());
   }
 
-  performSearch(): void {
-    const title = this.searchTitleControl.value?.trim();
-    const tags = this.searchTagsControl.value
-      ?.split(',')
-      .map((t: string) => t.trim())
-      .filter((t: string) => t.length > 0);
+  search(more = false): void {
+    const title = this.titleControl.value.trim();
+    const tags = this.tagsControl.value
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
+    const page = more ? this.page + 1 : 0;
 
-    this.postService.searchPostsInCommunity(this.communityId, title, tags, 0, 50).subscribe({
-      next: (data) => {
-        this.results = data.content.map(post => ({
-          ...post,
-          showContent: false
-        }));
-        this.error = null;
+    this.loading.set(true);
+    this.postService.searchPostsInCommunity(this.communityId, title, tags, page).subscribe({
+      next: (result) => {
+        this.results.update((current) => (more ? [...current, ...result.content] : result.content));
+        this.page = result.page;
+        this.total.set(result.totalElements);
+        this.hasMore.set(!result.last);
+        this.error.set(null);
+        this.loading.set(false);
       },
-      error: () => this.error = 'Error al buscar publicaciones.'
+      error: () => {
+        this.error.set('Error al buscar publicaciones.');
+        this.loading.set(false);
+      },
     });
-  }
-
-  toggleContent(post: PostWithToggle): void {
-    post.showContent = !post.showContent;
   }
 }

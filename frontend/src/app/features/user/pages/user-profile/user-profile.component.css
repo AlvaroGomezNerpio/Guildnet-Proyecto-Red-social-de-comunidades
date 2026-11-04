@@ -1,13 +1,17 @@
-::ng-deep .quill-content img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
+.gn-profile-header {
+  overflow: hidden;
 }
 
-::ng-deep .quill-content img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
+.gn-profile-cover {
+  height: 140px;
+  background: var(--gn-gradient, linear-gradient(135deg, #6f42c1, #0d6efd));
+}
+
+.gn-profile-avatar {
+  margin-top: -76px;
+}
+
+.gn-profile-avatar ::ng-deep img {
+  border: 4px solid var(--bs-body-bg) !important;
+  box-shadow: var(--gn-shadow, 0 0.25rem 0.75rem rgb(0 0 0 / 0.12));
 }

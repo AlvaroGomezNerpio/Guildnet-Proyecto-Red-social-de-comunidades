@@ -1,38 +1,51 @@
-import { Component, OnInit, ChangeDetectionStrategy, DestroyRef, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { CommunityProfileDTO, UpdateCommunityProfileRequest } from '../../models/profile.models';
-import { CommunityProfileService } from '../../services/community-profile.service';
-import { PostDTO } from '../../../posts/models/post.models';
-import { PostService } from '../../../posts/services/post.service';
-import { ProfileCommentService } from '../../services/profile-comment.service';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { QuillEditorComponent } from 'ngx-quill';
+import { CommunityProfileDTO } from '../../models/profile.models';
 import { ProfileCommentDTO } from '../../models/profile-comment.models';
-import { TitleService } from '../../services/title.service';
 import { TitleDTO } from '../../models/title.models';
-import { RoleService } from '../../../roles/services/role.service';
 import { RoleDTO } from '../../../roles/models/role.models';
+import { PostDTO } from '../../../posts/models/post.models';
+import { CommunityProfileService } from '../../services/community-profile.service';
+import { ProfileCommentService } from '../../services/profile-comment.service';
+import { TitleService } from '../../services/title.service';
+import { RoleService } from '../../../roles/services/role.service';
+import { PostService } from '../../../posts/services/post.service';
 import { CommunityService } from '../../../communities/services/community.service';
 import { CommunityPermissionsService, Permission } from '../../../communities/services/community-permissions.service';
 import { errorMessage } from '../../../../core/http/http-error';
-import { QuillEditorComponent } from 'ngx-quill';
-import { DatePipe } from '@angular/common';
+import { AvatarComponent } from '../../../../shared/ui/avatar/avatar.component';
+import { TagBadgeComponent } from '../../../../shared/ui/tag-badge/tag-badge.component';
+import { ModalComponent } from '../../../../shared/ui/modal/modal.component';
+import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
+import { PostCardComponent } from '../../../posts/components/post-card/post-card.component';
+import { RelativeTimePipe } from '../../../../shared/pipes/relative-time.pipe';
+import { ToastService } from '../../../../shared/ui/toast/toast.service';
+import { ConfirmService } from '../../../../shared/ui/confirm/confirm.service';
 
-interface PostWithToggle extends PostDTO {
-  showContent: boolean;
-}
+type Tab = 'posts' | 'comments';
+type Dialog = 'edit' | 'titles' | 'role' | null;
 
+/** Perfil de un miembro dentro de una comunidad. */
 @Component({
-    selector: 'app-community-profile-detail',
-    templateUrl: './community-profile-detail.component.html',
-    changeDetection: ChangeDetectionStrategy.Eager,
-    styleUrl: './community-profile-detail.component.css',
-    imports: [
-        FormsModule,
-        ReactiveFormsModule,
-        QuillEditorComponent,
-        DatePipe,
-    ],
+  selector: 'app-community-profile-detail',
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    RouterLink,
+    QuillEditorComponent,
+    AvatarComponent,
+    TagBadgeComponent,
+    ModalComponent,
+    EmptyStateComponent,
+    PostCardComponent,
+    RelativeTimePipe,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './community-profile-detail.component.html',
+  styleUrl: './community-profile-detail.component.css',
 })
 export class CommunityProfileDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -46,340 +59,297 @@ export class CommunityProfileDetailComponent implements OnInit {
   private readonly roleService = inject(RoleService);
   private readonly communityService = inject(CommunityService);
   private readonly permissionsService = inject(CommunityPermissionsService);
+  private readonly toast = inject(ToastService);
+  private readonly confirm = inject(ConfirmService);
 
+  profileId = 0;
   /** Perfil que se está visitando. */
-  profileId!: number;
-  profile: CommunityProfileDTO | null = null;
+  readonly profile = signal<CommunityProfileDTO | null>(null);
   /** Perfil del usuario autenticado en la misma comunidad (null si no es miembro). */
-  myProfile: CommunityProfileDTO | null = null;
+  readonly myProfile = signal<CommunityProfileDTO | null>(null);
+  readonly permissions = signal<Permission[]>([]);
+  readonly roles = signal<RoleDTO[]>([]);
 
-  posts: PostWithToggle[] = [];
-  postsPage = 0;
-  postsTotal = 0;
-  hasMorePosts = false;
-  comments: ProfileCommentDTO[] = [];
+  readonly tab = signal<Tab>('posts');
+  readonly dialog = signal<Dialog>(null);
+
+  readonly posts = signal<PostDTO[]>([]);
+  readonly postsTotal = signal(0);
+  readonly hasMorePosts = signal(false);
+  private postsPage = 0;
+
+  readonly comments = signal<ProfileCommentDTO[]>([]);
   newComment = '';
+  readonly editingCommentId = signal<number | null>(null);
+  editingContent = '';
+
+  readonly isOwnProfile = computed(() => {
+    const me = this.myProfile();
+    return !!me && me.id === this.profileId;
+  });
+  readonly canManageTitles = computed(() => this.permissions().includes('ASSIGN_TITLES'));
+  readonly canManageRoles = computed(() => this.permissions().includes('ASSIGN_ROLES') && !this.isOwnProfile());
+  readonly canBan = computed(() => this.permissions().includes('BAN_USER') && !this.isOwnProfile());
 
   readonly editForm = this.fb.nonNullable.group({
     username: ['', [Validators.required, Validators.maxLength(50)]],
     description: [''],
   });
-  selectedImage: File | null = null;
-  successMessage: string | null = null;
-  errorMessage: string | null = null;
-
-  editingCommentId: number | null = null;
-  editingContent = '';
+  private selectedImage: File | null = null;
 
   titleText = '';
-  titleBgColor = '#ffffff';
-  titleTextColor = '#000000';
-
-  roles: RoleDTO[] = [];
+  titleTextColor = '#ffffff';
+  titleBgColor = '#6f42c1';
   selectedRoleId: number | null = null;
-
-  permissions: Permission[] = [];
 
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const id = Number(params.get('id'));
       if (!id) return;
       this.profileId = id;
-      this.loadProfile();
+      this.tab.set('posts');
+      this.loadProfile(true);
       this.loadPosts();
       this.loadComments();
     });
   }
 
-  get myProfileId(): number | null {
-    return this.myProfile?.id ?? null;
-  }
-
-  get isOwnProfile(): boolean {
-    return this.myProfileId !== null && this.myProfileId === this.profileId;
-  }
-
-  loadProfile(): void {
+  private loadProfile(withViewer = false): void {
     this.profileService.getProfileById(this.profileId).subscribe({
       next: (data) => {
-        this.profile = data;
-        this.editForm.patchValue({ username: data.username, description: data.description || '' });
-        this.loadViewerContext(data.communityId);
-        this.roleService.getRolesByCommunity(data.communityId).subscribe({
-          next: (roles) => (this.roles = roles),
-        });
+        this.profile.set(data);
+        if (withViewer) this.loadViewerContext(data.communityId);
       },
-      error: () => this.showError('No se pudo cargar el perfil.'),
+      error: () => this.toast.error('No se pudo cargar el perfil.'),
     });
   }
 
-  /** Carga el perfil del usuario autenticado en esta comunidad y sus permisos. */
+  /** Perfil del usuario autenticado en esta comunidad, sus permisos y los roles disponibles. */
   private loadViewerContext(communityId: number): void {
     this.profileService.getMyProfileInCommunity(communityId).subscribe({
-      next: (me) => (this.myProfile = me),
-      error: () => (this.myProfile = null),
+      next: (me) => this.myProfile.set(me),
+      error: () => this.myProfile.set(null),
     });
-    this.permissionsService.getMyPermissions(communityId).subscribe((perms) => (this.permissions = perms));
+    this.permissionsService.getMyPermissions(communityId).subscribe((perms) => this.permissions.set(perms));
+    this.roleService.getRolesByCommunity(communityId).subscribe((roles) => this.roles.set(roles));
   }
 
-  /** Carga la primera página de publicaciones (o la siguiente si {@code more} es true). */
   loadPosts(more = false): void {
     const page = more ? this.postsPage + 1 : 0;
     this.postService.getPostsByProfile(this.profileId, page).subscribe({
       next: (result) => {
-        const posts = result.content.map((post) => ({ ...post, showContent: false }));
-        this.posts = more ? [...this.posts, ...posts] : posts;
+        this.posts.update((current) => (more ? [...current, ...result.content] : result.content));
         this.postsPage = result.page;
-        this.postsTotal = result.totalElements;
-        this.hasMorePosts = !result.last;
+        this.postsTotal.set(result.totalElements);
+        this.hasMorePosts.set(!result.last);
       },
-      error: () => this.showError('No se pudieron cargar los posts.'),
+      error: () => this.toast.error('No se pudieron cargar las publicaciones.'),
     });
   }
 
-  loadComments(): void {
+  private loadComments(): void {
     this.commentService.getCommentsByTarget(this.profileId).subscribe({
-      next: (data) => (this.comments = data),
-      error: () => this.showError('No se pudieron cargar los comentarios.'),
+      next: (data) => this.comments.set(data),
+      error: () => this.toast.error('No se pudieron cargar los comentarios.'),
     });
   }
 
-  toggleContent(post: PostWithToggle): void {
-    post.showContent = !post.showContent;
-  }
+  // ------------------------------------------------------------------ Edición del propio perfil
 
-  goToPostDetail(postId: number): void {
-    this.router.navigate(['/posts', postId]);
-  }
-
-  goToCommunity(): void {
-    if (this.profile) {
-      this.router.navigate(['/communities', this.profile.communityId]);
-    }
+  openEditor(): void {
+    const p = this.profile();
+    if (!p) return;
+    this.editForm.setValue({ username: p.username, description: p.description ?? '' });
+    this.selectedImage = null;
+    this.dialog.set('edit');
   }
 
   onImageSelected(event: Event): void {
     this.selectedImage = (event.target as HTMLInputElement).files?.[0] ?? null;
   }
 
-  onUpdateProfile(): void {
-    if (this.editForm.invalid || !this.profile) return;
-
-    const request: UpdateCommunityProfileRequest = {
-      userName: this.editForm.getRawValue().username,
-      description: this.editForm.getRawValue().description,
-    };
-
-    this.profileService.updateProfile(this.profileId, request, this.selectedImage).subscribe({
+  saveProfile(): void {
+    if (this.editForm.invalid) return;
+    const value = this.editForm.getRawValue();
+    this.profileService.updateProfile(this.profileId, { userName: value.username, description: value.description }, this.selectedImage).subscribe({
       next: (updated) => {
-        this.profile = updated;
-        this.showSuccess('Perfil actualizado correctamente.');
+        this.profile.set(updated);
+        this.myProfile.set(updated);
+        this.dialog.set(null);
+        this.toast.success('Perfil actualizado.');
       },
-      error: (err) => this.showError(errorMessage(err, 'Error al actualizar el perfil.')),
+      error: (err) => this.toast.error(errorMessage(err, 'Error al actualizar el perfil.')),
     });
   }
 
-  leaveCommunity(): void {
-    if (!this.profile || !confirm('¿Seguro que quieres abandonar esta comunidad?')) return;
-    const communityId = this.profile.communityId;
-    this.profileService.deleteProfile(this.profile.id).subscribe({
-      next: () => this.router.navigate(['/communities', communityId]),
-      error: (err) => this.showError(errorMessage(err, 'No se pudo abandonar la comunidad.')),
+  setFeaturedTitle(titleId: number): void {
+    this.profileService.changeFeaturedTitle(this.profileId, titleId).subscribe({
+      next: () => this.loadProfile(),
+      error: (err) => this.toast.error(errorMessage(err, 'No se pudo destacar el título.')),
+    });
+  }
+
+  async leaveCommunity(): Promise<void> {
+    const p = this.profile();
+    if (!p) return;
+    const accepted = await this.confirm.ask({
+      title: 'Abandonar comunidad',
+      message: 'Se borrará tu perfil en esta comunidad, junto con tus publicaciones y comentarios.',
+      confirmLabel: 'Abandonar',
+      danger: true,
+    });
+    if (!accepted) return;
+    this.profileService.deleteProfile(p.id).subscribe({
+      next: () => {
+        this.toast.info('Has abandonado la comunidad.');
+        this.router.navigate(['/communities', p.communityId]);
+      },
+      error: (err) => this.toast.error(errorMessage(err, 'No se pudo abandonar la comunidad.')),
     });
   }
 
   // ------------------------------------------------------------------ Comentarios
 
-  onSubmitComment(): void {
+  submitComment(): void {
     const content = this.newComment.trim();
-    if (!content || !this.myProfileId) return;
-
-    this.commentService.createComment(this.myProfileId, this.profileId, { content }).subscribe({
+    const me = this.myProfile();
+    if (!content || !me) return;
+    this.commentService.createComment(me.id, this.profileId, { content }).subscribe({
       next: (comment) => {
-        this.comments.unshift(comment);
+        this.comments.update((list) => [comment, ...list]);
         this.newComment = '';
       },
-      error: (err) => this.showError(errorMessage(err, 'No se pudo enviar el comentario.')),
+      error: (err) => this.toast.error(errorMessage(err, 'No se pudo enviar el comentario.')),
     });
   }
 
   canEdit(comment: ProfileCommentDTO): boolean {
-    return comment.authorProfile.id === this.myProfileId || this.hasPermission('EDIT_COMMENTS');
+    return comment.authorProfile.id === this.myProfile()?.id || this.permissions().includes('EDIT_COMMENTS');
   }
 
   canDelete(comment: ProfileCommentDTO): boolean {
-    return this.isOwnProfile || comment.authorProfile.id === this.myProfileId || this.hasPermission('DELETE_COMMENTS');
+    return this.isOwnProfile() || comment.authorProfile.id === this.myProfile()?.id || this.permissions().includes('DELETE_COMMENTS');
   }
 
   startEditing(comment: ProfileCommentDTO): void {
-    this.editingCommentId = comment.id;
+    this.editingCommentId.set(comment.id);
     this.editingContent = comment.content;
   }
 
-  cancelEditing(): void {
-    this.editingCommentId = null;
-    this.editingContent = '';
-  }
-
-  updateComment(commentId: number): void {
+  saveComment(commentId: number): void {
     const content = this.editingContent.trim();
     if (!content) return;
-
     this.commentService.updateComment(commentId, { content }).subscribe({
       next: (updated) => {
-        const comment = this.comments.find((c) => c.id === commentId);
-        if (comment) comment.content = updated.content;
-        this.cancelEditing();
+        this.comments.update((list) => list.map((c) => (c.id === commentId ? updated : c)));
+        this.editingCommentId.set(null);
       },
-      error: (err) => this.showError(errorMessage(err, 'Error al actualizar el comentario.')),
+      error: (err) => this.toast.error(errorMessage(err, 'Error al actualizar el comentario.')),
     });
   }
 
-  deleteComment(commentId: number): void {
-    if (!confirm('¿Estás seguro de eliminar este comentario?')) return;
-
+  async deleteComment(commentId: number): Promise<void> {
+    if (!(await this.confirm.ask({ message: '¿Eliminar este comentario?', confirmLabel: 'Eliminar', danger: true }))) return;
     this.commentService.deleteComment(commentId).subscribe({
-      next: () => (this.comments = this.comments.filter((c) => c.id !== commentId)),
-      error: (err) => this.showError(errorMessage(err, 'Error al eliminar el comentario.')),
+      next: () => this.comments.update((list) => list.filter((c) => c.id !== commentId)),
+      error: (err) => this.toast.error(errorMessage(err, 'Error al eliminar el comentario.')),
     });
   }
 
   // ------------------------------------------------------------------ Roles
 
-  assignRoleToProfile(): void {
-    if (!this.selectedRoleId || !this.profile) return;
-
-    this.profileService.assignRoleToProfile(this.profile.id, this.selectedRoleId).subscribe({
+  assignRole(): void {
+    if (!this.selectedRoleId) return;
+    this.profileService.assignRoleToProfile(this.profileId, this.selectedRoleId).subscribe({
       next: () => {
-        this.showSuccess('Rol asignado correctamente.');
+        this.toast.success('Rol asignado.');
         this.selectedRoleId = null;
+        this.dialog.set(null);
         this.loadProfile();
       },
-      error: (err) => this.showError(errorMessage(err, 'Error al asignar el rol.')),
+      error: (err) => this.toast.error(errorMessage(err, 'Error al asignar el rol.')),
     });
   }
 
-  removeRoleFromProfile(roleId: number): void {
-    if (!this.profile) return;
-    const roleName = this.roles.find((r) => r.id === roleId)?.name || 'el rol';
-    if (!confirm(`¿Quitar "${roleName}" a este usuario?`)) return;
-
-    this.profileService.removeRoleFromProfile(this.profile.id, roleId).subscribe({
+  removeRole(role: RoleDTO): void {
+    this.profileService.removeRoleFromProfile(this.profileId, role.id).subscribe({
       next: () => {
-        this.showSuccess('Rol eliminado correctamente.');
+        this.toast.success('Rol retirado.');
         this.loadProfile();
       },
-      error: (err) => this.showError(errorMessage(err, 'Error al eliminar el rol.')),
+      error: (err) => this.toast.error(errorMessage(err, 'Error al quitar el rol.')),
     });
   }
 
   // ------------------------------------------------------------------ Títulos
 
   createTitle(): void {
+    const p = this.profile();
     const title = this.titleText.trim();
-    if (!this.profile || !title) return;
+    if (!p || !title) return;
 
     this.titleService
-      .createTitle({
-        title,
-        textColor: this.titleTextColor,
-        backgroundColor: this.titleBgColor,
-        communityId: this.profile.communityId,
-      })
+      .createTitle({ title, textColor: this.titleTextColor, backgroundColor: this.titleBgColor, communityId: p.communityId })
       .subscribe({
-        next: (createdTitle) => {
-          this.profileService.assignTitle(this.profile!.id, createdTitle.id).subscribe({
+        next: (created) => {
+          this.profileService.assignTitle(p.id, created.id).subscribe({
             next: () => {
-              this.profile?.titles.push(createdTitle);
               this.titleText = '';
-              this.showSuccess('Título creado y asignado.');
+              this.toast.success('Título creado y asignado.');
+              this.loadProfile();
             },
-            error: (err) => this.showError(errorMessage(err, 'Error al asignar el título.')),
+            error: (err) => this.toast.error(errorMessage(err, 'Error al asignar el título.')),
           });
         },
-        error: (err) => this.showError(errorMessage(err, 'Error al crear el título.')),
+        error: (err) => this.toast.error(errorMessage(err, 'Error al crear el título.')),
       });
   }
 
-  /** Aplica el texto y los colores del formulario al título indicado. */
-  updateTitle(title: TitleDTO): void {
-    this.titleService
-      .updateTitle(title.id, {
-        title: this.titleText.trim() || title.title,
-        textColor: this.titleTextColor,
-        backgroundColor: this.titleBgColor,
-      })
-      .subscribe({
-        next: (updated) => {
-          if (this.profile) {
-            this.profile.titles = this.profile.titles.map((t) => (t.id === updated.id ? updated : t));
-          }
-          this.showSuccess('Título actualizado.');
-        },
-        error: (err) => this.showError(errorMessage(err, 'Error al actualizar el título.')),
-      });
-  }
-
-  deleteTitle(titleId: number): void {
-    if (!confirm('¿Eliminar este título? Se quitará a todos los miembros que lo tengan.')) return;
-
-    this.titleService.deleteTitle(titleId).subscribe({
+  removeTitle(title: TitleDTO): void {
+    this.profileService.removeTitle(this.profileId, title.id).subscribe({
       next: () => {
-        if (this.profile) {
-          this.profile.titles = this.profile.titles.filter((t) => t.id !== titleId);
-        }
-        this.showSuccess('Título eliminado.');
+        this.toast.success('Título retirado del perfil.');
+        this.loadProfile();
       },
-      error: (err) => this.showError(errorMessage(err, 'Error al eliminar el título.')),
+      error: (err) => this.toast.error(errorMessage(err, 'Error al retirar el título.')),
     });
   }
 
-  setFeaturedTitle(titleId: number): void {
-    if (!this.profile) return;
-    this.profileService.changeFeaturedTitle(this.profile.id, titleId).subscribe({
-      next: () => this.loadProfile(),
-      error: (err) => this.showError(errorMessage(err, 'No se pudo destacar el título.')),
+  async deleteTitle(title: TitleDTO): Promise<void> {
+    const accepted = await this.confirm.ask({
+      title: 'Eliminar título',
+      message: `Se eliminará "${title.title}" de la comunidad y de todos los miembros que lo tengan.`,
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (!accepted) return;
+    this.titleService.deleteTitle(title.id).subscribe({
+      next: () => {
+        this.toast.success('Título eliminado.');
+        this.loadProfile();
+      },
+      error: (err) => this.toast.error(errorMessage(err, 'Error al eliminar el título.')),
     });
   }
 
   // ------------------------------------------------------------------ Moderación
 
-  removeUserFromCommunity(): void {
-    if (!this.profile) return;
-    if (!confirm('¿Estás seguro de expulsar a este usuario de la comunidad?')) return;
-
-    const communityId = this.profile.communityId;
-    this.communityService.removeUserFromCommunity(communityId, this.profile.id).subscribe({
-      next: () => this.router.navigate(['/communities', communityId]),
-      error: (err) => this.showError(errorMessage(err, 'Error al expulsar al usuario.')),
+  async banUser(): Promise<void> {
+    const p = this.profile();
+    if (!p) return;
+    const accepted = await this.confirm.ask({
+      title: 'Expulsar miembro',
+      message: `¿Expulsar a ${p.username} de la comunidad? Se borrarán su perfil y su contenido.`,
+      confirmLabel: 'Expulsar',
+      danger: true,
     });
-  }
-
-  hasPermission(permission: Permission): boolean {
-    return this.permissions.includes(permission);
-  }
-
-  get canManageTitles(): boolean {
-    return this.hasPermission('ASSIGN_TITLES');
-  }
-
-  get canManageRoles(): boolean {
-    return this.hasPermission('ASSIGN_ROLES') && !this.isOwnProfile;
-  }
-
-  get canBanUser(): boolean {
-    return this.hasPermission('BAN_USER') && !this.isOwnProfile;
-  }
-
-  private showSuccess(message: string): void {
-    this.errorMessage = null;
-    this.successMessage = message;
-    setTimeout(() => (this.successMessage = null), 3000);
-  }
-
-  private showError(message: string): void {
-    this.successMessage = null;
-    this.errorMessage = message;
-    setTimeout(() => (this.errorMessage = null), 4000);
+    if (!accepted) return;
+    this.communityService.removeUserFromCommunity(p.communityId, p.id).subscribe({
+      next: () => {
+        this.toast.info(`${p.username} ha sido expulsado.`);
+        this.router.navigate(['/communities', p.communityId]);
+      },
+      error: (err) => this.toast.error(errorMessage(err, 'Error al expulsar al usuario.')),
+    });
   }
 }

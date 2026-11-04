@@ -1,0 +1,25 @@
+.gn-post-card {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.gn-post-card:hover {
+  border-color: var(--bs-primary);
+  box-shadow: var(--gn-shadow, 0 0.25rem 0.75rem rgb(0 0 0 / 0.08));
+}
+
+.gn-post-title {
+  font-weight: 700;
+}
+
+.gn-post-title:hover {
+  color: var(--bs-primary);
+}
+
+.gn-post-author:hover .fw-semibold {
+  text-decoration: underline;
+}
+
+.gn-post-content {
+  max-height: 32rem;
+  overflow: auto;
+}

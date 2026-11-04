@@ -1,0 +1,22 @@
+@let c = community();
+<button type="button" class="card gn-community-card h-100 text-start w-100" (click)="selected.emit(c)">
+  <div class="gn-community-banner" [style.background-image]="c.banner ? 'url(' + c.banner + ')' : null">
+    @if (member()) {
+      <span class="badge gn-member-badge"><i class="bi bi-check2-circle me-1"></i>Miembro</span>
+    }
+  </div>
+  <div class="card-body pt-0">
+    <div class="gn-community-avatar">
+      <app-avatar [src]="c.image" [size]="56" [alt]="c.name" />
+    </div>
+    <h5 class="card-title mb-1 text-truncate">{{ c.name }}</h5>
+    @if (c.description) {
+      <p class="card-text small text-body-secondary gn-community-excerpt">{{ c.description | excerpt: 110 }}</p>
+    }
+    <div class="d-flex flex-wrap gap-1 mt-auto">
+      @for (tag of c.tags.slice(0, 4); track tag) {
+        <span class="badge gn-chip">#{{ tag }}</span>
+      }
+    </div>
+  </div>
+</button>

@@ -1,0 +1,48 @@
+@let p = post();
+<article class="card gn-post-card mb-3">
+  <div class="card-body">
+    @if (showAuthor()) {
+      <a class="d-flex align-items-center gap-2 mb-3 text-reset text-decoration-none gn-post-author" [routerLink]="['/communities/profile', p.communityProfile.id]">
+        <app-avatar [src]="p.communityProfile.profileImage" [size]="36" [alt]="p.communityProfile.username" />
+        <div class="lh-sm">
+          <div class="fw-semibold">
+            {{ p.communityProfile.username }}
+            @if (p.communityProfile.rol; as rol) {
+              <app-tag-badge class="ms-1" [label]="rol.name" [background]="rol.backgroundColor" [color]="rol.textColor" />
+            }
+          </div>
+          @if (p.createdAt) {
+            <small class="text-body-secondary">{{ p.createdAt | relativeTime }}</small>
+          }
+        </div>
+      </a>
+    } @else if (p.createdAt) {
+      <small class="text-body-secondary d-block mb-2">{{ p.createdAt | relativeTime }}</small>
+    }
+
+    <a class="stretched-link-target text-reset text-decoration-none" [routerLink]="['/posts', p.id]">
+      <h5 class="card-title gn-post-title">{{ p.title }}</h5>
+    </a>
+
+    @if (expanded()) {
+      <div class="quill-content gn-post-content mb-2" [innerHTML]="p.content"></div>
+    } @else {
+      <p class="card-text text-body-secondary mb-2">{{ p.content | excerpt: 220 }}</p>
+    }
+
+    <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+      @for (tag of p.tags; track tag) {
+        <span class="badge gn-chip">#{{ tag }}</span>
+      }
+      <div class="ms-auto d-flex align-items-center gap-3 text-body-secondary small">
+        <button type="button" class="btn btn-link btn-sm p-0 text-reset" (click)="toggle($event)">
+          {{ expanded() ? 'Ver menos' : 'Ver más' }}
+        </button>
+        <span title="Me gusta"><i class="bi bi-heart-fill text-danger me-1"></i>{{ p.likes }}</span>
+        <a class="text-reset text-decoration-none" title="Comentarios" [routerLink]="['/posts', p.id]">
+          <i class="bi bi-chat-left-text me-1"></i>{{ p.comments }}
+        </a>
+      </div>
+    </div>
+  </div>
+</article>

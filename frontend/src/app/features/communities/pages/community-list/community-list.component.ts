@@ -1,109 +1,71 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { Router } from '@angular/router';
-import { FormBuilder, FormGroup } from '@angular/forms';
-
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { CommunityService } from '../../services/community.service';
 import { CommunityResponseDTO } from '../../models/community.models';
-import { CommunityProfileService } from '../../../profiles/services/community-profile.service';
-import { AuthService } from '../../../../core/auth/auth.service';
-import { errorMessage } from '../../../../core/http/http-error';
+import { CommunityCardComponent } from '../../components/community-card/community-card.component';
+import { CommunityPreviewComponent } from '../../components/community-preview/community-preview.component';
+import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
+import { ToastService } from '../../../../shared/ui/toast/toast.service';
 
+/** Página de inicio: comunidades del usuario, sugeridas y populares. */
 @Component({
-    selector: 'app-community-list',
-    templateUrl: './community-list.component.html',
-    changeDetection: ChangeDetectionStrategy.Eager,
-    styleUrls: ['./community-list.component.css']
+  selector: 'app-community-list',
+  imports: [FormsModule, RouterLink, CommunityCardComponent, CommunityPreviewComponent, EmptyStateComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './community-list.component.html',
+  styleUrl: './community-list.component.css',
 })
 export class CommunityListComponent implements OnInit {
-  communityId!: number;
-  subscribedCommunities: CommunityResponseDTO[] = [];
-  suggestedCommunities: CommunityResponseDTO[] = [];
-  popularCommunities: CommunityResponseDTO[] = [];
+  private readonly communityService = inject(CommunityService);
+  private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
 
-  filteredPopularCommunities: CommunityResponseDTO[] = [];
+  readonly subscribed = signal<CommunityResponseDTO[]>([]);
+  readonly suggested = signal<CommunityResponseDTO[]>([]);
+  readonly popular = signal<CommunityResponseDTO[]>([]);
+  readonly loading = signal(true);
+  readonly selected = signal<CommunityResponseDTO | null>(null);
 
-  selectedCommunity: CommunityResponseDTO | null = null;
-  isLoggedIn: boolean = false;
-  error: string | null = null;
+  private readonly subscribedIds = computed(() => new Set(this.subscribed().map((c) => c.id)));
+  /** Populares a las que el usuario todavía no pertenece. */
+  readonly popularToDiscover = computed(() => this.popular().filter((c) => !this.subscribedIds().has(c.id)).slice(0, 9));
 
-  searchForm!: FormGroup;
-
-  constructor(
-    private communityService: CommunityService,
-    private communityProfileService: CommunityProfileService,
-    private authService: AuthService,
-    private router: Router,
-    private fb: FormBuilder
-  ) {}
+  searchText = '';
 
   ngOnInit(): void {
-    this.isLoggedIn = this.authService.isAuthenticated();
-
-    this.searchForm = this.fb.group({
-      name: [''],
-      tags: ['']
-    });
-
-    if (this.isLoggedIn) {
-      this.loadSubscribedCommunities();
-      this.loadSuggestedCommunities();
-    }
-
-    this.loadPopularCommunities();
-  }
-
-  loadSubscribedCommunities(): void {
     this.communityService.getSubscribedCommunities().subscribe({
-      next: data => {
-        this.subscribedCommunities = data;
-        this.filterPopularCommunities(); // filtrar populares al obtener subscritas
+      next: (data) => {
+        this.subscribed.set(data);
+        this.loading.set(false);
       },
-      error: () => this.error = 'No se pudieron cargar las comunidades suscritas.'
+      error: () => {
+        this.loading.set(false);
+        this.toast.error('No se pudieron cargar tus comunidades.');
+      },
     });
-  }
-
-  loadSuggestedCommunities(): void {
     this.communityService.getSuggestedCommunities().subscribe({
-      next: data => this.suggestedCommunities = data.slice(0, 10),
-      error: () => this.error = 'No se pudieron cargar las comunidades sugeridas.'
+      next: (data) => this.suggested.set(data.slice(0, 6)),
     });
-  }
-
-  loadPopularCommunities(): void {
     this.communityService.getPopularCommunities().subscribe({
-      next: data => {
-        this.popularCommunities = data.slice(0, 10);
-        this.filterPopularCommunities();
-      },
-      error: () => this.error = 'No se pudieron cargar las comunidades populares.'
+      next: (data) => this.popular.set(data),
     });
   }
 
-  filterPopularCommunities(): void {
-    const subscribedIds = this.subscribedCommunities.map(c => c.id);
-    this.filteredPopularCommunities = this.popularCommunities.filter(
-      community => !subscribedIds.includes(community.id)
-    );
+  isMember(community: CommunityResponseDTO): boolean {
+    return this.subscribedIds().has(community.id);
   }
 
-  onCreateCommunity(): void {
-    this.router.navigate(['/communities/create']);
+  open(community: CommunityResponseDTO): void {
+    if (this.isMember(community)) {
+      this.router.navigate(['/communities', community.id]);
+    } else {
+      this.selected.set(community);
+    }
   }
 
-  onJoinCommunity(communityId: number): void {
-    this.communityProfileService.joinCommunity(communityId).subscribe({
-      next: () => {
-        this.router.navigate(['/communities', communityId]); // redirige tras unirse
-      },
-      error: (err) => (this.error = errorMessage(err, 'No se pudo unir a la comunidad.'))
-    });
-  }
-
-  openCommunityModal(community: CommunityResponseDTO): void {
-    this.selectedCommunity = community;
-  }
-
-  enterCommunity(communityId: number): void {
-    this.router.navigate(['/communities/', communityId]);
+  search(): void {
+    const name = this.searchText.trim();
+    this.router.navigate(['/communities/search'], { queryParams: name ? { name } : {} });
   }
 }

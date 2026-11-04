@@ -7,6 +7,7 @@ import {
   OnInit,
   ViewChild,
   inject,
+  signal,
 } from '@angular/core';
 import { Client, IMessage } from '@stomp/stompjs';
 import { environment } from '../../../../../environments/environment';
@@ -14,7 +15,8 @@ import { ChatMessageDTO } from '../../models/chat.models';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ChatService } from '../../services/chat.service';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
+import { AvatarComponent } from '../../../../shared/ui/avatar/avatar.component';
+import { RelativeTimePipe } from '../../../../shared/pipes/relative-time.pipe';
 
 /**
  * Chat en tiempo real de una comunidad (STOMP sobre WebSocket).
@@ -24,8 +26,8 @@ import { DatePipe } from '@angular/common';
     selector: 'app-community-chat',
     templateUrl: './community-chat.component.html',
     styleUrl: './community-chat.component.css',
-    changeDetection: ChangeDetectionStrategy.Eager,
-    imports: [FormsModule, DatePipe],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [FormsModule, AvatarComponent, RelativeTimePipe],
 })
 export class CommunityChatComponent implements OnInit, OnDestroy {
   private readonly chatService = inject(ChatService);
@@ -36,20 +38,20 @@ export class CommunityChatComponent implements OnInit, OnDestroy {
 
   @ViewChild('messageList') private messageList?: ElementRef<HTMLElement>;
 
-  messages: ChatMessageDTO[] = [];
+  readonly messages = signal<ChatMessageDTO[]>([]);
+  readonly connected = signal(false);
+  readonly error = signal<string | null>(null);
   draft = '';
-  connected = false;
-  error: string | null = null;
 
   private client?: Client;
 
   ngOnInit(): void {
     this.chatService.getHistory(this.communityId).subscribe({
       next: (history) => {
-        this.messages = history;
+        this.messages.set(history);
         this.scrollToBottom();
       },
-      error: () => (this.error = 'No se pudo cargar el historial del chat.'),
+      error: () => this.error.set('No se pudo cargar el historial del chat.'),
     });
     this.connect();
   }
@@ -79,17 +81,17 @@ export class CommunityChatComponent implements OnInit, OnDestroy {
       connectHeaders: { Authorization: `Bearer ${this.authService.getToken()}` },
       reconnectDelay: 5000,
       onConnect: () => {
-        this.connected = true;
-        this.error = null;
+        this.connected.set(true);
+        this.error.set(null);
         this.client!.subscribe(`/topic/chat/${this.communityId}`, (frame: IMessage) => {
-          this.messages = [...this.messages, JSON.parse(frame.body) as ChatMessageDTO];
+          this.messages.update((list) => [...list, JSON.parse(frame.body) as ChatMessageDTO]);
           this.scrollToBottom();
         });
       },
-      onWebSocketClose: () => (this.connected = false),
+      onWebSocketClose: () => this.connected.set(false),
       onStompError: () => {
-        this.connected = false;
-        this.error = 'Se ha perdido la conexión con el chat.';
+        this.connected.set(false);
+        this.error.set('Se ha perdido la conexión con el chat.');
       },
     });
     this.client.activate();

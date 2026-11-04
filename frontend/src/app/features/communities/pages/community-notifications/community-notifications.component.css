@@ -1,0 +1,34 @@
+.gn-notification {
+  cursor: pointer;
+}
+
+.gn-unread {
+  background: var(--bs-primary-bg-subtle);
+  border-left: 3px solid var(--bs-primary);
+}
+
+.gn-system-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--bs-primary-bg-subtle);
+  color: var(--bs-primary);
+  font-size: 1.25rem;
+}
+
+.gn-type-icon {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  background: var(--bs-body-bg);
+  color: var(--bs-primary);
+  box-shadow: 0 0 0 2px var(--bs-body-bg);
+}

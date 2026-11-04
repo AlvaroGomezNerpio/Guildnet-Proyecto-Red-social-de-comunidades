@@ -1,0 +1,40 @@
+@let c = community();
+<app-modal [open]="!!c" [title]="c?.name ?? ''" size="lg" (closed)="closed.emit()">
+  @if (c) {
+    @if (c.banner) {
+      <img [src]="c.banner" class="img-fluid rounded mb-3 w-100 gn-preview-banner" alt="" />
+    }
+    <div class="d-flex align-items-center gap-3 mb-3">
+      <app-avatar [src]="c.image" [size]="64" [alt]="c.name" />
+      <div>
+        <h4 class="mb-1">{{ c.name }}</h4>
+        <div class="d-flex flex-wrap gap-1">
+          @for (tag of c.tags; track tag) {
+            <span class="badge gn-chip">#{{ tag }}</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <h6 class="text-uppercase small fw-bold text-body-secondary">Descripción</h6>
+    <div class="quill-content mb-3" [innerHTML]="c.description || '<p class=\'text-body-secondary\'>Sin descripción.</p>'"></div>
+
+    <h6 class="text-uppercase small fw-bold text-body-secondary">Reglas</h6>
+    <div class="quill-content" [innerHTML]="c.rules || '<p class=\'text-body-secondary\'>Sin reglas publicadas.</p>'"></div>
+  }
+
+  <ng-container modal-footer>
+    <button type="button" class="btn btn-outline-secondary" (click)="closed.emit()">Cerrar</button>
+    @if (c) {
+      @if (member()) {
+        <button type="button" class="btn btn-primary" (click)="enter(c.id)">
+          <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
+        </button>
+      } @else {
+        <button type="button" class="btn btn-success" (click)="join(c)" [disabled]="joining()">
+          <i class="bi bi-person-plus me-1"></i>{{ loggedIn ? 'Unirse a la comunidad' : 'Inicia sesión para unirte' }}
+        </button>
+      }
+    }
+  </ng-container>
+</app-modal>

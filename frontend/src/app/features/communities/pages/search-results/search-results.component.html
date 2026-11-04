@@ -1,162 +1,41 @@
-<div class="container mt-4">
-  <!-- Filtro de búsqueda -->
-  <div class="card p-4 shadow-sm mb-4">
-    <h5 class="mb-3">Buscar comunidades</h5>
-    <div class="row g-3">
-      <div class="col-md-6">
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Buscar por nombre"
-          [formControl]="searchNameControl"
-          />
+<div class="container py-4">
+  <h1 class="h3 fw-bold mb-3">Explorar comunidades</h1>
+
+  <div class="card gn-filter-card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold" for="searchName">Nombre</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input id="searchName" type="search" class="form-control" placeholder="Ej. Fotografía" [formControl]="nameControl" />
+          </div>
         </div>
         <div class="col-md-6">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Buscar por tags (separados por coma)"
-            [formControl]="searchTagsControl"
-            />
+          <label class="form-label small fw-semibold" for="searchTags">Etiquetas</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-hash"></i></span>
+            <input id="searchTags" type="search" class="form-control" placeholder="Separadas por comas: juegos, arte" [formControl]="tagsControl" />
           </div>
-        </div>
-      </div>
-
-      <!-- Resultados -->
-      @if (results.length > 0) {
-        <div>
-          <h3 class="mb-4">Resultados de búsqueda</h3>
-          <div class="row g-3">
-            @for (community of results; track community) {
-              <div class="col-md-4">
-                <div class="card h-100 shadow-sm">
-                  @if (community.banner) {
-                    <img
-                      [src]="community.banner"
-                      class="card-img-top"
-                      alt="Banner"
-                      />
-                  }
-                  <div class="card-body">
-                    <div class="d-flex align-items-center mb-3">
-                      @if (community.image) {
-                        <img
-                          [src]="community.image"
-                          alt="Avatar"
-                          class="rounded-circle me-3"
-                          width="40"
-                          height="40"
-                          />
-                      }
-                      <h5 class="card-title mb-0">{{ community.name }}</h5>
-                    </div>
-                    <button
-                      class="btn btn-outline-primary w-100"
-                      data-bs-toggle="modal"
-                      data-bs-target="#communityModal"
-                      (click)="openCommunityModal(community)"
-                      >
-                      Ver más
-                    </button>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-      }
-
-      <!-- Mensajes -->
-      @if (results.length === 0 && !error) {
-        <p class="mt-3 text-muted">
-          No se encontraron comunidades.
-        </p>
-      }
-      @if (error) {
-        <p class="mt-3 text-danger">{{ error }}</p>
-      }
-
-      <!-- Modal de comunidad -->
-      <div
-        class="modal fade"
-        id="communityModal"
-        tabindex="-1"
-        aria-labelledby="communityModalLabel"
-        aria-hidden="true"
-        >
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-          @if (selectedCommunity) {
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="communityModalLabel">
-                  {{ selectedCommunity.name }}
-                </h5>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Cerrar"
-                ></button>
-              </div>
-              <div class="modal-body">
-                @if (selectedCommunity.banner) {
-                  <img
-                    [src]="selectedCommunity.banner"
-                    class="img-fluid mb-3 rounded"
-                    alt="Banner"
-                    />
-                }
-                <div class="d-flex align-items-center mb-3">
-                  @if (selectedCommunity.image) {
-                    <img
-                      [src]="selectedCommunity.image"
-                      alt="Avatar"
-                      class="rounded-circle me-3"
-                      width="60"
-                      height="60"
-                      />
-                  }
-                  <div>
-                    <h4 class="mb-0">{{ selectedCommunity.name }}</h4>
-                    <small class="text-muted">
-                      #{{ selectedCommunity.tags.join(', ') }}
-                    </small>
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <strong>Descripción:</strong>
-                  <div class="quill-content card-text" [innerHTML]="selectedCommunity.description"></div>
-                </div>
-                <div>
-                  <strong>Reglas:</strong>
-                  <div class="quill-content card-text" [innerHTML]="selectedCommunity.rules"></div>
-                </div>
-              </div>
-              <div class="modal-footer">
-                @if (isLoggedIn && isSubscribed(selectedCommunity.id)) {
-                  <button
-                    class="btn btn-primary"
-                    (click)="enterCommunity(selectedCommunity.id)"
-                    data-bs-dismiss="modal"
-                    >
-                    Entrar a la comunidad
-                  </button>
-                }
-                @if (isLoggedIn && !isSubscribed(selectedCommunity.id)) {
-                  <button
-                    class="btn btn-success"
-                    (click)="onJoinCommunity(selectedCommunity.id)"
-                    data-bs-dismiss="modal"
-                    >
-                    Unirse a la comunidad
-                  </button>
-                }
-                <button class="btn btn-secondary" data-bs-dismiss="modal">
-                  Cerrar
-                </button>
-              </div>
-            </div>
-          }
         </div>
       </div>
     </div>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-danger">{{ error() }}</div>
+  } @else if (results().length) {
+    <p class="text-body-secondary small">{{ results().length }} {{ results().length === 1 ? 'comunidad encontrada' : 'comunidades encontradas' }}</p>
+    <div class="row g-3">
+      @for (community of results(); track community.id) {
+        <div class="col-sm-6 col-lg-4">
+          <app-community-card [community]="community" [member]="isMember(community)" (selected)="selected.set($event)" />
+        </div>
+      }
+    </div>
+  } @else if (!loading()) {
+    <app-empty-state icon="search" message="No se encontraron comunidades con esos criterios." />
+  }
+</div>
+
+<app-community-preview [community]="selected()" [member]="selectedIsMember()" (closed)="selected.set(null)" />

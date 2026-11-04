@@ -1,236 +1,207 @@
-import { Component, OnInit, ChangeDetectionStrategy, DestroyRef, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { QuillEditorComponent } from 'ngx-quill';
 import { PostService } from '../../services/post.service';
-import { PostDetailDTO, PostUpdateDTO } from '../../models/post.models';
 import { PostCommentService } from '../../services/post-comment.service';
-import { PostCommentDTO } from '../../models/post-comment.models';
 import { LikeService } from '../../services/like.service';
+import { PostDetailDTO } from '../../models/post.models';
+import { PostCommentDTO } from '../../models/post-comment.models';
 import { CommunityProfileService } from '../../../profiles/services/community-profile.service';
 import { CommunityPermissionsService, Permission } from '../../../communities/services/community-permissions.service';
 import { errorMessage } from '../../../../core/http/http-error';
-import { FormsModule } from '@angular/forms';
-import { QuillEditorComponent } from 'ngx-quill';
-import { DatePipe } from '@angular/common';
+import { AvatarComponent } from '../../../../shared/ui/avatar/avatar.component';
+import { TagBadgeComponent } from '../../../../shared/ui/tag-badge/tag-badge.component';
+import { RelativeTimePipe } from '../../../../shared/pipes/relative-time.pipe';
+import { ToastService } from '../../../../shared/ui/toast/toast.service';
+import { ConfirmService } from '../../../../shared/ui/confirm/confirm.service';
 
 @Component({
-    selector: 'app-post-detail',
-    templateUrl: './post-detail.component.html',
-    changeDetection: ChangeDetectionStrategy.Eager,
-    styleUrl: './post-detail.component.css',
-    imports: [
-        FormsModule,
-        QuillEditorComponent,
-        DatePipe,
-    ],
+  selector: 'app-post-detail',
+  imports: [FormsModule, RouterLink, QuillEditorComponent, AvatarComponent, TagBadgeComponent, RelativeTimePipe],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './post-detail.component.html',
+  styleUrl: './post-detail.component.css',
 })
 export class PostDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly postService = inject(PostService);
-  private readonly postCommentService = inject(PostCommentService);
+  private readonly commentService = inject(PostCommentService);
   private readonly likeService = inject(LikeService);
   private readonly profileService = inject(CommunityProfileService);
   private readonly permissionsService = inject(CommunityPermissionsService);
+  private readonly toast = inject(ToastService);
+  private readonly confirm = inject(ConfirmService);
 
-  postId!: number;
-  post?: PostDetailDTO;
+  postId = 0;
+  readonly post = signal<PostDetailDTO | null>(null);
+  readonly notFound = signal(false);
   /** Perfil del usuario en la comunidad del post (null si no es miembro). */
-  myProfileId: number | null = null;
-  error: string | null = null;
+  readonly myProfileId = signal<number | null>(null);
+  readonly permissions = signal<Permission[]>([]);
+  readonly likeCount = signal(0);
+  readonly hasLiked = signal(false);
 
-  newCommentContent = '';
-  editingCommentId: number | null = null;
-  editingContent = '';
+  readonly editing = signal(false);
+  editTitle = '';
+  editContent = '';
+  editTags = '';
 
-  editingPost = false;
-  editingPostTitle = '';
-  editingPostContent = '';
-  editingPostTags = '';
+  newComment = '';
+  readonly editingCommentId = signal<number | null>(null);
+  editingCommentText = '';
 
-  likeCount = 0;
-  hasLiked = false;
-
-  permissions: Permission[] = [];
+  readonly isAuthor = computed(() => {
+    const p = this.post();
+    return !!p && p.communityProfile.id === this.myProfileId();
+  });
+  readonly canEditPost = computed(() => this.isAuthor() || this.permissions().includes('EDIT_POST'));
+  readonly canDeletePost = computed(() => this.isAuthor() || this.permissions().includes('DELETE_POST'));
+  readonly wasEdited = computed(() => {
+    const p = this.post();
+    if (!p?.createdAt || !p.updatedAt) return false;
+    return new Date(p.updatedAt).getTime() - new Date(p.createdAt).getTime() > 60_000;
+  });
 
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       this.postId = Number(params.get('id'));
-      this.likeService.countLikes(this.postId).subscribe((count) => (this.likeCount = count));
+      this.editing.set(false);
+      this.likeService.countLikes(this.postId).subscribe((count) => this.likeCount.set(count));
       this.loadPost(true);
     });
   }
 
-  loadPost(loadViewer = false): void {
+  private loadPost(withViewer = false): void {
     this.postService.getPostById(this.postId).subscribe({
       next: (data) => {
-        this.post = data;
-        this.editingPostTitle = data.title;
-        this.editingPostContent = data.content;
-        this.editingPostTags = data.tags.join(', ');
-        if (loadViewer) this.loadViewerContext(data.communityId);
+        this.post.set(data);
+        if (withViewer) this.loadViewerContext(data.communityId);
       },
-      error: (err) => (this.error = errorMessage(err, 'No se pudo cargar la publicación.')),
+      error: () => this.notFound.set(true),
     });
   }
 
   private loadViewerContext(communityId: number): void {
-    this.permissionsService.getMyPermissions(communityId).subscribe((perms) => (this.permissions = perms));
+    this.permissionsService.getMyPermissions(communityId).subscribe((perms) => this.permissions.set(perms));
     this.profileService.getMyProfileInCommunity(communityId).subscribe({
       next: (me) => {
-        this.myProfileId = me.id;
-        this.likeService.hasUserLiked(this.postId, me.id).subscribe((liked) => (this.hasLiked = liked));
+        this.myProfileId.set(me.id);
+        this.likeService.hasUserLiked(this.postId, me.id).subscribe((liked) => this.hasLiked.set(liked));
       },
-      error: () => (this.myProfileId = null),
-    });
-  }
-
-  hasPermission(permission: Permission): boolean {
-    return this.permissions.includes(permission);
-  }
-
-  isPostOwner(): boolean {
-    return !!this.post && this.post.communityProfile.id === this.myProfileId;
-  }
-
-  canEditPost(): boolean {
-    return this.isPostOwner() || this.hasPermission('EDIT_POST');
-  }
-
-  canDeletePost(): boolean {
-    return this.isPostOwner() || this.hasPermission('DELETE_POST');
-  }
-
-  canEditComment(comment: PostCommentDTO): boolean {
-    return comment.communityProfile.id === this.myProfileId || this.hasPermission('EDIT_COMMENTS');
-  }
-
-  canDeleteComment(comment: PostCommentDTO): boolean {
-    return comment.communityProfile.id === this.myProfileId || this.hasPermission('DELETE_COMMENTS');
-  }
-
-  // ------------------------------------------------------------------ Comentarios
-
-  createComment(): void {
-    const content = this.newCommentContent.trim();
-    if (!this.post || !this.myProfileId || !content) return;
-
-    this.postCommentService.createComment({ postId: this.post.id, content }).subscribe({
-      next: (created) => {
-        this.post?.postComment.push(created);
-        this.newCommentContent = '';
-      },
-      error: (err) => (this.error = errorMessage(err, 'No se pudo publicar el comentario.')),
-    });
-  }
-
-  startEditing(comment: PostCommentDTO): void {
-    this.editingCommentId = comment.id;
-    this.editingContent = comment.content;
-  }
-
-  cancelEditing(): void {
-    this.editingCommentId = null;
-    this.editingContent = '';
-  }
-
-  updateComment(commentId: number): void {
-    const content = this.editingContent.trim();
-    if (!content) return;
-
-    this.postCommentService.updateComment(commentId, { content }).subscribe({
-      next: (updated) => {
-        const comment = this.post?.postComment.find((c) => c.id === commentId);
-        if (comment) comment.content = updated.content;
-        this.cancelEditing();
-      },
-      error: (err) => (this.error = errorMessage(err, 'No se pudo actualizar el comentario.')),
-    });
-  }
-
-  deleteComment(commentId: number): void {
-    if (!confirm('¿Eliminar este comentario?')) return;
-
-    this.postCommentService.deleteComment(commentId).subscribe({
-      next: () => {
-        if (this.post) {
-          this.post.postComment = this.post.postComment.filter((c) => c.id !== commentId);
-        }
-      },
-      error: (err) => (this.error = errorMessage(err, 'No se pudo eliminar el comentario.')),
+      error: () => this.myProfileId.set(null),
     });
   }
 
   // ------------------------------------------------------------------ Publicación
 
-  startEditingPost(): void {
-    this.editingPost = true;
+  startEditing(): void {
+    const p = this.post();
+    if (!p) return;
+    this.editTitle = p.title;
+    this.editContent = p.content;
+    this.editTags = p.tags.join(', ');
+    this.editing.set(true);
   }
 
-  cancelEditingPost(): void {
-    this.editingPost = false;
-    if (this.post) {
-      this.editingPostTitle = this.post.title;
-      this.editingPostContent = this.post.content;
-      this.editingPostTags = this.post.tags.join(', ');
-    }
-  }
-
-  updatePost(): void {
-    if (!this.post) return;
-
-    const dto: PostUpdateDTO = {
-      title: this.editingPostTitle.trim(),
-      content: this.editingPostContent.trim(),
-      tags: this.editingPostTags
-        .split(',')
-        .map((tag) => tag.trim())
-        .filter((tag) => tag.length > 0),
-    };
-
-    this.postService.updatePost(this.postId, dto).subscribe({
+  savePost(): void {
+    const tags = this.editTags
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
+    this.postService.updatePost(this.postId, { title: this.editTitle.trim(), content: this.editContent, tags }).subscribe({
       next: () => {
-        this.editingPost = false;
+        this.editing.set(false);
+        this.toast.success('Publicación actualizada.');
         this.loadPost();
       },
-      error: (err) => (this.error = errorMessage(err, 'No se pudo actualizar la publicación.')),
+      error: (err) => this.toast.error(errorMessage(err, 'No se pudo actualizar la publicación.')),
     });
   }
 
-  deletePost(): void {
-    if (!this.post || !confirm('¿Estás seguro de que quieres eliminar esta publicación?')) return;
-
-    const communityId = this.post.communityId;
+  async deletePost(): Promise<void> {
+    const p = this.post();
+    if (!p) return;
+    const accepted = await this.confirm.ask({
+      title: 'Eliminar publicación',
+      message: 'Se borrarán también sus comentarios y likes.',
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (!accepted) return;
     this.postService.deletePost(this.postId).subscribe({
-      next: () => this.router.navigate(['/communities', communityId]),
-      error: (err) => (this.error = errorMessage(err, 'No se pudo eliminar la publicación.')),
+      next: () => {
+        this.toast.info('Publicación eliminada.');
+        this.router.navigate(['/communities', p.communityId]);
+      },
+      error: (err) => this.toast.error(errorMessage(err, 'No se pudo eliminar la publicación.')),
     });
   }
 
   toggleLike(): void {
-    if (!this.post || !this.myProfileId) return;
-
-    const request = this.hasLiked
-      ? this.likeService.unlikePost(this.post.id, this.myProfileId)
-      : this.likeService.likePost(this.post.id, this.myProfileId);
-
+    const profileId = this.myProfileId();
+    if (!profileId) return;
+    const liked = this.hasLiked();
+    // Actualización optimista: se revierte si falla
+    this.hasLiked.set(!liked);
+    this.likeCount.update((n) => n + (liked ? -1 : 1));
+    const request = liked ? this.likeService.unlikePost(this.postId, profileId) : this.likeService.likePost(this.postId, profileId);
     request.subscribe({
-      next: () => {
-        this.likeCount += this.hasLiked ? -1 : 1;
-        this.hasLiked = !this.hasLiked;
+      error: (err) => {
+        this.hasLiked.set(liked);
+        this.likeCount.update((n) => n + (liked ? 1 : -1));
+        this.toast.error(errorMessage(err, 'No se pudo registrar el like.'));
       },
-      error: (err) => (this.error = errorMessage(err, 'No se pudo registrar el like.')),
     });
   }
 
-  viewProfile(profileId: number): void {
-    this.router.navigate(['/communities/profile', profileId]);
+  // ------------------------------------------------------------------ Comentarios
+
+  canEditComment(comment: PostCommentDTO): boolean {
+    return comment.communityProfile.id === this.myProfileId() || this.permissions().includes('EDIT_COMMENTS');
   }
 
-  goToCommunity(): void {
-    if (this.post) {
-      this.router.navigate(['/communities', this.post.communityId]);
-    }
+  canDeleteComment(comment: PostCommentDTO): boolean {
+    return comment.communityProfile.id === this.myProfileId() || this.permissions().includes('DELETE_COMMENTS');
+  }
+
+  submitComment(): void {
+    const content = this.newComment.trim();
+    if (!content) return;
+    this.commentService.createComment({ postId: this.postId, content }).subscribe({
+      next: (created) => {
+        this.post.update((p) => (p ? { ...p, postComment: [...p.postComment, created] } : p));
+        this.newComment = '';
+      },
+      error: (err) => this.toast.error(errorMessage(err, 'No se pudo publicar el comentario.')),
+    });
+  }
+
+  startEditingComment(comment: PostCommentDTO): void {
+    this.editingCommentId.set(comment.id);
+    this.editingCommentText = comment.content;
+  }
+
+  saveComment(commentId: number): void {
+    const content = this.editingCommentText.trim();
+    if (!content) return;
+    this.commentService.updateComment(commentId, { content }).subscribe({
+      next: (updated) => {
+        this.post.update((p) => (p ? { ...p, postComment: p.postComment.map((c) => (c.id === commentId ? updated : c)) } : p));
+        this.editingCommentId.set(null);
+      },
+      error: (err) => this.toast.error(errorMessage(err, 'No se pudo actualizar el comentario.')),
+    });
+  }
+
+  async deleteComment(commentId: number): Promise<void> {
+    if (!(await this.confirm.ask({ message: '¿Eliminar este comentario?', confirmLabel: 'Eliminar', danger: true }))) return;
+    this.commentService.deleteComment(commentId).subscribe({
+      next: () => this.post.update((p) => (p ? { ...p, postComment: p.postComment.filter((c) => c.id !== commentId) } : p)),
+      error: (err) => this.toast.error(errorMessage(err, 'No se pudo eliminar el comentario.')),
+    });
   }
 }

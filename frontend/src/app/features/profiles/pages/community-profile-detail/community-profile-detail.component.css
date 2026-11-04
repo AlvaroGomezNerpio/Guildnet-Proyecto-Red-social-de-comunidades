@@ -1,14 +1,21 @@
-::ng-deep .quill-content img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
+.gn-member-header {
+  overflow: hidden;
 }
 
-.post-card {
-  cursor: pointer;
+.gn-member-cover {
+  height: 120px;
+  background: var(--gn-gradient, linear-gradient(135deg, #6f42c1, #0d6efd));
 }
 
-.comment-text {
+.gn-member-avatar {
+  margin-top: -76px;
+}
+
+.gn-member-avatar ::ng-deep img {
+  border: 4px solid var(--bs-body-bg) !important;
+  box-shadow: var(--gn-shadow, 0 0.25rem 0.75rem rgb(0 0 0 / 0.15));
+}
+
+.gn-comment-text {
   white-space: pre-wrap;
 }

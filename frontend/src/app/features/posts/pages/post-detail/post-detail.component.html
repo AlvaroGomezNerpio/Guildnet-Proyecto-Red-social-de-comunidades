@@ -1,131 +1,135 @@
-<div class="container mt-4">
-  @if (error) {
-    <div class="alert alert-danger alert-dismissible">
-      {{ error }}
-      <button type="button" class="btn-close" (click)="error = null"></button>
-    </div>
+@let p = post();
+<div class="container py-4 gn-narrow">
+  @if (notFound()) {
+    <div class="alert alert-warning">Esta publicación no existe o ha sido eliminada.</div>
   }
 
-  @if (post) {
-    <button class="btn btn-link px-0 mb-3" (click)="goToCommunity()">
+  @if (p) {
+    <a class="btn btn-link px-0 mb-3" [routerLink]="['/communities', p.communityId]">
       <i class="bi bi-arrow-left me-1"></i>Volver a la comunidad
-    </button>
+    </a>
 
-    <!-- Autor -->
-    <div class="d-flex align-items-center mb-4 clickable" (click)="viewProfile(post.communityProfile.id)">
-      <img [src]="post.communityProfile.profileImage || 'default-avatar.svg'" class="rounded-circle me-3 border" width="50" height="50" alt="" />
-      <div>
-        <h5 class="mb-0 fw-bold">{{ post.communityProfile.username }}</h5>
-        @if (post.createdAt) {
-          <small class="text-muted">{{ post.createdAt | date: 'medium' }}</small>
-        }
-      </div>
-    </div>
+    <article class="card mb-4">
+      <div class="card-body p-4">
+        <!-- Autor -->
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <a [routerLink]="['/communities/profile', p.communityProfile.id]">
+            <app-avatar [src]="p.communityProfile.profileImage" [size]="48" [alt]="p.communityProfile.username" />
+          </a>
+          <div class="flex-grow-1">
+            <a class="fw-semibold text-reset text-decoration-none" [routerLink]="['/communities/profile', p.communityProfile.id]">
+              {{ p.communityProfile.username }}
+            </a>
+            @if (p.communityProfile.rol; as rol) {
+              <app-tag-badge class="ms-1" [label]="rol.name" [background]="rol.backgroundColor" [color]="rol.textColor" />
+            }
+            <div class="small text-body-secondary">
+              {{ p.createdAt | relativeTime }}
+              @if (wasEdited()) {
+                · <span title="Editada {{ p.updatedAt | relativeTime }}">editada</span>
+              }
+            </div>
+          </div>
+          @if (!editing() && (canEditPost() || canDeletePost())) {
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-label="Opciones">
+                <i class="bi bi-three-dots"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                @if (canEditPost()) {
+                  <li><button class="dropdown-item" (click)="startEditing()"><i class="bi bi-pencil me-2"></i>Editar</button></li>
+                }
+                @if (canDeletePost()) {
+                  <li><button class="dropdown-item text-danger" (click)="deletePost()"><i class="bi bi-trash me-2"></i>Eliminar</button></li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
 
-    <!-- Título -->
-    <div class="mb-3">
-      @if (editingPost) {
-        <input [(ngModel)]="editingPostTitle" class="form-control form-control-lg fw-semibold" maxlength="200" placeholder="Título de la publicación" />
-      } @else {
-        <h1 class="h3 fw-bold">{{ post.title }}</h1>
-      }
-    </div>
-
-    <!-- Contenido -->
-    <div class="mb-4">
-      @if (editingPost) {
-        <quill-editor [(ngModel)]="editingPostContent" [styles]="{ height: '250px' }"></quill-editor>
-      } @else {
-        <div class="quill-content" [innerHTML]="post.content"></div>
-      }
-    </div>
-
-    <!-- Etiquetas -->
-    <div class="mb-4">
-      @if (editingPost) {
-        <label class="form-label" for="postTags"><strong>Etiquetas (separadas por comas):</strong></label>
-        <input id="postTags" type="text" [(ngModel)]="editingPostTags" class="form-control" placeholder="Ej: tecnología, redes sociales" />
-      } @else {
-        @for (tag of post.tags; track tag) {
-          <span class="badge bg-primary me-1">{{ tag }}</span>
-        }
-      }
-    </div>
-
-    <!-- Editar / eliminar -->
-    @if (canEditPost() || canDeletePost()) {
-      <div class="mb-4">
-        @if (editingPost) {
-          <button class="btn btn-sm btn-success me-2" (click)="updatePost()" [disabled]="!editingPostTitle.trim()">Guardar</button>
-          <button class="btn btn-sm btn-secondary" (click)="cancelEditingPost()">Cancelar</button>
+        @if (editing()) {
+          <input class="form-control form-control-lg fw-semibold mb-3" maxlength="200" placeholder="Título" aria-label="Título" [(ngModel)]="editTitle" />
+          <quill-editor class="d-block mb-3" [(ngModel)]="editContent" [styles]="{ height: '300px' }" />
+          <label class="form-label small" for="editTags">Etiquetas (separadas por comas)</label>
+          <input id="editTags" class="form-control mb-3" [(ngModel)]="editTags" />
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary" (click)="savePost()" [disabled]="!editTitle.trim()">Guardar</button>
+            <button class="btn btn-outline-secondary" (click)="editing.set(false)">Cancelar</button>
+          </div>
         } @else {
-          @if (canEditPost()) {
-            <button class="btn btn-outline-secondary btn-sm me-2" (click)="startEditingPost()">Editar publicación</button>
-          }
-          @if (canDeletePost()) {
-            <button class="btn btn-outline-danger btn-sm" (click)="deletePost()">Eliminar publicación</button>
-          }
+          <h1 class="h3 fw-bold mb-3">{{ p.title }}</h1>
+          <div class="quill-content gn-post-body mb-3" [innerHTML]="p.content"></div>
+          <div class="d-flex flex-wrap gap-1">
+            @for (tag of p.tags; track tag) {
+              <span class="badge gn-chip">#{{ tag }}</span>
+            }
+          </div>
         }
       </div>
-    }
-
-    <hr />
-
-    <!-- Likes -->
-    <div class="mb-4 d-flex align-items-center gap-2">
-      <button class="btn btn-light border" (click)="toggleLike()" [disabled]="!myProfileId" [title]="myProfileId ? '' : 'Únete a la comunidad para dar like'">
-        {{ hasLiked ? '💙' : '🤍' }}
-      </button>
-      <span class="text-muted">{{ likeCount }} me gusta</span>
-    </div>
+      <div class="card-footer d-flex align-items-center gap-3">
+        <button
+          type="button"
+          class="btn btn-sm gn-like-btn"
+          [class.btn-danger]="hasLiked()"
+          [class.btn-outline-danger]="!hasLiked()"
+          [disabled]="!myProfileId()"
+          [title]="myProfileId() ? (hasLiked() ? 'Quitar me gusta' : 'Me gusta') : 'Únete a la comunidad para dar me gusta'"
+          (click)="toggleLike()"
+        >
+          <i class="bi" [class.bi-heart-fill]="hasLiked()" [class.bi-heart]="!hasLiked()"></i>
+          <span class="ms-1">{{ likeCount() }}</span>
+        </button>
+        <span class="text-body-secondary small"><i class="bi bi-chat-left-text me-1"></i>{{ p.postComment.length }} comentarios</span>
+      </div>
+    </article>
 
     <!-- Comentarios -->
-    <div class="mt-5">
-      <h4 class="mb-3 fw-semibold">Comentarios ({{ post.postComment.length }})</h4>
+    <section>
+      <h2 class="h5 fw-bold mb-3">Comentarios</h2>
 
-      @if (myProfileId) {
-        <form (ngSubmit)="createComment()" class="mb-4">
-          <textarea [(ngModel)]="newCommentContent" name="comment" class="form-control mb-2" rows="3" maxlength="2000" placeholder="Escribe un comentario..." required></textarea>
-          <button type="submit" class="btn btn-primary" [disabled]="!newCommentContent.trim()">Publicar comentario</button>
+      @if (myProfileId()) {
+        <form class="card mb-3" (ngSubmit)="submitComment()">
+          <div class="card-body">
+            <textarea class="form-control mb-2" name="comment" rows="3" maxlength="2000" placeholder="Escribe un comentario…" [(ngModel)]="newComment"></textarea>
+            <div class="text-end">
+              <button type="submit" class="btn btn-primary" [disabled]="!newComment.trim()">Comentar</button>
+            </div>
+          </div>
         </form>
       } @else {
         <div class="alert alert-light border">Únete a la comunidad para comentar.</div>
       }
 
-      <ul class="list-unstyled">
-        @for (comment of post.postComment.slice().reverse(); track comment.id) {
-          <li class="border-top pt-3 pb-2 d-flex gap-3">
-            <img [src]="comment.communityProfile.profileImage || 'default-avatar.svg'" class="rounded-circle clickable" width="40" height="40" alt="" (click)="viewProfile(comment.communityProfile.id)" />
-            <div class="flex-grow-1">
-              <div>
-                <span class="fw-bold clickable" (click)="viewProfile(comment.communityProfile.id)">{{ comment.communityProfile.username }}</span>
-                @if (comment.createdAt) {
-                  <small class="text-muted ms-2">{{ comment.createdAt | date: 'short' }}</small>
+      @for (comment of p.postComment; track comment.id) {
+        <div class="d-flex gap-3 py-3 border-top">
+          <a [routerLink]="['/communities/profile', comment.communityProfile.id]">
+            <app-avatar [src]="comment.communityProfile.profileImage" [size]="40" [alt]="comment.communityProfile.username" />
+          </a>
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-baseline gap-2">
+              <a class="fw-semibold text-reset text-decoration-none" [routerLink]="['/communities/profile', comment.communityProfile.id]">{{ comment.communityProfile.username }}</a>
+              <small class="text-body-secondary">{{ comment.createdAt | relativeTime }}</small>
+            </div>
+            @if (editingCommentId() === comment.id) {
+              <textarea class="form-control my-2" rows="3" maxlength="2000" [(ngModel)]="editingCommentText"></textarea>
+              <button class="btn btn-sm btn-success me-2" (click)="saveComment(comment.id)">Guardar</button>
+              <button class="btn btn-sm btn-outline-secondary" (click)="editingCommentId.set(null)">Cancelar</button>
+            } @else {
+              <p class="mb-1 gn-comment-text">{{ comment.content }}</p>
+              <div class="d-flex gap-3">
+                @if (canEditComment(comment)) {
+                  <button class="btn btn-sm btn-link p-0" (click)="startEditingComment(comment)">Editar</button>
+                }
+                @if (canDeleteComment(comment)) {
+                  <button class="btn btn-sm btn-link p-0 text-danger" (click)="deleteComment(comment.id)">Eliminar</button>
                 }
               </div>
-              @if (editingCommentId === comment.id) {
-                <div class="mt-2">
-                  <textarea [(ngModel)]="editingContent" class="form-control mb-2" rows="3" maxlength="2000"></textarea>
-                  <button class="btn btn-sm btn-success me-2" (click)="updateComment(comment.id)">Guardar</button>
-                  <button class="btn btn-sm btn-secondary" (click)="cancelEditing()">Cancelar</button>
-                </div>
-              } @else {
-                <p class="mb-1 comment-text">{{ comment.content }}</p>
-                <div class="mt-2">
-                  @if (canEditComment(comment)) {
-                    <button class="btn btn-sm btn-outline-secondary me-2" (click)="startEditing(comment)">Editar</button>
-                  }
-                  @if (canDeleteComment(comment)) {
-                    <button class="btn btn-sm btn-outline-danger" (click)="deleteComment(comment.id)">Eliminar</button>
-                  }
-                </div>
-              }
-            </div>
-          </li>
-        } @empty {
-          <li class="text-muted mt-3">No hay comentarios aún.</li>
-        }
-      </ul>
-    </div>
+            }
+          </div>
+        </div>
+      } @empty {
+        <p class="text-body-secondary">Todavía no hay comentarios. ¡Sé el primero!</p>
+      }
+    </section>
   }
 </div>

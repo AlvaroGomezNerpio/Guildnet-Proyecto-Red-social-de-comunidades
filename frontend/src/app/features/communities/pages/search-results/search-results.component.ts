@@ -1,101 +1,89 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, merge } from 'rxjs';
 import { CommunityService } from '../../services/community.service';
-import { CommunityProfileService } from '../../../profiles/services/community-profile.service';
-import { AuthService } from '../../../../core/auth/auth.service';
-import { errorMessage } from '../../../../core/http/http-error';
 import { CommunityResponseDTO } from '../../models/community.models';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { CommunityCardComponent } from '../../components/community-card/community-card.component';
+import { CommunityPreviewComponent } from '../../components/community-preview/community-preview.component';
+import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
 
+/** Búsqueda de comunidades por nombre y etiquetas (pública: no requiere sesión). */
 @Component({
-    selector: 'app-search-results',
-    templateUrl: './search-results.component.html',
-    changeDetection: ChangeDetectionStrategy.Eager,
-    styleUrls: ['./search-results.component.css'],
-    imports: [FormsModule, ReactiveFormsModule]
+  selector: 'app-search-results',
+  imports: [ReactiveFormsModule, CommunityCardComponent, CommunityPreviewComponent, EmptyStateComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './search-results.component.html',
+  styleUrl: './search-results.component.css',
 })
 export class SearchResultsComponent implements OnInit {
-  searchNameControl = new FormControl('');
-  searchTagsControl = new FormControl('');
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly communityService = inject(CommunityService);
+  private readonly authService = inject(AuthService);
 
-  results: CommunityResponseDTO[] = [];
-  selectedCommunity: CommunityResponseDTO | null = null;
-  subscribedCommunities: CommunityResponseDTO[] = [];
+  readonly nameControl = new FormControl('', { nonNullable: true });
+  readonly tagsControl = new FormControl('', { nonNullable: true });
 
-  isLoggedIn: boolean = false;
-  error: string | null = null;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private communityService: CommunityService,
-    private communityProfileService: CommunityProfileService,
-    private authService: AuthService
-  ) {}
+  readonly results = signal<CommunityResponseDTO[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
+  readonly selected = signal<CommunityResponseDTO | null>(null);
+  private readonly memberIds = signal<Set<number>>(new Set());
+  readonly selectedIsMember = computed(() => {
+    const c = this.selected();
+    return !!c && this.memberIds().has(c.id);
+  });
 
   ngOnInit(): void {
-    this.isLoggedIn = this.authService.isAuthenticated();
-
-    if (this.isLoggedIn) {
+    if (this.authService.isAuthenticated()) {
       this.communityService.getSubscribedCommunities().subscribe({
-        next: data => this.subscribedCommunities = data,
-        error: () => this.subscribedCommunities = []
+        next: (data) => this.memberIds.set(new Set(data.map((c) => c.id))),
       });
     }
 
-    this.route.queryParams.subscribe((params) => {
-      const name = params['name'];
-      const tag = params['tag'];
+    const params = this.route.snapshot.queryParamMap;
+    this.nameControl.setValue(params.get('name') ?? '', { emitEvent: false });
+    this.tagsControl.setValue(params.getAll('tag').join(', '), { emitEvent: false });
+    this.performSearch();
 
-      this.searchNameControl.setValue(name || '');
-      this.searchTagsControl.setValue(Array.isArray(tag) ? tag.join(', ') : tag || '');
-      this.performSearch();
-    });
-
-    this.searchNameControl.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged())
+    merge(this.nameControl.valueChanges, this.tagsControl.valueChanges)
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.performSearch());
+  }
 
-    this.searchTagsControl.valueChanges
-      .pipe(debounceTime(300), distinctUntilChanged())
-      .subscribe(() => this.performSearch());
+  isMember(community: CommunityResponseDTO): boolean {
+    return this.memberIds().has(community.id);
   }
 
   performSearch(): void {
-    const name = this.searchNameControl.value?.trim();
-    const tags = this.searchTagsControl.value
-      ?.split(',')
-      .map((t: string) => t.trim())
-      .filter((t: string) => t.length > 0);
+    const name = this.nameControl.value.trim();
+    const tags = this.tagsControl.value
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0);
 
+    // Mantiene la búsqueda en la URL para poder compartirla o volver atrás
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { name: name || null, tag: tags.length ? tags : null },
+      replaceUrl: true,
+    });
+
+    this.loading.set(true);
     this.communityService.searchCommunities(name, tags).subscribe({
       next: (data) => {
-        this.results = data;
-        this.error = null;
+        this.results.set(data);
+        this.error.set(null);
+        this.loading.set(false);
       },
-      error: () => this.error = 'Error al buscar comunidades.'
-    });
-  }
-
-  onJoinCommunity(communityId: number): void {
-    this.communityProfileService.joinCommunity(communityId).subscribe({
-      next: () => {
-        this.router.navigate(['/communities', communityId]);
+      error: () => {
+        this.error.set('Error al buscar comunidades.');
+        this.loading.set(false);
       },
-      error: (err) => (this.error = errorMessage(err, 'No se pudo unir a la comunidad.'))
     });
-  }
-
-  enterCommunity(communityId: number): void {
-    this.router.navigate(['/communities', communityId]);
-  }
-
-  openCommunityModal(community: CommunityResponseDTO): void {
-    this.selectedCommunity = community;
-  }
-
-  isSubscribed(communityId: number): boolean {
-    return this.subscribedCommunities.some(c => c.id === communityId);
   }
 }

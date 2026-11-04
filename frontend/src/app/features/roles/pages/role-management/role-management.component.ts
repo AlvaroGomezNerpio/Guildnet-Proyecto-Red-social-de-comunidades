@@ -8,6 +8,8 @@ import { RolePermissionService } from '../../services/role-permission.service';
 import { CommunityPermissionsService } from '../../../communities/services/community-permissions.service';
 import { RoleDTO, PermissionDTO, RolePermissionDTO } from '../../models/role.models';
 import { errorMessage } from '../../../../core/http/http-error';
+import { ToastService } from '../../../../shared/ui/toast/toast.service';
+import { ConfirmService } from '../../../../shared/ui/confirm/confirm.service';
 
 interface RoleWithPermissions extends RoleDTO {
   permissions: RolePermissionDTO[];
@@ -29,6 +31,8 @@ export class RoleManagementComponent implements OnInit {
   private readonly permissionService = inject(PermissionService);
   private readonly rolePermissionService = inject(RolePermissionService);
   private readonly communityPermissions = inject(CommunityPermissionsService);
+  private readonly toast = inject(ToastService);
+  private readonly confirm = inject(ConfirmService);
 
   communityId!: number;
   permissions: PermissionDTO[] = [];
@@ -36,7 +40,6 @@ export class RoleManagementComponent implements OnInit {
   roles: RoleWithPermissions[] = [];
 
   saving = false;
-  success: string | null = null;
   error: string | null = null;
 
   readonly roleForm = this.fb.nonNullable.group({
@@ -112,8 +115,7 @@ export class RoleManagementComponent implements OnInit {
       .subscribe({
         next: () => {
           this.saving = false;
-          this.success = 'Rol creado con éxito.';
-          setTimeout(() => (this.success = null), 3000);
+          this.toast.success('Rol creado.');
           this.roleForm.reset();
           this.selectedPermissions.clear();
           this.loadRoles();
@@ -125,12 +127,21 @@ export class RoleManagementComponent implements OnInit {
       });
   }
 
-  deleteRole(role: RoleDTO): void {
-    if (!confirm(`¿Eliminar el rol "${role.name}"? Se quitará a todos los miembros que lo tengan.`)) return;
+  async deleteRole(role: RoleDTO): Promise<void> {
+    const accepted = await this.confirm.ask({
+      title: 'Eliminar rol',
+      message: `¿Eliminar el rol "${role.name}"? Se quitará a todos los miembros que lo tengan.`,
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (!accepted) return;
 
     this.roleService.deleteRole(role.id).subscribe({
-      next: () => this.loadRoles(),
-      error: (err) => (this.error = errorMessage(err, 'No se pudo eliminar el rol.')),
+      next: () => {
+        this.toast.success('Rol eliminado.');
+        this.loadRoles();
+      },
+      error: (err) => this.toast.error(errorMessage(err, 'No se pudo eliminar el rol.')),
     });
   }
 

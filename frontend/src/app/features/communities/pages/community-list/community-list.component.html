@@ -1,208 +1,79 @@
-<div class="container  mt-4">
-  <!-- Cabecera -->
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">Comunidades</h2>
-  </div>
-
-  @if (error) {
-    <div class="alert alert-danger alert-dismissible">
-      {{ error }}
-      <button type="button" class="btn-close" (click)="error = null"></button>
-    </div>
-  }
-
-  <!-- Comunidades suscritas -->
-  @if (isLoggedIn && subscribedCommunities.length > 0) {
-    <div>
-      <h4 class="mb-3">Tus comunidades</h4>
-      <div class="row g-3">
-        @for (community of subscribedCommunities; track community) {
-          <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-              @if (community.banner) {
-                <img [src]="community.banner" class="card-img-top" alt="Banner" />
-              }
-              <div class="card-body">
-                <div class="d-flex align-items-center mb-2">
-                  @if (community.image) {
-                    <img
-                      [src]="community.image"
-                      alt="Avatar"
-                      class="rounded-circle me-2"
-                      width="40"
-                      height="40"
-                      />
-                  }
-                  <h5 class="card-title mb-0">{{ community.name }}</h5>
-                </div>
-                <button class="btn btn-outline-primary w-100" (click)="enterCommunity(community.id)">
-                  Entrar a la comunidad
-                </button>
-              </div>
-            </div>
-          </div>
-        }
+<section class="gn-hero mb-5">
+  <div class="container py-5">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <h1 class="display-6 fw-bold mb-2">Encuentra tu gremio</h1>
+        <p class="lead mb-4 gn-hero-text">Únete a comunidades que comparten tus intereses, publica, comenta y chatea en tiempo real.</p>
+        <form class="d-flex gap-2 gn-hero-search" role="search" (ngSubmit)="search()">
+          <input
+            class="form-control form-control-lg"
+            type="search"
+            name="search"
+            placeholder="Buscar comunidades…"
+            aria-label="Buscar comunidades"
+            [(ngModel)]="searchText"
+          />
+          <button class="btn btn-light btn-lg px-4" type="submit" aria-label="Buscar"><i class="bi bi-search"></i></button>
+        </form>
       </div>
-    </div>
-  }
-
-  @if (isLoggedIn) {
-    <hr class="my-5" />
-  }
-
-  <!-- Comunidades sugeridas -->
-  @if (isLoggedIn && suggestedCommunities.length > 0) {
-    <div>
-      <h4 class="mb-3">Comunidades sugeridas</h4>
-      <div class="row g-3">
-        @for (community of suggestedCommunities; track community) {
-          <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-              @if (community.banner) {
-                <img [src]="community.banner" class="card-img-top" alt="Banner" />
-              }
-              <div class="card-body">
-                <div class="d-flex align-items-center mb-2">
-                  @if (community.image) {
-                    <img
-                      [src]="community.image"
-                      alt="Avatar"
-                      class="rounded-circle me-2"
-                      width="40"
-                      height="40"
-                      />
-                  }
-                  <h5 class="card-title mb-0">{{ community.name }}</h5>
-                </div>
-                <button
-                  class="btn btn-outline-primary w-100"
-                  data-bs-toggle="modal"
-                  data-bs-target="#communityModal"
-                  (click)="openCommunityModal(community)"
-                  >
-                  Ver más
-                </button>
-              </div>
-            </div>
-          </div>
-        }
+      <div class="col-lg-5 text-lg-end">
+        <a class="btn btn-outline-light btn-lg" routerLink="/communities/create">
+          <i class="bi bi-plus-circle me-2"></i>Crear comunidad
+        </a>
       </div>
-    </div>
-  }
-
-  <hr class="my-5" />
-
-  <!-- Comunidades populares -->
-  <h4 class="mb-3">Comunidades populares</h4>
-  @if (filteredPopularCommunities.length > 0) {
-    <div>
-      <div class="row g-3">
-        @for (community of filteredPopularCommunities; track community) {
-          <div class="col-md-4">
-            <div class="card h-100 shadow-sm">
-              @if (community.banner) {
-                <img [src]="community.banner" class="card-img-top" alt="Banner" />
-              }
-              <div class="card-body">
-                <div class="d-flex align-items-center mb-2">
-                  @if (community.image) {
-                    <img
-                      [src]="community.image"
-                      alt="Avatar"
-                      class="rounded-circle me-2"
-                      width="40"
-                      height="40"
-                      />
-                  }
-                  <h5 class="card-title mb-0">{{ community.name }}</h5>
-                </div>
-                <button
-                  class="btn btn-outline-primary w-100"
-                  data-bs-toggle="modal"
-                  data-bs-target="#communityModal"
-                  (click)="openCommunityModal(community)"
-                  >
-                  Ver más
-                </button>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  } @else {
-    <p class="text-muted">No hay comunidades populares disponibles por ahora.</p>
-  }
-
-  <!-- Fallback si no hay populares -->
-
-  <!-- Modal de detalles -->
-  <div
-    class="modal fade"
-    id="communityModal"
-    tabindex="-1"
-    aria-labelledby="communityModalLabel"
-    aria-hidden="true"
-    >
-    <div class="modal-dialog modal-lg modal-dialog-centered text-center">
-      @if (selectedCommunity) {
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="communityModalLabel">{{ selectedCommunity.name }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-          </div>
-          <div class="modal-body">
-            @if (selectedCommunity.banner) {
-              <img
-                [src]="selectedCommunity.banner"
-                class="img-fluid rounded mb-3"
-                alt="Banner"
-                />
-            }
-            <div class="d-flex align-items-center mb-3">
-              @if (selectedCommunity.image) {
-                <img
-                  [src]="selectedCommunity.image"
-                  class="rounded-circle me-3"
-                  width="60"
-                  height="60"
-                  alt="Avatar"
-                  />
-              }
-              <div>
-                <h5 class="mb-0">{{ selectedCommunity.name }}</h5>
-                <div class="mt-2">
-                  @for (tag of selectedCommunity.tags; track tag) {
-                    <span class="badge bg-primary me-1">
-                      {{ tag }}
-                    </span>
-                  }
-                </div>
-              </div>
-            </div>
-            <div class="mb-3">
-              <strong>Descripción:</strong>
-              <div class="quill-content card card-body card-text" [innerHTML]="selectedCommunity.description"></div>
-            </div>
-            <div>
-              <strong>Reglas:</strong>
-              <div class="quill-content card card-body card-text" [innerHTML]="selectedCommunity.rules"></div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            @if (isLoggedIn) {
-              <button
-                class="btn btn-success"
-                (click)="onJoinCommunity(selectedCommunity.id)"
-                data-bs-dismiss="modal"
-                >
-                Unirse a la comunidad
-              </button>
-            }
-            <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-          </div>
-        </div>
-      }
     </div>
   </div>
+</section>
+
+<div class="container">
+  <!-- Tus comunidades -->
+  <section class="mb-5">
+    <h2 class="gn-section-title">Tus comunidades</h2>
+    @if (subscribed().length) {
+      <div class="row g-3">
+        @for (community of subscribed(); track community.id) {
+          <div class="col-sm-6 col-lg-4">
+            <app-community-card [community]="community" [member]="true" (selected)="open($event)" />
+          </div>
+        }
+      </div>
+    } @else if (!loading()) {
+      <app-empty-state icon="people" message="Todavía no perteneces a ninguna comunidad.">
+        <a class="btn btn-primary" routerLink="/communities/search">Explorar comunidades</a>
+      </app-empty-state>
+    }
+  </section>
+
+  <!-- Sugeridas -->
+  @if (suggested().length) {
+    <section class="mb-5">
+      <h2 class="gn-section-title">Sugeridas para ti</h2>
+      <p class="text-body-secondary small mt-n2 mb-3">Según los intereses de tu perfil.</p>
+      <div class="row g-3">
+        @for (community of suggested(); track community.id) {
+          <div class="col-sm-6 col-lg-4">
+            <app-community-card [community]="community" (selected)="open($event)" />
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- Populares -->
+  <section class="mb-5">
+    <h2 class="gn-section-title">Populares</h2>
+    @if (popularToDiscover().length) {
+      <div class="row g-3">
+        @for (community of popularToDiscover(); track community.id) {
+          <div class="col-sm-6 col-lg-4">
+            <app-community-card [community]="community" (selected)="open($event)" />
+          </div>
+        }
+      </div>
+    } @else {
+      <app-empty-state icon="stars" message="No hay más comunidades por descubrir ahora mismo." />
+    }
+  </section>
 </div>
+
+<app-community-preview [community]="selected()" (closed)="selected.set(null)" />

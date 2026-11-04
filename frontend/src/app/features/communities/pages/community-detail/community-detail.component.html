@@ -1,215 +1,164 @@
-<div class="container mt-4">
-  @if (error) {
-    <div class="alert alert-danger alert-dismissible">
-      {{ error }}
-      <button type="button" class="btn-close" (click)="error = null"></button>
-    </div>
-  }
+@let c = community();
+@let me = profile();
 
-  <!-- Banner e información principal de la comunidad -->
-  <div class="text-center mb-5">
-    @if (community?.banner) {
-      <img [src]="community!.banner" class="img-fluid rounded mb-3 w-100 community-banner" alt="Banner de la comunidad" />
-    }
-
-    <div class="d-flex justify-content-center align-items-center gap-3">
-      @if (community?.image) {
-        <img [src]="community!.image" alt="Imagen de la comunidad" class="rounded-circle border" width="80" height="80" />
-      }
-      <div>
-        <h2 class="mb-1">{{ community?.name }}</h2>
-        @if (community?.tags?.length) {
-          <small class="text-muted d-block">#{{ community!.tags.join(' #') }}</small>
+<!-- Cabecera de la comunidad -->
+<section class="gn-community-header mb-4">
+  <div class="gn-community-cover" [style.background-image]="c?.banner ? 'url(' + c!.banner + ')' : null"></div>
+  <div class="container">
+    <div class="d-flex flex-column flex-md-row align-items-center align-items-md-end gap-3 gn-community-identity">
+      <div class="gn-community-logo">
+        <app-avatar [src]="c?.image" [size]="112" [alt]="c?.name ?? ''" />
+      </div>
+      <div class="flex-grow-1 text-center text-md-start pb-md-2">
+        <h1 class="h2 fw-bold mb-1">{{ c?.name }}</h1>
+        <div class="d-flex flex-wrap gap-1 justify-content-center justify-content-md-start">
+          @for (tag of c?.tags ?? []; track tag) {
+            <span class="badge gn-chip">#{{ tag }}</span>
+          }
+        </div>
+      </div>
+      <div class="d-flex flex-wrap gap-2 pb-md-2">
+        @if (me) {
+          <button class="btn btn-primary" (click)="goToCreatePost()"><i class="bi bi-pencil-square me-1"></i>Publicar</button>
+          @if (canEditCommunity()) {
+            <a class="btn btn-outline-secondary" [routerLink]="['/communities', communityId, 'edit']" title="Editar comunidad">
+              <i class="bi bi-gear"></i>
+            </a>
+          }
+        } @else if (membershipLoaded()) {
+          <button class="btn btn-success" (click)="join()" [disabled]="joining()">
+            <i class="bi bi-person-plus me-1"></i>Unirse
+          </button>
         }
       </div>
     </div>
-
-    <!-- Reglas y descripción -->
-    <div class="mt-4 accordion text-start" id="communityAccordion">
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="descHeader">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#descriptionCollapse">
-            Ver descripción
-          </button>
-        </h2>
-        <div id="descriptionCollapse" class="accordion-collapse collapse" aria-labelledby="descHeader" data-bs-parent="#communityAccordion">
-          <div class="accordion-body">
-            <div class="quill-content" [innerHTML]="community?.description || 'Esta comunidad no tiene descripción pública.'"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion-item">
-        <h2 class="accordion-header" id="rulesHeader">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#rulesCollapse">
-            Ver reglas
-          </button>
-        </h2>
-        <div id="rulesCollapse" class="accordion-collapse collapse" aria-labelledby="rulesHeader" data-bs-parent="#communityAccordion">
-          <div class="accordion-body">
-            <div class="quill-content" [innerHTML]="community?.rules || 'Esta comunidad no tiene reglas públicas.'"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <hr class="mt-5" />
   </div>
+</section>
 
-  <div class="row">
+<div class="container pb-5">
+  <div class="row g-4">
     <!-- Columna lateral -->
-    <div class="col-md-3 mb-4">
-      @if (profile) {
-        <!-- Perfil -->
-        <div class="card text-center mb-4">
-          <div class="card-body">
-            <img [src]="profile.profileImage || 'default-avatar.svg'" alt="Perfil" class="rounded-circle mb-2" width="70" height="70" />
-            <h5 class="card-title">{{ profile.username }}</h5>
-            @if (profile.rol) {
-              <span class="badge mb-2" [style.background-color]="profile.rol.backgroundColor" [style.color]="profile.rol.textColor">
-                {{ profile.rol.name }}
-              </span>
-            }
-            <button class="btn btn-outline-primary w-100 mt-2" (click)="viewProfile(profile.id)">Ver perfil</button>
-          </div>
-        </div>
-
-        <!-- Opciones -->
-        <div class="card">
-          <div class="card-body">
-            <h6 class="mb-3">Opciones</h6>
-            <div class="d-grid gap-2">
-              <button class="btn btn-primary" (click)="goToCreatePost()">Crear publicación</button>
-              <button class="btn btn-outline-primary" (click)="loadCommunityMembers()">Ver miembros</button>
-              <button class="btn btn-outline-primary" (click)="goToSearchPosts()">Buscar publicaciones</button>
-              <button class="btn btn-outline-primary" (click)="goToNotifications()">
-                Ver notificaciones
-                @if (unreadCount > 0) {
-                  <span class="badge bg-danger ms-2">{{ unreadCount }}</span>
-                }
-              </button>
-              @if (hasPermission('ASSIGN_ROLES')) {
-                <button class="btn btn-outline-primary" (click)="goToCreateRole()">Gestionar roles</button>
-              }
-              @if (hasPermission('MANAGE_COMMUNITY_SETTINGS')) {
-                <button class="btn btn-outline-warning" (click)="goToEditCommunity()">
-                  <i class="bi bi-pencil-square me-1"></i> Editar comunidad
-                </button>
+    <aside class="col-lg-4 order-lg-2">
+      @if (me) {
+        <div class="card mb-3">
+          <div class="card-body d-flex align-items-center gap-3">
+            <app-avatar [src]="me.profileImage" [size]="52" [alt]="me.username" />
+            <div class="flex-grow-1 min-w-0">
+              <div class="fw-semibold text-truncate">{{ me.username }}</div>
+              @if (me.rol; as rol) {
+                <app-tag-badge [label]="rol.name" [background]="rol.backgroundColor" [color]="rol.textColor" />
               }
             </div>
+            <a class="btn btn-sm btn-outline-primary" [routerLink]="['/communities/profile', me.id]">Mi perfil</a>
+          </div>
+          <div class="list-group list-group-flush">
+            <a class="list-group-item list-group-item-action d-flex align-items-center" [routerLink]="['/communities', communityId, 'notifications']">
+              <i class="bi bi-bell me-2"></i>Notificaciones
+              @if (unreadCount() > 0) {
+                <span class="badge rounded-pill bg-danger ms-auto">{{ unreadCount() }}</span>
+              }
+            </a>
+            <a class="list-group-item list-group-item-action" [routerLink]="['/communities', communityId, 'search-posts']">
+              <i class="bi bi-search me-2"></i>Buscar publicaciones
+            </a>
+            <button type="button" class="list-group-item list-group-item-action" (click)="openMembers()">
+              <i class="bi bi-people me-2"></i>Miembros
+            </button>
+            @if (canManageRoles()) {
+              <a class="list-group-item list-group-item-action" [routerLink]="['/communities', communityId, 'roles']">
+                <i class="bi bi-shield-lock me-2"></i>Gestionar roles
+              </a>
+            }
           </div>
         </div>
-      } @else if (profileLoaded) {
-        <div class="card text-center">
-          <div class="card-body">
-            <p class="mb-3">Únete para publicar, comentar y participar en el chat.</p>
-            <button class="btn btn-success w-100" (click)="join()" [disabled]="joining">
-              <i class="bi bi-person-plus me-1"></i> Unirse a la comunidad
-            </button>
-            <button class="btn btn-outline-primary w-100 mt-2" (click)="loadCommunityMembers()">Ver miembros</button>
+      } @else if (membershipLoaded()) {
+        <div class="card mb-3 gn-join-card">
+          <div class="card-body text-center">
+            <i class="bi bi-door-open fs-1"></i>
+            <p class="mt-2 mb-3">Únete para publicar, comentar y participar en el chat.</p>
+            <button class="btn btn-success w-100" (click)="join()" [disabled]="joining()">Unirse a la comunidad</button>
+            <button class="btn btn-link btn-sm mt-2" (click)="openMembers()">Ver miembros</button>
           </div>
         </div>
       }
-    </div>
+
+      <div class="card mb-3">
+        <div class="card-body">
+          <h2 class="h6 text-uppercase fw-bold text-body-secondary">Acerca de</h2>
+          <div class="quill-content small" [innerHTML]="c?.description || 'Esta comunidad no tiene descripción.'"></div>
+          <hr />
+          <h2 class="h6 text-uppercase fw-bold text-body-secondary">Reglas</h2>
+          <div class="quill-content small" [innerHTML]="c?.rules || 'Esta comunidad no tiene reglas publicadas.'"></div>
+        </div>
+      </div>
+    </aside>
 
     <!-- Columna principal -->
-    <div class="col-md-9">
-      @if (profile) {
-        <div class="mb-4">
-          <app-community-chat [communityId]="communityId" [myProfileId]="profile.id"></app-community-chat>
-        </div>
+    <section class="col-lg-8 order-lg-1">
+      @if (me) {
+        <ul class="nav nav-pills gn-tabs mb-3">
+          <li class="nav-item">
+            <button class="nav-link" [class.active]="tab() === 'posts'" (click)="tab.set('posts')">
+              <i class="bi bi-card-text me-1"></i>Publicaciones
+              <span class="badge rounded-pill text-bg-secondary ms-1">{{ totalPosts() }}</span>
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link" [class.active]="tab() === 'chat'" (click)="tab.set('chat')">
+              <i class="bi bi-chat-dots me-1"></i>Chat
+            </button>
+          </li>
+        </ul>
       }
 
-      <h4 class="mb-4">Publicaciones recientes</h4>
-
-      @for (post of posts; track post.id) {
-        <div class="card mb-4 post-card" (click)="goToPostDetail(post.id)">
-          <div class="card-body">
-            <!-- Autor -->
-            <div class="d-flex align-items-center mb-3" (click)="viewProfile(post.communityProfile.id); $event.stopPropagation()">
-              <img [src]="post.communityProfile.profileImage || 'default-avatar.svg'" alt="Avatar" class="rounded-circle me-2" width="40" height="40" />
-              <h6 class="mb-0 text-truncate">{{ post.communityProfile.username }}</h6>
-              @if (post.createdAt) {
-                <small class="text-muted ms-auto">{{ post.createdAt | date: 'medium' }}</small>
+      @if (tab() === 'chat' && me) {
+        <app-community-chat [communityId]="communityId" [myProfileId]="me.id" />
+      } @else {
+        @for (post of posts(); track post.id) {
+          <app-post-card [post]="post" />
+        } @empty {
+          @if (!loadingPosts()) {
+            <app-empty-state icon="card-text" message="Aún no hay publicaciones en esta comunidad.">
+              @if (me) {
+                <button class="btn btn-primary" (click)="goToCreatePost()">Escribe la primera</button>
               }
-            </div>
+            </app-empty-state>
+          }
+        }
 
-            <h5 class="card-title">{{ post.title }}</h5>
-
-            @if (post.showContent) {
-              <div class="card card-body bg-light mb-2">
-                <div class="quill-content" [innerHTML]="post.content"></div>
-              </div>
-            }
-
-            <div class="text-center">
-              <button class="btn btn-sm btn-outline-secondary" (click)="toggleContent(post); $event.stopPropagation()">
-                {{ post.showContent ? 'Ver menos' : 'Ver más' }}
-              </button>
-            </div>
-
-            <div class="mt-2 mb-2">
-              @for (tag of post.tags; track tag) {
-                <span class="badge bg-primary me-1">{{ tag }}</span>
-              }
-            </div>
-
-            <div class="text-end">
-              <small class="text-muted">{{ post.likes }} 💙</small> |
-              <small class="text-muted">{{ post.comments }} 💬</small>
-            </div>
+        @if (hasMorePosts()) {
+          <div class="text-center my-3">
+            <button class="btn btn-outline-primary" (click)="loadPosts(true)" [disabled]="loadingPosts()">
+              {{ loadingPosts() ? 'Cargando…' : 'Cargar más publicaciones' }}
+            </button>
           </div>
-        </div>
-      } @empty {
-        @if (!loadingPosts) {
-          <div class="alert alert-secondary">No hay publicaciones en esta comunidad todavía.</div>
         }
       }
-
-      @if (hasMorePosts) {
-        <div class="text-center mb-4">
-          <button class="btn btn-outline-primary" (click)="loadPosts(true)" [disabled]="loadingPosts">
-            {{ loadingPosts ? 'Cargando…' : 'Cargar más publicaciones' }}
-          </button>
-        </div>
-      }
-    </div>
+    </section>
   </div>
-
-  <!-- Modal miembros -->
-  @if (showMembersModal) {
-    <div class="modal fade show d-block" tabindex="-1">
-      <div class="modal-dialog modal-dialog-scrollable modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Miembros de la comunidad</h5>
-            <button type="button" class="btn-close" (click)="showMembersModal = false"></button>
-          </div>
-          <div class="modal-body">
-            <input type="text" class="form-control mb-3" placeholder="Buscar por nombre..." [(ngModel)]="searchTerm" (input)="filterMembers()" />
-            <ul class="list-group">
-              @for (member of filteredMembers; track member.id) {
-                <li class="list-group-item d-flex align-items-center">
-                  <img [src]="member.profileImage || 'default-avatar.svg'" width="40" height="40" class="rounded-circle me-2" alt="" />
-                  <span class="flex-grow-1">{{ member.username }}</span>
-                  @if (member.rol) {
-                    <span class="badge me-2" [style.background-color]="member.rol.backgroundColor" [style.color]="member.rol.textColor">
-                      {{ member.rol.name }}
-                    </span>
-                  }
-                  <button class="btn btn-sm btn-link" (click)="viewProfile(member.id)">Ver perfil</button>
-                </li>
-              } @empty {
-                <li class="list-group-item text-muted">No se encontraron miembros.</li>
-              }
-            </ul>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" (click)="showMembersModal = false">Cerrar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-backdrop fade show"></div>
-  }
 </div>
+
+<!-- Modal de miembros -->
+<app-modal [open]="membersOpen()" title="Miembros de la comunidad" size="lg" (closed)="membersOpen.set(false)">
+  <input
+    type="search"
+    class="form-control mb-3"
+    placeholder="Buscar por nombre…"
+    aria-label="Buscar miembros"
+    [ngModel]="memberFilter()"
+    (ngModelChange)="memberFilter.set($event)"
+  />
+  <div class="list-group">
+    @for (member of filteredMembers(); track member.id) {
+      <button type="button" class="list-group-item list-group-item-action d-flex align-items-center gap-2" (click)="viewProfile(member.id)">
+        <app-avatar [src]="member.profileImage" [size]="36" [alt]="member.username" />
+        <span class="flex-grow-1 text-start">{{ member.username }}</span>
+        @if (member.rol; as rol) {
+          <app-tag-badge [label]="rol.name" [background]="rol.backgroundColor" [color]="rol.textColor" />
+        }
+      </button>
+    } @empty {
+      <div class="list-group-item text-body-secondary">No se encontraron miembros.</div>
+    }
+  </div>
+</app-modal>

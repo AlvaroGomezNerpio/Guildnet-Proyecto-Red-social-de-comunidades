@@ -1,252 +1,78 @@
-<div class="container mt-5">
-  <!-- Imagen y nombre -->
-  <div class="text-center mb-4">
-    <img
-      [src]="user?.profileImage || 'default-avatar.svg'"
-      alt="Imagen de perfil"
-      class="rounded-circle border shadow"
-      width="150"
-      height="150"
-      />
-      <h4 class="mt-3">{{ user?.username }}</h4>
-
-      <!-- Etiquetas -->
-      @if (user?.tags?.length) {
-        <div class="mt-2">
-          @for (tag of user?.tags; track tag) {
-            <span class="badge bg-primary me-1">
-              {{ tag }}
-            </span>
-          }
+<div class="container py-4">
+  @if (user(); as u) {
+    <section class="card gn-profile-header mb-4">
+      <div class="gn-profile-cover"></div>
+      <div class="card-body d-flex flex-column flex-md-row align-items-center align-items-md-end gap-3">
+        <div class="gn-profile-avatar">
+          <app-avatar [src]="u.profileImage" [size]="120" [alt]="u.username" />
         </div>
-      }
-
-      <!-- Botón modal -->
-      <button
-        class="btn btn-outline-primary mt-4"
-        data-bs-toggle="modal"
-        data-bs-target="#editProfileModal"
-        >
-        Editar perfil
-      </button>
-    </div>
-
-    <!-- Modal editar perfil -->
-    <div
-      class="modal fade"
-      id="editProfileModal"
-      tabindex="-1"
-      aria-labelledby="editProfileModalLabel"
-      aria-hidden="true"
-      >
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <form [formGroup]="editForm" (ngSubmit)="onUpdateProfile()">
-            <div class="modal-header">
-              <h5 class="modal-title" id="editProfileModalLabel">Editar perfil</h5>
-              <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Cerrar"
-              ></button>
-            </div>
-
-            <div class="modal-body">
-              <div class="mb-3">
-                <label for="username" class="form-label">Nombre de usuario</label>
-                <input
-                  type="text"
-                  id="username"
-                  class="form-control"
-                  formControlName="username"
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label for="email" class="form-label">Correo electrónico</label>
-                  <input
-                    type="email"
-                    id="email"
-                    class="form-control"
-                    formControlName="email"
-                    />
-                  </div>
-
-                  <div class="mb-3">
-                    <label for="tags" class="form-label">Etiquetas de interés</label>
-                    <input
-                      type="text"
-                      id="tags"
-                      class="form-control"
-                      formControlName="tags"
-                      placeholder="Ej. videojuegos, anime, música"
-                      />
-                      <div class="form-text">Separa las etiquetas con comas</div>
-                    </div>
-
-                    <div class="mb-3">
-                      <label for="image" class="form-label">Cambiar imagen</label>
-                      <input
-                        type="file"
-                        id="image"
-                        class="form-control"
-                        (change)="onImageSelected($event)"
-                        />
-                      </div>
-
-                      @if (successMessage) {
-                        <div class="alert alert-success">
-                          {{ successMessage }}
-                        </div>
-                      }
-                      @if (errorMessage) {
-                        <div class="alert alert-danger">
-                          {{ errorMessage }}
-                        </div>
-                      }
-                    </div>
-
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-outline-danger me-auto" (click)="deleteAccount()">
-                        Eliminar mi cuenta
-                      </button>
-                      <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal"
-                        >
-                        Cerrar
-                      </button>
-                      <button type="submit" class="btn btn-primary">
-                        Guardar cambios
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-
-            <hr class="my-5" />
-
-            <!-- Comunidades suscritas -->
-            <h3 class="mb-4 text-center">Tus comunidades</h3>
-
-            @if (subscribedCommunities.length > 0) {
-              <div class="row">
-                @for (community of subscribedCommunities; track community) {
-                  <div
-                    class="col-md-4 col-sm-6 mb-4"
-                    >
-                    <div class="card h-100 shadow-sm">
-                      @if (community.banner) {
-                        <img
-                          [src]="community.banner"
-                          class="card-img-top"
-                          alt="Banner"
-                          />
-                      }
-                      <div class="card-body">
-                        <div class="d-flex align-items-center mb-2">
-                          @if (community.image) {
-                            <img
-                              [src]="community.image"
-                              alt="Avatar"
-                              class="rounded-circle me-2"
-                              width="40"
-                              height="40"
-                              />
-                          }
-                          <h5 class="card-title mb-0">{{ community.name }}</h5>
-                        </div>
-                        <button
-                          class="btn btn-outline-success w-100 mt-3"
-                          data-bs-toggle="modal"
-                          data-bs-target="#communityModal"
-                          (click)="selectedCommunity = community"
-                          >
-                          Ver más
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                }
-              </div>
-            } @else {
-              <p class="text-muted text-center">No estás suscrito a ninguna comunidad.</p>
+        <div class="flex-grow-1 text-center text-md-start">
+          <h1 class="h3 fw-bold mb-0">{{ u.username }}</h1>
+          <p class="text-body-secondary mb-2">{{ u.email }}</p>
+          <div class="d-flex flex-wrap gap-1 justify-content-center justify-content-md-start">
+            @for (tag of u.tags; track tag) {
+              <span class="badge gn-chip">#{{ tag }}</span>
+            } @empty {
+              <small class="text-body-secondary">Añade intereses para recibir sugerencias de comunidades.</small>
             }
-
-
-            <!-- Modal detalles comunidad -->
-            <div
-              class="modal fade"
-              id="communityModal"
-              tabindex="-1"
-              aria-labelledby="communityModalLabel"
-              aria-hidden="true"
-              >
-              <div class="modal-dialog modal-lg modal-dialog-centered text-center">
-                @if (selectedCommunity) {
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="communityModalLabel">
-                        {{ selectedCommunity.name }}
-                      </h5>
-                      <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Cerrar"
-                      ></button>
-                    </div>
-                    <div class="modal-body">
-                      @if (selectedCommunity.banner) {
-                        <img
-                          [src]="selectedCommunity.banner"
-                          class="img-fluid rounded mb-3"
-                          alt="Banner"
-                          />
-                      }
-                      <div class="d-flex align-items-center mb-3">
-                        @if (selectedCommunity.image) {
-                          <img
-                            [src]="selectedCommunity.image"
-                            alt="Avatar"
-                            class="rounded-circle me-3"
-                            width="60"
-                            height="60"
-                            />
-                        }
-                        <div>
-                          <h4 class="mb-0">{{ selectedCommunity.name }}</h4>
-                          <small class="text-muted">
-                            #{{ selectedCommunity.tags.join(', ') }}
-                          </small>
-                        </div>
-                      </div>
-                      <div class="mb-3">
-                        <strong>Descripción:</strong>
-                        <div class="card card-body quill-content" [innerHTML]="selectedCommunity.description"></div>
-                      </div>
-                      <div>
-                        <strong>Reglas:</strong>
-                        <div class="card card-body quill-content" [innerHTML]="selectedCommunity.rules"></div>
-                      </div>
-                    </div>
-                    <div class="modal-footer">
-                      <button
-                        class="btn btn-primary"
-                        (click)="enterCommunity(selectedCommunity.id)"
-                        data-bs-dismiss="modal"
-                        >
-                        Entrar a la comunidad
-                      </button>
-                      <button class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cerrar
-                      </button>
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
           </div>
+        </div>
+        <button class="btn btn-primary" (click)="openEditor()"><i class="bi bi-pencil me-1"></i>Editar perfil</button>
+      </div>
+    </section>
+  }
+
+  <section class="mb-5">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h2 class="gn-section-title mb-0">Tus comunidades</h2>
+      <a class="btn btn-sm btn-outline-primary" routerLink="/communities/search">Explorar más</a>
+    </div>
+    @if (communities().length) {
+      <div class="row g-3">
+        @for (community of communities(); track community.id) {
+          <div class="col-sm-6 col-lg-4">
+            <app-community-card [community]="community" [member]="true" (selected)="openCommunity($event)" />
+          </div>
+        }
+      </div>
+    } @else {
+      <app-empty-state icon="people" message="No estás suscrito a ninguna comunidad." />
+    }
+  </section>
+
+  <section class="card border-danger-subtle mb-5">
+    <div class="card-body d-flex flex-column flex-md-row align-items-md-center gap-3">
+      <div class="flex-grow-1">
+        <h2 class="h6 fw-bold text-danger mb-1">Zona de peligro</h2>
+        <p class="small text-body-secondary mb-0">Eliminar la cuenta borra tus perfiles y las comunidades que hayas creado.</p>
+      </div>
+      <button class="btn btn-outline-danger" (click)="deleteAccount()">Eliminar mi cuenta</button>
+    </div>
+  </section>
+</div>
+
+<app-modal [open]="editing()" title="Editar perfil" (closed)="editing.set(false)">
+  <form id="profileForm" [formGroup]="editForm" (ngSubmit)="save()">
+    <div class="mb-3">
+      <label for="username" class="form-label">Nombre de usuario</label>
+      <input id="username" type="text" class="form-control" formControlName="username" maxlength="50" />
+    </div>
+    <div class="mb-3">
+      <label for="email" class="form-label">Correo electrónico</label>
+      <input id="email" type="email" class="form-control" formControlName="email" />
+    </div>
+    <div class="mb-3">
+      <label for="tags" class="form-label">Intereses</label>
+      <input id="tags" type="text" class="form-control" formControlName="tags" placeholder="juegos, fotografía, programación" />
+      <div class="form-text">Separados por comas. Se usan para sugerirte comunidades.</div>
+    </div>
+    <div class="mb-1">
+      <label for="image" class="form-label">Imagen de perfil</label>
+      <input id="image" type="file" class="form-control" accept="image/png, image/jpeg, image/gif, image/webp" (change)="onImageSelected($event)" />
+    </div>
+  </form>
+  <ng-container modal-footer>
+    <button type="button" class="btn btn-outline-secondary" (click)="editing.set(false)">Cancelar</button>
+    <button type="submit" form="profileForm" class="btn btn-primary" [disabled]="editForm.invalid || saving()">Guardar cambios</button>
+  </ng-container>
+</app-modal>

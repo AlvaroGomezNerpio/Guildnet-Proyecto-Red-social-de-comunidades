@@ -6,6 +6,8 @@ import { CommunityPermissionsService } from '../../services/community-permission
 import { AuthService } from '../../../../core/auth/auth.service';
 import { CommunityResponseDTO } from '../../models/community.models';
 import { errorMessage } from '../../../../core/http/http-error';
+import { ToastService } from '../../../../shared/ui/toast/toast.service';
+import { ConfirmService } from '../../../../shared/ui/confirm/confirm.service';
 import { QuillEditorComponent } from 'ngx-quill';
 
 @Component({
@@ -22,6 +24,8 @@ export class EditCommunityComponent implements OnInit {
   private readonly communityService = inject(CommunityService);
   private readonly permissionsService = inject(CommunityPermissionsService);
   private readonly authService = inject(AuthService);
+  private readonly toast = inject(ToastService);
+  private readonly confirm = inject(ConfirmService);
 
   community: CommunityResponseDTO | null = null;
   imageFile: File | null = null;
@@ -82,7 +86,10 @@ export class EditCommunityComponent implements OnInit {
 
     this.saving = true;
     this.communityService.updateCommunity(this.community.id, data, this.imageFile, this.bannerFile).subscribe({
-      next: (updated) => this.router.navigate(['/communities', updated.id]),
+      next: (updated) => {
+        this.toast.success('Comunidad actualizada.');
+        this.router.navigate(['/communities', updated.id]);
+      },
       error: (err) => {
         this.saving = false;
         this.error = errorMessage(err, 'Ocurrió un error al actualizar la comunidad.');
@@ -90,12 +97,23 @@ export class EditCommunityComponent implements OnInit {
     });
   }
 
-  onDelete(): void {
-    if (!this.community || !confirm('¿Seguro que quieres eliminar esta comunidad? Se borrará todo su contenido.')) return;
+  async onDelete(): Promise<void> {
+    const community = this.community;
+    if (!community) return;
+    const accepted = await this.confirm.ask({
+      title: 'Eliminar comunidad',
+      message: `Se borrará "${community.name}" con todas sus publicaciones, miembros, roles y mensajes. Esta acción no se puede deshacer.`,
+      confirmLabel: 'Eliminar comunidad',
+      danger: true,
+    });
+    if (!accepted) return;
 
-    this.communityService.deleteCommunity(this.community.id).subscribe({
-      next: () => this.router.navigate(['/communities']),
-      error: (err) => (this.error = errorMessage(err, 'No se pudo eliminar la comunidad.')),
+    this.communityService.deleteCommunity(community.id).subscribe({
+      next: () => {
+        this.toast.info('Comunidad eliminada.');
+        this.router.navigate(['/communities']);
+      },
+      error: (err) => this.toast.error(errorMessage(err, 'No se pudo eliminar la comunidad.')),
     });
   }
 }
