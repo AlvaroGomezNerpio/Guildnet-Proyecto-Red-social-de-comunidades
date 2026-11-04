@@ -70,19 +70,28 @@ public class CommunityProfileService {
 
     // ------------------------------------------------------------------ Unirse / salir
 
-    /** El usuario autenticado se une a la comunidad. */
-    public CommunityProfileDTO join(User authUser, Long communityId, CreateCommunityProfileRequest request) {
+    /**
+     * El usuario autenticado se une a la comunidad. Si la comunidad lo exige,
+     * {@code rulesAccepted} debe ser true (el usuario ha aceptado las normas).
+     */
+    public CommunityProfileDTO join(User authUser, Long communityId, CreateCommunityProfileRequest request, boolean rulesAccepted) {
         User user = userRepository.findById(authUser.getId())
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
         Community community = communityRepository.findById(communityId)
                 .orElseThrow(() -> new NotFoundException("Comunidad no encontrada"));
 
+        if (community.isRequireRulesAcceptance() && !rulesAccepted) {
+            throw new BadRequestException("Para unirte a esta comunidad tienes que aceptar sus normas");
+        }
+
         String username = request != null ? request.username() : null;
         String description = request != null ? request.description() : null;
         CommunityProfile profile = createMembership(user, community, username, description);
 
-        notificationService.notify(profile, null, NotificationType.WELCOME,
-                "¡Bienvenido a " + community.getName() + "!");
+        String welcome = community.getWelcomeMessage() != null
+                ? community.getWelcomeMessage()
+                : "¡Bienvenido a " + community.getName() + "!";
+        notificationService.notify(profile, null, NotificationType.WELCOME, welcome);
         return DtoMapper.toProfileDTO(profile);
     }
 

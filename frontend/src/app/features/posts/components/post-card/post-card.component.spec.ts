@@ -13,6 +13,7 @@ const post: PostDTO = {
   createdAt: new Date().toISOString(),
   updatedAt: null,
   communityId: 1,
+  pinned: false,
   communityProfile: {
     id: 5,
     username: 'Bruno',

@@ -11,6 +11,11 @@
       </div>
       <div class="flex-grow-1 text-center text-md-start pb-md-2">
         <h1 class="h2 fw-bold mb-1">{{ c?.name }}</h1>
+        @if (c) {
+          <button type="button" class="btn btn-link p-0 small text-body-secondary text-decoration-none mb-1 gn-members-count" (click)="openMembers()">
+            <i class="bi bi-people-fill me-1"></i>{{ membersText() }}
+          </button>
+        }
         <div class="d-flex flex-wrap gap-1 justify-content-center justify-content-md-start">
           @for (tag of c?.tags ?? []; track tag) {
             <span class="badge gn-chip">#{{ tag }}</span>
@@ -26,7 +31,7 @@
             </a>
           }
         } @else if (membershipLoaded()) {
-          <button class="btn btn-success" (click)="join()" [disabled]="joining()">
+          <button class="btn btn-primary" (click)="join()" [disabled]="joining()">
             <i class="bi bi-person-plus me-1"></i>Unirse
           </button>
         }
@@ -62,7 +67,7 @@
               <i class="bi bi-search me-2"></i>Buscar publicaciones
             </a>
             <button type="button" class="list-group-item list-group-item-action" (click)="openMembers()">
-              <i class="bi bi-people me-2"></i>Miembros
+              <i class="bi bi-people me-2"></i>{{ c?.membersLabel || 'Miembros' }}
             </button>
             @if (canManageRoles()) {
               <a class="list-group-item list-group-item-action" [routerLink]="['/communities', communityId, 'roles']">
@@ -76,8 +81,28 @@
           <div class="card-body text-center">
             <i class="bi bi-door-open fs-1"></i>
             <p class="mt-2 mb-3">Únete para publicar, comentar y participar en el chat.</p>
-            <button class="btn btn-success w-100" (click)="join()" [disabled]="joining()">Unirse a la comunidad</button>
-            <button class="btn btn-link btn-sm mt-2" (click)="openMembers()">Ver miembros</button>
+            <button class="btn btn-light w-100 fw-semibold" (click)="join()" [disabled]="joining()">Unirse a la comunidad</button>
+            <button class="btn btn-link btn-sm mt-2 gn-on-gradient-link" (click)="openMembers()">Ver {{ c?.membersLabel?.toLowerCase() || 'miembros' }}</button>
+          </div>
+        </div>
+      }
+
+      @if (c?.links?.length) {
+        <div class="card mb-3">
+          <div class="card-body pb-2">
+            <h2 class="h6 text-uppercase fw-bold text-body-secondary mb-2">Enlaces</h2>
+          </div>
+          <div class="list-group list-group-flush">
+            @for (link of c!.links; track $index) {
+              <a class="list-group-item list-group-item-action d-flex align-items-center gap-2" [href]="link.url" target="_blank" rel="noopener noreferrer nofollow">
+                <span class="gn-link-badge"><i class="bi bi-{{ linkIcon(link.url) }}"></i></span>
+                <span class="flex-grow-1 min-w-0">
+                  <span class="d-block fw-semibold text-truncate">{{ link.label }}</span>
+                  <span class="d-block small text-body-secondary text-truncate">{{ linkHost(link.url) }}</span>
+                </span>
+                <i class="bi bi-box-arrow-up-right small text-body-secondary"></i>
+              </a>
+            }
           </div>
         </div>
       }
@@ -100,7 +125,7 @@
           <li class="nav-item">
             <button class="nav-link" [class.active]="tab() === 'posts'" (click)="tab.set('posts')">
               <i class="bi bi-card-text me-1"></i>Publicaciones
-              <span class="badge rounded-pill text-bg-secondary ms-1">{{ totalPosts() }}</span>
+              <span class="badge rounded-pill text-bg-secondary ms-1">{{ totalPosts() + pinnedPosts().length }}</span>
             </button>
           </li>
           <li class="nav-item">
@@ -114,6 +139,14 @@
       @if (tab() === 'chat' && me) {
         <app-community-chat [communityId]="communityId" [myProfileId]="me.id" />
       } @else {
+        @if (pinnedPosts().length) {
+          <div class="gn-pinned mb-3">
+            <div class="small fw-bold text-uppercase text-body-secondary mb-2"><i class="bi bi-pin-angle-fill me-1"></i>Fijadas</div>
+            @for (post of pinnedPosts(); track post.id) {
+              <app-post-card [post]="post" />
+            }
+          </div>
+        }
         @for (post of posts(); track post.id) {
           <app-post-card [post]="post" />
         } @empty {
@@ -138,8 +171,18 @@
   </div>
 </div>
 
+<!-- Normas que hay que aceptar para unirse -->
+<app-modal [open]="rulesOpen()" title="Normas de {{ c?.name }}" (closed)="rulesOpen.set(false)">
+  <p class="text-body-secondary small">Para unirte a esta comunidad tienes que aceptar sus normas.</p>
+  <div class="quill-content border rounded-3 p-3 mb-3 gn-rules-box" [innerHTML]="c?.rules || 'Esta comunidad no tiene reglas publicadas.'"></div>
+  <div class="d-flex justify-content-end gap-2">
+    <button type="button" class="btn btn-outline-secondary" (click)="rulesOpen.set(false)">Cancelar</button>
+    <button type="button" class="btn btn-primary" (click)="acceptRulesAndJoin()"><i class="bi bi-check2-circle me-1"></i>Acepto las normas</button>
+  </div>
+</app-modal>
+
 <!-- Modal de miembros -->
-<app-modal [open]="membersOpen()" title="Miembros de la comunidad" size="lg" (closed)="membersOpen.set(false)">
+<app-modal [open]="membersOpen()" [title]="c?.membersLabel ? c!.membersLabel! : 'Miembros de la comunidad'" size="lg" (closed)="membersOpen.set(false)">
   <input
     type="search"
     class="form-control mb-3"

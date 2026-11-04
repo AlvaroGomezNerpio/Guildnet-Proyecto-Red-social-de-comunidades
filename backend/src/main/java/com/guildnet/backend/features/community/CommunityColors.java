@@ -2,7 +2,7 @@ package com.guildnet.backend.features.community;
 
 import java.util.Locale;
 
-/** Colores por defecto y normalización de la paleta de una comunidad (y de sus etiquetas). */
+/** Aspecto de una comunidad: colores (también de sus etiquetas) y tipografía. */
 public final class CommunityColors {
 
     /** Color en formato hexadecimal de seis cifras: #rrggbb. */
@@ -10,6 +10,10 @@ public final class CommunityColors {
 
     public static final String DEFAULT_PRIMARY = "#7c3aed";
     public static final String DEFAULT_ACCENT = "#06b6d4";
+
+    /** Tipografías disponibles para los títulos de la comunidad. */
+    public static final String HEADING_FONT_PATTERN = "^(default|serif|rounded|pixel|hand)$";
+    public static final String DEFAULT_HEADING_FONT = "default";
 
     /** Casi negro usado como texto sobre fondos claros. */
     private static final String INK = "#111322";

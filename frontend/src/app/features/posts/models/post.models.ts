@@ -12,6 +12,8 @@ export interface PostDTO {
   updatedAt: string | null;
   communityProfile: CommunityProfileDTO;
   communityId: number;
+  /** Fijada en lo alto de la comunidad. */
+  pinned: boolean;
 }
 
 export interface PostDetailDTO {
@@ -24,6 +26,7 @@ export interface PostDetailDTO {
   postComment: PostCommentDTO[];
   communityProfile: CommunityProfileDTO;
   communityId: number;
+  pinned: boolean;
 }
 
 export interface PostCreateDTO {

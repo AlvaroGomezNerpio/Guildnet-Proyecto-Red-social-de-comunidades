@@ -8,6 +8,7 @@ public enum PermissionType {
     ASSIGN_ROLES,      // Poder crear y asignar roles a usuarios
     ASSIGN_TITLES,     // Poder crear y asignar títulos a usuarios
     BAN_USER,           // Poder eliminar usuarios de la comunidad
-    MANAGE_COMMUNITY_SETTINGS
+    MANAGE_COMMUNITY_SETTINGS,
+    PIN_POSTS          // Poder fijar publicaciones
 }
 

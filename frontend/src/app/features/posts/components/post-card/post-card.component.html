@@ -21,7 +21,12 @@
     }
 
     <a class="stretched-link-target text-reset text-decoration-none" [routerLink]="['/posts', p.id]">
-      <h5 class="card-title gn-post-title">{{ p.title }}</h5>
+      <h5 class="card-title gn-post-title">
+        @if (p.pinned) {
+          <span class="badge gn-chip gn-pinned-badge me-1" title="Publicación fijada"><i class="bi bi-pin-angle-fill"></i> Fijada</span>
+        }
+        {{ p.title }}
+      </h5>
     </a>
 
     @if (expanded()) {

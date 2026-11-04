@@ -10,8 +10,11 @@ export class CommunityProfileService {
   private readonly apiUrl = `${environment.apiUrl}/api/v1/profiles`;
 
   /** Unirse a una comunidad con los datos del perfil global. */
-  joinCommunity(communityId: number): Observable<CommunityProfileDTO> {
-    return this.http.post<CommunityProfileDTO>(`${this.apiUrl}/auto-create/community/${communityId}`, null);
+  /** Unirse con el perfil global. Si la comunidad lo exige, hay que aceptar sus normas. */
+  joinCommunity(communityId: number, acceptRules = false): Observable<CommunityProfileDTO> {
+    return this.http.post<CommunityProfileDTO>(`${this.apiUrl}/auto-create/community/${communityId}`, null, {
+      params: { acceptRules },
+    });
   }
 
   /** Perfil del usuario autenticado en la comunidad (404 si no es miembro). */

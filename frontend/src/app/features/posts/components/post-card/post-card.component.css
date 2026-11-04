@@ -23,3 +23,9 @@
   max-height: 32rem;
   overflow: auto;
 }
+
+.gn-pinned-badge {
+  font-family: var(--bs-body-font-family);
+  font-size: 0.7rem;
+  vertical-align: 0.2em;
+}

@@ -30,7 +30,11 @@ describe('community-palette', () => {
   });
 
   it('usa la paleta de GuildNet si la comunidad no tiene colores válidos', () => {
-    expect(paletteOf({ primaryColor: 'red; x', accentColor: null })).toEqual({ primary: '#7c3aed', accent: '#06b6d4' });
-    expect(paletteOf({ primaryColor: '#ea580c', accentColor: '#db2777' })).toEqual({ primary: '#ea580c', accent: '#db2777' });
+    expect(paletteOf({ primaryColor: 'red; x', accentColor: null })).toEqual({ primary: '#7c3aed', accent: '#06b6d4', font: 'default' });
+    expect(paletteOf({ primaryColor: '#ea580c', accentColor: '#db2777', headingFont: 'pixel' })).toEqual({
+      primary: '#ea580c',
+      accent: '#db2777',
+      font: 'pixel',
+    });
   });
 });

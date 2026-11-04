@@ -184,6 +184,79 @@ class BackendApplicationTests {
     }
 
     @Test
+    void communityCustomizationRulesAcceptanceAndWelcomeMessage() throws Exception {
+        String owner = register("Owner", uniqueEmail());
+        String member = register("Member", uniqueEmail());
+        long communityId = createCommunity(owner, "Personalizada " + UUID.randomUUID());
+
+        mvc.perform(auth(multipart("/api/v1/communities/" + communityId)
+                        .file(json("data", "{\"name\":\"Entrenadores " + UUID.randomUUID() + "\",\"headingFont\":\"pixel\","
+                                + "\"membersLabel\":\"Entrenadores\",\"welcomeMessage\":\"¡Hola, entrenador!\","
+                                + "\"requireRulesAcceptance\":true,"
+                                + "\"links\":[{\"label\":\"Discord\",\"url\":\"https://discord.gg/abc\"}]}"))
+                        .with(r -> { r.setMethod("PUT"); return r; }), owner))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.headingFont").value("pixel"))
+                .andExpect(jsonPath("$.membersLabel").value("Entrenadores"))
+                .andExpect(jsonPath("$.links[0].label").value("Discord"))
+                .andExpect(jsonPath("$.memberCount").value(1));
+
+        // Enlaces que no son http(s) se rechazan (evita javascript: y similares)
+        mvc.perform(auth(multipart("/api/v1/communities/" + communityId)
+                        .file(json("data", "{\"name\":\"X\",\"links\":[{\"label\":\"Mal\",\"url\":\"javascript:alert(1)\"}]}"))
+                        .with(r -> { r.setMethod("PUT"); return r; }), owner))
+                .andExpect(status().isBadRequest());
+
+        // Sin aceptar las normas no se puede entrar; aceptándolas sí, y llega el mensaje propio
+        mvc.perform(auth(post("/api/v1/profiles/auto-create/community/" + communityId), member))
+                .andExpect(status().isBadRequest());
+        String body = mvc.perform(auth(post("/api/v1/profiles/auto-create/community/" + communityId)
+                        .param("acceptRules", "true"), member))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        long profileId = ((Number) JsonPath.read(body, "$.id")).longValue();
+        mvc.perform(auth(get("/api/v1/notifications/profile/" + profileId), member))
+                .andExpect(jsonPath("$[0].message").value("¡Hola, entrenador!"));
+    }
+
+    @Test
+    void pinnedPostsRequirePermissionAreLimitedAndLeaveTheFeed() throws Exception {
+        String owner = register("Owner", uniqueEmail());
+        String member = register("Member", uniqueEmail());
+        long communityId = createCommunity(owner, "Fijadas " + UUID.randomUUID());
+        joinCommunity(member, communityId);
+        long[] posts = new long[4];
+        for (int i = 0; i < posts.length; i++) {
+            posts[i] = createPost(owner, communityId, "Post " + i, "<p>x</p>");
+        }
+
+        // Un miembro sin permiso no puede fijar
+        mvc.perform(auth(put("/api/v1/posts/" + posts[0] + "/pin"), member)).andExpect(status().isForbidden());
+
+        // El creador fija tres; la cuarta supera el límite
+        for (int i = 0; i < 3; i++) {
+            mvc.perform(auth(put("/api/v1/posts/" + posts[i] + "/pin"), owner))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.pinned").value(true));
+        }
+        mvc.perform(auth(put("/api/v1/posts/" + posts[3] + "/pin"), owner)).andExpect(status().isConflict());
+
+        // Las fijadas salen aparte y no se repiten en el muro; fijar no la marca como editada
+        mvc.perform(auth(get("/api/v1/posts/community/" + communityId + "/pinned"), owner))
+                .andExpect(jsonPath("$.length()").value(3));
+        mvc.perform(auth(get("/api/v1/posts/community/" + communityId), owner))
+                .andExpect(jsonPath("$.totalElements").value(1));
+        String detail = mvc.perform(auth(get("/api/v1/posts/" + posts[0]), owner))
+                .andReturn().getResponse().getContentAsString();
+        String createdAt = JsonPath.read(detail, "$.createdAt");
+        String updatedAt = JsonPath.read(detail, "$.updatedAt");
+        org.assertj.core.api.Assertions.assertThat(updatedAt.substring(0, 19)).isEqualTo(createdAt.substring(0, 19));
+
+        mvc.perform(auth(delete("/api/v1/posts/" + posts[0] + "/pin"), owner))
+                .andExpect(jsonPath("$.pinned").value(false));
+    }
+
+    @Test
     void myPermissionsReflectOwnershipAndRole() throws Exception {
         String owner = register("Owner", uniqueEmail());
         String member = register("Member", uniqueEmail());

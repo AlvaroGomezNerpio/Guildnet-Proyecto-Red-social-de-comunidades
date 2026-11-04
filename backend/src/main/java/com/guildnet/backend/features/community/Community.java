@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Length;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
@@ -55,6 +56,35 @@ public class Community {
     @Builder.Default
     @Column(name = "accent_color", nullable = false, length = 7)
     private String accentColor = CommunityColors.DEFAULT_ACCENT;
+
+    /** Tipografía de los títulos (ver {@link CommunityColors#HEADING_FONT_PATTERN}). */
+    @Builder.Default
+    @Column(name = "heading_font", nullable = false, length = 20)
+    private String headingFont = CommunityColors.DEFAULT_HEADING_FONT;
+
+    /** Cómo se llama a los miembros ("Entrenadores"...). Null: "miembros". */
+    @Column(name = "members_label", length = 30)
+    private String membersLabel;
+
+    /** Mensaje que recibe quien se une. Null: mensaje genérico. */
+    @Column(name = "welcome_message", length = 255)
+    private String welcomeMessage;
+
+    /** Si es true, para unirse hay que aceptar las normas. */
+    @Builder.Default
+    @Column(name = "require_rules_acceptance", nullable = false)
+    private boolean requireRulesAcceptance = false;
+
+    @Builder.Default
+    @ElementCollection
+    @CollectionTable(name = "community_links", joinColumns = @JoinColumn(name = "community_id"))
+    @OrderColumn(name = "sort_order")
+    private List<CommunityLink> links = new ArrayList<>();
+
+    /** Número de miembros, calculado en la propia consulta. */
+    @Setter(AccessLevel.NONE)
+    @Formula("(select count(*) from community_profiles cp where cp.community_id = id)")
+    private int memberCount;
 
     @Builder.Default
     @ElementCollection

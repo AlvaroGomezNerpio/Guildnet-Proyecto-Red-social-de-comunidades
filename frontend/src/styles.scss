@@ -519,6 +519,14 @@ h3,
     --bs-pagination-active-color: var(--gn-c-on-primary);
   }
 
+  // Tipografía elegida por la comunidad para sus títulos
+  h1, h2, h3, .h1, .h2, .h3, .h4,
+  .card-title,
+  .gn-section-title,
+  .gn-heading-font {
+    font-family: var(--gn-c-heading-font);
+  }
+
   .spinner-border.text-primary,
   .text-primary {
     color: var(--gn-c-emphasis) !important;

@@ -1,5 +1,6 @@
 package com.guildnet.backend.features.post;
 
+import com.guildnet.backend.common.exception.ConflictException;
 import com.guildnet.backend.common.exception.NotFoundException;
 import com.guildnet.backend.common.html.HtmlSanitizer;
 import com.guildnet.backend.common.mapper.DtoMapper;
@@ -17,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +26,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 public class PostService {
+
+    /** Máximo de publicaciones fijadas por comunidad. */
+    static final int MAX_PINNED = 3;
 
     private final PostRepository postRepository;
     private final AccessGuard accessGuard;
@@ -73,7 +78,8 @@ public class PostService {
                 post.getUpdatedAt(),
                 post.getComments().stream().map(DtoMapper::toPostCommentDTO).toList(),
                 DtoMapper.toProfileDTO(post.getProfile()),
-                post.getCommunity().getId()
+                post.getCommunity().getId(),
+                post.getPinnedAt() != null
         );
     }
 
@@ -90,8 +96,37 @@ public class PostService {
     @Transactional(readOnly = true)
     public PageResponse<PostDTO> getByCommunity(Long communityId, int page, int size) {
         return PageResponse.of(
-                postRepository.findByCommunityId(communityId, PageResponse.request(page, size, NEWEST_FIRST)),
+                postRepository.findByCommunityIdAndPinnedAtIsNull(communityId, PageResponse.request(page, size, NEWEST_FIRST)),
                 DtoMapper::toPostDTO);
+    }
+
+    /** Publicaciones fijadas de la comunidad, la más reciente primero. */
+    @Transactional(readOnly = true)
+    public List<PostDTO> getPinned(Long communityId) {
+        return postRepository.findByCommunityIdAndPinnedAtIsNotNullOrderByPinnedAtDesc(communityId).stream()
+                .map(DtoMapper::toPostDTO)
+                .toList();
+    }
+
+    /** Fija la publicación en lo alto de la comunidad. Requiere PIN_POSTS; como mucho {@value #MAX_PINNED}. */
+    public PostDTO pin(Long id, User user) {
+        Post post = load(id);
+        Long communityId = post.getCommunity().getId();
+        accessGuard.requirePermission(user, communityId, PermissionType.PIN_POSTS);
+        if (post.getPinnedAt() == null) {
+            if (postRepository.countByCommunityIdAndPinnedAtIsNotNull(communityId) >= MAX_PINNED) {
+                throw new ConflictException("Solo se pueden fijar " + MAX_PINNED + " publicaciones; desfija alguna antes");
+            }
+            postRepository.setPinnedAt(id, LocalDateTime.now());
+        }
+        return DtoMapper.toPostDTO(load(id));
+    }
+
+    public PostDTO unpin(Long id, User user) {
+        Post post = load(id);
+        accessGuard.requirePermission(user, post.getCommunity().getId(), PermissionType.PIN_POSTS);
+        postRepository.setPinnedAt(id, null);
+        return DtoMapper.toPostDTO(load(id));
     }
 
     @Transactional(readOnly = true)

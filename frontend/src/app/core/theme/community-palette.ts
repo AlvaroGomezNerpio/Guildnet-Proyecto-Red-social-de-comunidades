@@ -7,9 +7,32 @@
  * en tema claro como oscuro, elija la comunidad el color que elija.
  */
 
+export type HeadingFont = 'default' | 'serif' | 'rounded' | 'pixel' | 'hand';
+
 export interface CommunityPalette {
   primary: string;
   accent: string;
+  /** Tipografía de los títulos; sin indicar, la de GuildNet. */
+  font?: HeadingFont;
+}
+
+export interface HeadingFontOption {
+  id: HeadingFont;
+  name: string;
+  family: string;
+}
+
+/** Tipografías para los títulos de la comunidad (las fuentes se cargan solo si se usan). */
+export const HEADING_FONTS: readonly HeadingFontOption[] = [
+  { id: 'default', name: 'Moderna', family: "'Space Grotesk Variable', 'Inter Variable', sans-serif" },
+  { id: 'serif', name: 'Clásica', family: "'Fraunces Variable', Georgia, serif" },
+  { id: 'rounded', name: 'Redondeada', family: "'Nunito Variable', 'Inter Variable', sans-serif" },
+  { id: 'pixel', name: 'Pixel', family: "'Pixelify Sans Variable', monospace" },
+  { id: 'hand', name: 'Manuscrita', family: "'Caveat Variable', cursive" },
+];
+
+export function headingFontFamily(font: HeadingFont | null | undefined): string {
+  return (HEADING_FONTS.find((f) => f.id === font) ?? HEADING_FONTS[0]).family;
 }
 
 export interface PalettePreset extends CommunityPalette {
@@ -152,6 +175,7 @@ export function paletteCssVars(palette: CommunityPalette, mode: 'light' | 'dark'
     '--gn-c-gradient': `linear-gradient(135deg, ${gradFrom} 0%, ${gradTo} 100%)`,
     '--gn-c-on-gradient': readableOn(mix(gradFrom, gradTo, 0.5)),
     '--gn-c-glow': `rgba(${toRgb(primary).join(', ')}, 0.3)`,
+    '--gn-c-heading-font': headingFontFamily(palette.font),
   };
 }
 
@@ -177,11 +201,15 @@ export function paletteWarnings(palette: CommunityPalette): PaletteWarning[] {
 }
 
 /** Paleta de una comunidad (o la de GuildNet si no tiene una válida). */
-export function paletteOf(community: { primaryColor?: string | null; accentColor?: string | null } | null | undefined): CommunityPalette {
+export function paletteOf(
+  community: { primaryColor?: string | null; accentColor?: string | null; headingFont?: HeadingFont | null } | null | undefined
+): CommunityPalette {
   const primary = community?.primaryColor;
   const accent = community?.accentColor;
+  const font = HEADING_FONTS.some((f) => f.id === community?.headingFont) ? community!.headingFont! : 'default';
   return {
     primary: isHexColor(primary) ? primary : DEFAULT_PALETTE.primary,
     accent: isHexColor(accent) ? accent : DEFAULT_PALETTE.accent,
+    font,
   };
 }

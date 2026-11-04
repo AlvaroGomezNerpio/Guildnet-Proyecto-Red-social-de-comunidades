@@ -11,6 +11,12 @@ public record CommunityResponseDTO(
         String banner,
         String primaryColor,
         String accentColor,
+        String headingFont,
+        String membersLabel,
+        String welcomeMessage,
+        boolean requireRulesAcceptance,
+        List<CommunityLinkDTO> links,
+        int memberCount,
         List<String> tags,
         Long ownerId
 ) {

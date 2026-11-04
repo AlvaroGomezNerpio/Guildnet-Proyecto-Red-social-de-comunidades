@@ -6,6 +6,7 @@ import com.guildnet.backend.features.chat.ChatService;
 import com.guildnet.backend.features.community.Community;
 import com.guildnet.backend.features.community.CommunityRepository;
 import com.guildnet.backend.features.community.CommunityService;
+import com.guildnet.backend.features.community.dto.CommunityLinkDTO;
 import com.guildnet.backend.features.community.dto.CreateCommunityRequest;
 import com.guildnet.backend.features.like.LikeService;
 import com.guildnet.backend.features.permission.PermissionRepository;
@@ -96,26 +97,33 @@ public class DemoDataLoader implements ApplicationRunner {
                 "Juegos de mesa",
                 "<p>Un lugar para hablar de <strong>juegos de mesa</strong>: novedades, reseñas y quedadas.</p>",
                 "<ol><li>Respeta a los demás.</li><li>Marca los spoilers de campañas.</li><li>Nada de spam.</li></ol>",
-                List.of("juegos", "mesa", "ocio"), "#ea580c", "#db2777"), null, null, ana).id();
+                List.of("juegos", "mesa", "ocio"), "#ea580c", "#db2777",
+                "rounded", "Jugadores", "¡Bienvenido a la mesa! Preséntate en el chat y cuéntanos a qué te gusta jugar.", false,
+                List.of(new CommunityLinkDTO("BoardGameGeek", "https://boardgamegeek.com"))), null, null, ana).id();
 
         long photography = communityService.create(new CreateCommunityRequest(
                 "Fotografía",
                 "<p>Comparte tus fotos, pide consejo sobre equipo y aprende técnicas nuevas.</p>",
                 "<p>Indica siempre si la foto es tuya.</p>",
-                List.of("fotografía", "arte", "cámaras"), "#0284c7", "#22d3ee"), null, null, bruno).id();
+                List.of("fotografía", "arte", "cámaras"), "#0284c7", "#22d3ee",
+                "serif", "Fotógrafos", "¡Hola! Antes de publicar, recuerda indicar si la foto es tuya.", true,
+                List.of()), null, null, bruno).id();
 
         long programming = communityService.create(new CreateCommunityRequest(
                 "Programación",
                 "<p>Dudas, proyectos y recursos para aprender a programar.</p>",
                 "<p>Comparte el código como bloque de código, no como captura.</p>",
-                List.of("programación", "tecnología", "java", "angular"), "#059669", "#14b8a6"), null, null, carla).id();
+                List.of("programación", "tecnología", "java", "angular"), "#059669", "#14b8a6",
+                "pixel", "Programadores", null, false,
+                List.of(new CommunityLinkDTO("GitHub", "https://github.com"),
+                        new CommunityLinkDTO("Documentación de Angular", "https://angular.dev"))), null, null, carla).id();
 
         // ------------------------------------------------------------ Miembros
-        CommunityProfileDTO brunoInGames = profileService.join(bruno, boardGames, null);
-        CommunityProfileDTO carlaInGames = profileService.join(carla, boardGames, null);
-        CommunityProfileDTO anaInPhoto = profileService.join(ana, photography, null);
-        profileService.join(ana, programming, null);
-        CommunityProfileDTO brunoInCode = profileService.join(bruno, programming, null);
+        CommunityProfileDTO brunoInGames = profileService.join(bruno, boardGames, null, true);
+        CommunityProfileDTO carlaInGames = profileService.join(carla, boardGames, null, true);
+        CommunityProfileDTO anaInPhoto = profileService.join(ana, photography, null, true);
+        profileService.join(ana, programming, null, true);
+        CommunityProfileDTO brunoInCode = profileService.join(bruno, programming, null, true);
 
         // ------------------------------------------------------------ Roles y títulos
         RoleDTO moderator = roleService.create(

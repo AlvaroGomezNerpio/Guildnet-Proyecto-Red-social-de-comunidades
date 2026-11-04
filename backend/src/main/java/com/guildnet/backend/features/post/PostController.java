@@ -61,6 +61,21 @@ public class PostController {
         return postService.getByCommunity(communityId, page, size);
     }
 
+    @GetMapping("/community/{communityId}/pinned")
+    public List<PostDTO> getPinned(@PathVariable Long communityId) {
+        return postService.getPinned(communityId);
+    }
+
+    @PutMapping("/{id}/pin")
+    public PostDTO pin(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        return postService.pin(id, user);
+    }
+
+    @DeleteMapping("/{id}/pin")
+    public PostDTO unpin(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        return postService.unpin(id, user);
+    }
+
     @GetMapping("/search/{communityId}")
     public PageResponse<PostDTO> search(
             @PathVariable Long communityId,

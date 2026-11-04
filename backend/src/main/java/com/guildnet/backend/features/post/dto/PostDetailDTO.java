@@ -15,6 +15,7 @@ public record PostDetailDTO(
         LocalDateTime updatedAt,
         List<PostCommentDTO> postComment,
         CommunityProfileDTO communityProfile,
-        Long communityId
+        Long communityId,
+        boolean pinned
 ) {
 }

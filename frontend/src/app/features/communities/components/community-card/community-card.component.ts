@@ -20,4 +20,9 @@ export class CommunityCardComponent {
   readonly selected = output<CommunityResponseDTO>();
 
   protected readonly palette = computed(() => paletteOf(this.community()));
+  protected readonly membersText = computed(() => {
+    const c = this.community();
+    const label = c.membersLabel?.trim() || (c.memberCount === 1 ? 'miembro' : 'miembros');
+    return `${(c.memberCount ?? 0).toLocaleString('es-ES')} ${label}`;
+  });
 }

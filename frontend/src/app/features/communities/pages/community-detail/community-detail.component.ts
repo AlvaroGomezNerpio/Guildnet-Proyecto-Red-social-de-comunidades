@@ -15,6 +15,7 @@ import { CommunityChatComponent } from '../../components/community-chat/communit
 import { PostCardComponent } from '../../../posts/components/post-card/post-card.component';
 import { AvatarComponent } from '../../../../shared/ui/avatar/avatar.component';
 import { TagBadgeComponent } from '../../../../shared/ui/tag-badge/tag-badge.component';
+import { linkHost, linkIcon } from '../../components/community-links/link-icon';
 import { ModalComponent } from '../../../../shared/ui/modal/modal.component';
 import { EmptyStateComponent } from '../../../../shared/ui/empty-state/empty-state.component';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
@@ -78,6 +79,24 @@ export class CommunityDetailComponent implements OnInit {
   readonly canManageRoles = computed(() => this.permissions().includes('ASSIGN_ROLES'));
   readonly canEditCommunity = computed(() => this.permissions().includes('MANAGE_COMMUNITY_SETTINGS'));
 
+  /** Publicaciones fijadas, encima del muro. */
+  readonly pinnedPosts = signal<PostDTO[]>([]);
+  /** Diálogo de normas al unirse (si la comunidad lo exige). */
+  readonly rulesOpen = signal(false);
+
+  /** "1.204 Entrenadores": el número de miembros con el nombre que elige la comunidad. */
+  readonly membersText = computed(() => {
+    const c = this.community();
+    if (!c) return '';
+    const count = c.memberCount.toLocaleString('es-ES');
+    const label = c.membersLabel?.trim();
+    if (label) return `${count} ${label}`;
+    return `${count} ${c.memberCount === 1 ? 'miembro' : 'miembros'}`;
+  });
+
+  protected readonly linkIcon = linkIcon;
+  protected readonly linkHost = linkHost;
+
   ngOnInit(): void {
     this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const id = Number(params.get('id'));
@@ -87,6 +106,7 @@ export class CommunityDetailComponent implements OnInit {
       this.membershipLoaded.set(false);
       this.tab.set('posts');
       this.loadCommunity();
+      this.loadPinned();
       this.loadPosts();
       this.loadMembership();
     });
@@ -137,13 +157,35 @@ export class CommunityDetailComponent implements OnInit {
     });
   }
 
+  loadPinned(): void {
+    this.postService.getPinnedPosts(this.communityId).subscribe({
+      next: (posts) => this.pinnedPosts.set(posts),
+      error: () => this.pinnedPosts.set([]),
+    });
+  }
+
+  /** Si la comunidad pide aceptar las normas, primero se muestran. */
   join(): void {
+    if (this.community()?.requireRulesAcceptance) {
+      this.rulesOpen.set(true);
+      return;
+    }
+    this.doJoin(false);
+  }
+
+  acceptRulesAndJoin(): void {
+    this.rulesOpen.set(false);
+    this.doJoin(true);
+  }
+
+  private doJoin(acceptRules: boolean): void {
     this.joining.set(true);
-    this.profileService.joinCommunity(this.communityId).subscribe({
+    this.profileService.joinCommunity(this.communityId, acceptRules).subscribe({
       next: () => {
         this.joining.set(false);
         this.toast.success('¡Bienvenido a la comunidad!');
         this.loadMembership();
+        this.loadCommunity();
       },
       error: (err) => {
         this.joining.set(false);

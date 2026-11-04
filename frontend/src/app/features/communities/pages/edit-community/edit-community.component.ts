@@ -1,25 +1,30 @@
-import { Component, OnInit, ChangeDetectionStrategy, effect, inject } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommunityService } from '../../services/community.service';
 import { CommunityPermissionsService } from '../../services/community-permissions.service';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { CommunityResponseDTO } from '../../models/community.models';
+import {
+  CommunityCustomization,
+  CommunityResponseDTO,
+  cleanCustomization,
+  customizationOf,
+  defaultCustomization,
+} from '../../models/community.models';
 import { errorMessage } from '../../../../core/http/http-error';
 import { ToastService } from '../../../../shared/ui/toast/toast.service';
 import { ConfirmService } from '../../../../shared/ui/confirm/confirm.service';
 import { QuillEditorComponent } from 'ngx-quill';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { PalettePickerComponent } from '../../components/palette-picker/palette-picker.component';
+import { CommunityCustomizationComponent } from '../../components/community-customization/community-customization.component';
 import { injectCommunityTheme } from '../../../../core/theme/community-theme.service';
-import { DEFAULT_PALETTE } from '../../../../core/theme/community-palette';
+import { paletteOf } from '../../../../core/theme/community-palette';
 
 @Component({
     selector: 'app-edit-community',
     templateUrl: './edit-community.component.html',
     changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './edit-community.component.css',
-    imports: [FormsModule, ReactiveFormsModule, QuillEditorComponent, RouterLink, PalettePickerComponent]
+    imports: [FormsModule, ReactiveFormsModule, QuillEditorComponent, RouterLink, CommunityCustomizationComponent]
 })
 export class EditCommunityComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -42,19 +47,20 @@ export class EditCommunityComponent implements OnInit {
     description: [''],
     rules: [''],
     tags: [''],
-    primaryColor: [DEFAULT_PALETTE.primary],
-    accentColor: [DEFAULT_PALETTE.accent],
   });
 
+  /** Apariencia, identidad, normas y enlaces (ver CommunityCustomizationComponent). */
+  readonly customization = signal<CommunityCustomization>(defaultCustomization());
+  private readonly loaded = signal(false);
+
   private readonly theme = injectCommunityTheme();
-  private readonly colors = toSignal(this.editForm.valueChanges, { initialValue: this.editForm.getRawValue() });
 
   constructor() {
-    // Vista previa en vivo: toda la página adopta la paleta mientras se elige
+    // Vista previa en vivo: toda la página adopta la paleta y la tipografía mientras se eligen
     effect(() => {
-      const { primaryColor, accentColor } = this.colors();
-      if (this.community && primaryColor && accentColor) {
-        this.theme.set({ primary: primaryColor, accent: accentColor });
+      const c = this.customization();
+      if (this.loaded()) {
+        this.theme.set({ primary: c.primaryColor, accent: c.accentColor, font: c.headingFont });
       }
     });
   }
@@ -74,9 +80,9 @@ export class EditCommunityComponent implements OnInit {
           description: c.description ?? '',
           rules: c.rules ?? '',
           tags: c.tags.join(', '),
-          primaryColor: c.primaryColor ?? DEFAULT_PALETTE.primary,
-          accentColor: c.accentColor ?? DEFAULT_PALETTE.accent,
         });
+        this.customization.set(customizationOf(c));
+        this.loaded.set(true);
       });
     });
   }
@@ -103,14 +109,13 @@ export class EditCommunityComponent implements OnInit {
       description: value.description,
       rules: value.rules,
       tags: value.tags.split(',').map((t) => t.trim()).filter((t) => t.length > 0),
-      primaryColor: value.primaryColor,
-      accentColor: value.accentColor,
+      ...cleanCustomization(this.customization()),
     };
 
     this.saving = true;
     this.communityService.updateCommunity(this.community.id, data, this.imageFile, this.bannerFile).subscribe({
       next: (updated) => {
-        this.theme.apply(updated.id, { primary: updated.primaryColor, accent: updated.accentColor });
+        this.theme.apply(updated.id, paletteOf(updated));
         this.toast.success('Comunidad actualizada.');
         this.router.navigate(['/communities', updated.id]);
       },

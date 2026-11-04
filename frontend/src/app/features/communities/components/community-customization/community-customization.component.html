@@ -1,0 +1,123 @@
+@let v = value();
+
+<!-- Apariencia -->
+<section class="gn-form-section">
+  <h2>Apariencia</h2>
+  <p class="gn-form-hint">Elige una paleta o tus colores exactos. La página cambia al momento para que veas cómo queda.</p>
+  <app-palette-picker
+    [primary]="v.primaryColor"
+    (primaryChange)="update({ primaryColor: $event })"
+    [accent]="v.accentColor"
+    (accentChange)="update({ accentColor: $event })"
+  />
+
+  <span class="form-label small fw-semibold d-block mt-4">Tipografía de los títulos</span>
+  <div class="gn-fonts" role="radiogroup" aria-label="Tipografía de los títulos">
+    @for (font of fonts; track font.id) {
+      <button
+        type="button"
+        class="gn-font"
+        role="radio"
+        [attr.aria-checked]="v.headingFont === font.id"
+        [class.active]="v.headingFont === font.id"
+        (click)="setFont(font.id)"
+      >
+        <span class="gn-font-sample" [style.font-family]="font.family">{{ communityName() || 'Aa Comunidad' }}</span>
+        <span class="gn-font-name">{{ font.name }}</span>
+      </button>
+    }
+  </div>
+</section>
+
+<!-- Identidad -->
+<section class="gn-form-section">
+  <h2>Identidad</h2>
+  <p class="gn-form-hint">Cómo se llama tu gente y qué reciben al unirse.</p>
+
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="form-floating">
+        <input
+          id="membersLabel"
+          type="text"
+          class="form-control"
+          placeholder="miembros"
+          maxlength="30"
+          [value]="v.membersLabel ?? ''"
+          (input)="update({ membersLabel: text($event) })"
+        />
+        <label for="membersLabel">Nombre de los miembros</label>
+      </div>
+      <div class="form-text">Por ejemplo: Entrenadores, Fotógrafos, Jugadores. Se verá así: <strong>{{ membersPreview() }}</strong></div>
+    </div>
+    <div class="col-md-6">
+      <div class="form-floating">
+        <textarea
+          id="welcomeMessage"
+          class="form-control gn-welcome"
+          placeholder="Mensaje de bienvenida"
+          maxlength="255"
+          [value]="v.welcomeMessage ?? ''"
+          (input)="update({ welcomeMessage: text($event) })"
+        ></textarea>
+        <label for="welcomeMessage">Mensaje de bienvenida</label>
+      </div>
+      <div class="form-text d-flex justify-content-between">
+        <span>Llega como notificación al unirse. Vacío: «¡Bienvenido a {{ communityName() || 'la comunidad' }}!»</span>
+        <span>{{ (v.welcomeMessage ?? '').length }}/255</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-check form-switch mt-3">
+    <input
+      class="form-check-input"
+      type="checkbox"
+      role="switch"
+      id="requireRules"
+      [checked]="v.requireRulesAcceptance"
+      (change)="update({ requireRulesAcceptance: $any($event.target).checked })"
+    />
+    <label class="form-check-label" for="requireRules">Pedir que acepten las normas antes de unirse</label>
+  </div>
+  <div class="form-text ms-5">Al pulsar «Unirse» se mostrarán las reglas con un botón «Acepto».</div>
+</section>
+
+<!-- Enlaces -->
+<section class="gn-form-section">
+  <h2>Enlaces</h2>
+  <p class="gn-form-hint">Discord, web, redes… Se muestran en la barra lateral de la comunidad (máximo {{ maxLinks }}).</p>
+
+  @for (link of v.links; track $index; let i = $index, first = $first, last = $last) {
+    <div class="gn-link-row">
+      <span class="gn-link-icon"><i class="bi bi-{{ iconOf(link.url) }}"></i></span>
+      <input
+        type="text"
+        class="form-control form-control-sm"
+        placeholder="Nombre (ej. Discord)"
+        aria-label="Nombre del enlace"
+        maxlength="40"
+        [value]="link.label"
+        (input)="setLink(i, { label: text($event) })"
+      />
+      <input
+        type="url"
+        class="form-control form-control-sm"
+        placeholder="https://…"
+        aria-label="Dirección del enlace"
+        maxlength="500"
+        [class.is-invalid]="link.url.length > 8 && !isValidUrl(link.url)"
+        [value]="link.url"
+        (input)="setLink(i, { url: text($event) })"
+      />
+      <div class="btn-group btn-group-sm">
+        <button type="button" class="btn btn-outline-secondary" aria-label="Subir" [disabled]="first" (click)="moveLink(i, -1)"><i class="bi bi-arrow-up"></i></button>
+        <button type="button" class="btn btn-outline-secondary" aria-label="Bajar" [disabled]="last" (click)="moveLink(i, 1)"><i class="bi bi-arrow-down"></i></button>
+        <button type="button" class="btn btn-outline-danger" aria-label="Quitar enlace" (click)="removeLink(i)"><i class="bi bi-x-lg"></i></button>
+      </div>
+    </div>
+  }
+  @if (v.links.length < maxLinks) {
+    <button type="button" class="btn btn-sm btn-outline-primary" (click)="addLink()"><i class="bi bi-plus-lg me-1"></i>Añadir enlace</button>
+  }
+</section>

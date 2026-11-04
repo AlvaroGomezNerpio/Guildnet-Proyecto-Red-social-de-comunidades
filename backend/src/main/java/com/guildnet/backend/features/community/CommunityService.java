@@ -6,6 +6,7 @@ import com.guildnet.backend.common.exception.NotFoundException;
 import com.guildnet.backend.common.html.HtmlSanitizer;
 import com.guildnet.backend.common.mapper.DtoMapper;
 import com.guildnet.backend.features.community.dto.CommunityResponseDTO;
+import com.guildnet.backend.features.community.dto.CommunityLinkDTO;
 import com.guildnet.backend.features.community.dto.CreateCommunityRequest;
 import com.guildnet.backend.features.community.dto.UpdateCommunityRequest;
 import com.guildnet.backend.features.profile.CommunityProfile;
@@ -107,6 +108,11 @@ public class CommunityService {
                 .tags(cleanTags(request.tags()))
                 .primaryColor(CommunityColors.normalize(request.primaryColor(), CommunityColors.DEFAULT_PRIMARY))
                 .accentColor(CommunityColors.normalize(request.accentColor(), CommunityColors.DEFAULT_ACCENT))
+                .headingFont(request.headingFont() != null ? request.headingFont() : CommunityColors.DEFAULT_HEADING_FONT)
+                .membersLabel(blankToNull(request.membersLabel()))
+                .welcomeMessage(blankToNull(request.welcomeMessage()))
+                .requireRulesAcceptance(Boolean.TRUE.equals(request.requireRulesAcceptance()))
+                .links(toLinks(request.links()))
                 .owner(owner)
                 .image(fileStorageService.storeImage(image, FileStorageService.Folder.COMMUNITIES))
                 .banner(fileStorageService.storeImage(banner, FileStorageService.Folder.COMMUNITIES))
@@ -143,6 +149,15 @@ public class CommunityService {
         community.getTags().addAll(cleanTags(request.tags()));
         community.setPrimaryColor(CommunityColors.normalize(request.primaryColor(), community.getPrimaryColor()));
         community.setAccentColor(CommunityColors.normalize(request.accentColor(), community.getAccentColor()));
+        // Personalización: los campos que no se envían se mantienen; los textos vacíos se borran
+        if (request.headingFont() != null) community.setHeadingFont(request.headingFont());
+        if (request.membersLabel() != null) community.setMembersLabel(blankToNull(request.membersLabel()));
+        if (request.welcomeMessage() != null) community.setWelcomeMessage(blankToNull(request.welcomeMessage()));
+        if (request.requireRulesAcceptance() != null) community.setRequireRulesAcceptance(request.requireRulesAcceptance());
+        if (request.links() != null) {
+            community.getLinks().clear();
+            community.getLinks().addAll(toLinks(request.links()));
+        }
 
         String imageUrl = fileStorageService.storeImage(image, FileStorageService.Folder.COMMUNITIES);
         if (imageUrl != null) {
@@ -197,6 +212,19 @@ public class CommunityService {
                 .filter(t -> t != null && !t.isBlank())
                 .map(String::trim)
                 .distinct()
+                .toList());
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
+    private static List<CommunityLink> toLinks(List<CommunityLinkDTO> links) {
+        if (links == null) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(links.stream()
+                .map(link -> new CommunityLink(link.label().trim(), link.url().trim()))
                 .toList());
     }
 }

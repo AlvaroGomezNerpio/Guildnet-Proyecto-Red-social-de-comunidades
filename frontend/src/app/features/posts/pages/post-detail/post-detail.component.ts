@@ -62,6 +62,7 @@ export class PostDetailComponent implements OnInit {
   });
   readonly canEditPost = computed(() => this.isAuthor() || this.permissions().includes('EDIT_POST'));
   readonly canDeletePost = computed(() => this.isAuthor() || this.permissions().includes('DELETE_POST'));
+  readonly canPinPost = computed(() => this.permissions().includes('PIN_POSTS'));
   readonly wasEdited = computed(() => {
     const p = this.post();
     if (!p?.createdAt || !p.updatedAt) return false;
@@ -122,6 +123,19 @@ export class PostDetailComponent implements OnInit {
         this.loadPost();
       },
       error: (err) => this.toast.error(errorMessage(err, 'No se pudo actualizar la publicación.')),
+    });
+  }
+
+  togglePin(): void {
+    const p = this.post();
+    if (!p) return;
+    const request = p.pinned ? this.postService.unpinPost(p.id) : this.postService.pinPost(p.id);
+    request.subscribe({
+      next: (updated) => {
+        this.post.set({ ...p, pinned: updated.pinned });
+        this.toast.success(updated.pinned ? 'Publicación fijada en la comunidad.' : 'Publicación desfijada.');
+      },
+      error: (err) => this.toast.error(errorMessage(err, 'No se pudo cambiar la publicación fijada.')),
     });
   }
 

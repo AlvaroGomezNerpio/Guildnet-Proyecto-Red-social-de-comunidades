@@ -37,6 +37,19 @@ export class PostService {
     return this.http.get<Page<PostDTO>>(`${this.apiUrl}/community/${communityId}`, { params: { page, size } });
   }
 
+  /** Publicaciones fijadas de la comunidad (no aparecen en el muro normal). */
+  getPinnedPosts(communityId: number): Observable<PostDTO[]> {
+    return this.http.get<PostDTO[]>(`${this.apiUrl}/community/${communityId}/pinned`);
+  }
+
+  pinPost(id: number): Observable<PostDTO> {
+    return this.http.put<PostDTO>(`${this.apiUrl}/${id}/pin`, null);
+  }
+
+  unpinPost(id: number): Observable<PostDTO> {
+    return this.http.delete<PostDTO>(`${this.apiUrl}/${id}/pin`);
+  }
+
   searchPostsInCommunity(communityId: number, title?: string, tags?: string[], page = 0, size = PAGE_SIZE): Observable<Page<PostDTO>> {
     let params = new HttpParams().set('page', page).set('size', size);
     if (title) params = params.set('title', title);

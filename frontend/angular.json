@@ -39,6 +39,10 @@
             "styles": [
               "node_modules/@fontsource-variable/inter/index.css",
               "node_modules/@fontsource-variable/space-grotesk/index.css",
+              "node_modules/@fontsource-variable/fraunces/index.css",
+              "node_modules/@fontsource-variable/nunito/index.css",
+              "node_modules/@fontsource-variable/pixelify-sans/index.css",
+              "node_modules/@fontsource-variable/caveat/index.css",
               "node_modules/bootstrap-icons/font/bootstrap-icons.css",
               "node_modules/quill/dist/quill.snow.css",
               "src/styles.scss"

@@ -44,15 +44,18 @@ public class CommunityProfileController {
     public CommunityProfileDTO join(
             @PathVariable Long communityId,
             @RequestBody @Valid CreateCommunityProfileRequest request,
+            @RequestParam(defaultValue = "false") boolean acceptRules,
             @AuthenticationPrincipal User user
     ) {
-        return profileService.join(user, communityId, request);
+        return profileService.join(user, communityId, request, acceptRules);
     }
 
     /** Unirse a una comunidad con los datos del perfil global. */
     @PostMapping("/auto-create/community/{communityId}")
-    public CommunityProfileDTO autoJoin(@PathVariable Long communityId, @AuthenticationPrincipal User user) {
-        return profileService.join(user, communityId, null);
+    public CommunityProfileDTO autoJoin(@PathVariable Long communityId,
+                                        @RequestParam(defaultValue = "false") boolean acceptRules,
+                                        @AuthenticationPrincipal User user) {
+        return profileService.join(user, communityId, null, acceptRules);
     }
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

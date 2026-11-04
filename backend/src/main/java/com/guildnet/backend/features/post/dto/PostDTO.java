@@ -22,4 +22,5 @@ public class PostDTO {
     private LocalDateTime updatedAt;
     private CommunityProfileDTO communityProfile;
     private Long communityId;
+    private boolean pinned;
 }

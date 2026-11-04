@@ -76,4 +76,9 @@ public class Post {
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    /** Momento en que se fijó en la comunidad; null si no está fijada. */
+    @Setter(AccessLevel.NONE)
+    @Column(name = "pinned_at")
+    private LocalDateTime pinnedAt;
 }

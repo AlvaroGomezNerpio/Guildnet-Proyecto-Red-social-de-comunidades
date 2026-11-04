@@ -1,6 +1,7 @@
 package com.guildnet.backend.common.mapper;
 
 import com.guildnet.backend.features.community.Community;
+import com.guildnet.backend.features.community.dto.CommunityLinkDTO;
 import com.guildnet.backend.features.community.dto.CommunityResponseDTO;
 import com.guildnet.backend.features.profile.CommunityProfile;
 import com.guildnet.backend.features.profile.dto.CommunityProfileDTO;
@@ -43,6 +44,14 @@ public final class DtoMapper {
                 community.getBanner(),
                 community.getPrimaryColor(),
                 community.getAccentColor(),
+                community.getHeadingFont(),
+                community.getMembersLabel(),
+                community.getWelcomeMessage(),
+                community.isRequireRulesAcceptance(),
+                community.getLinks() != null
+                        ? community.getLinks().stream().map(l -> new CommunityLinkDTO(l.getLabel(), l.getUrl())).toList()
+                        : List.of(),
+                community.getMemberCount(),
                 community.getTags() != null ? List.copyOf(community.getTags()) : List.of(),
                 community.getOwner() != null ? community.getOwner().getId() : null
         );
@@ -107,6 +116,7 @@ public final class DtoMapper {
         dto.setUpdatedAt(post.getUpdatedAt());
         dto.setCommunityId(post.getCommunity().getId());
         dto.setCommunityProfile(toProfileDTO(post.getProfile()));
+        dto.setPinned(post.getPinnedAt() != null);
         return dto;
     }
 
