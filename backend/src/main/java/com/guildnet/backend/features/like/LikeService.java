@@ -3,6 +3,7 @@ package com.guildnet.backend.features.like;
 import com.guildnet.backend.common.exception.BadRequestException;
 import com.guildnet.backend.common.exception.NotFoundException;
 import com.guildnet.backend.features.profile.CommunityProfile;
+import com.guildnet.backend.features.title.AutoTitleService;
 import com.guildnet.backend.features.notification.NotificationService;
 import com.guildnet.backend.features.notification.NotificationType;
 import com.guildnet.backend.features.post.Post;
@@ -24,6 +25,7 @@ public class LikeService {
     private final PostRepository postRepository;
     private final NotificationService notificationService;
     private final AccessGuard accessGuard;
+    private final AutoTitleService autoTitleService;
 
     /** Da like como el perfil indicado, que debe ser del usuario y de la comunidad del post. */
     public void like(Long postId, Long profileId, User user) {
@@ -33,8 +35,9 @@ public class LikeService {
         if (likeRepository.existsByPostIdAndProfileId(postId, profileId)) {
             return;
         }
-        likeRepository.save(Like.builder().post(post).profile(profile).build());
+        likeRepository.saveAndFlush(Like.builder().post(post).profile(profile).build());
         notificationService.notify(post.getProfile(), profile, NotificationType.LIKE_POST, "Ha dado like a tu publicación.");
+        autoTitleService.evaluate(post.getProfile());
     }
 
     public void unlike(Long postId, Long profileId, User user) {

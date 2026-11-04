@@ -1,6 +1,7 @@
 package com.guildnet.backend.features.title;
 
 import com.guildnet.backend.features.title.dto.CreateTitleRequest;
+import com.guildnet.backend.features.title.dto.TitleRuleRequest;
 import com.guildnet.backend.features.title.dto.TitleDTO;
 import com.guildnet.backend.features.title.dto.UpdateTitleRequest;
 import com.guildnet.backend.features.user.User;
@@ -29,6 +30,17 @@ public class TitleController {
     public TitleDTO update(@PathVariable Long id, @RequestBody @Valid UpdateTitleRequest request,
                            @AuthenticationPrincipal User user) {
         return titleService.update(id, request, user);
+    }
+
+    @PutMapping("/{id}/rule")
+    public TitleDTO setRule(@PathVariable Long id, @RequestBody @Valid TitleRuleRequest rule,
+                            @AuthenticationPrincipal User user) {
+        return titleService.setRule(id, rule, user);
+    }
+
+    @DeleteMapping("/{id}/rule")
+    public TitleDTO removeRule(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        return titleService.removeRule(id, user);
     }
 
     @DeleteMapping("/{id}")

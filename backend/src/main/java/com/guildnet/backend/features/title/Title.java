@@ -31,6 +31,14 @@ public class Title {
     @Column(nullable = false, length = 7)
     private String backgroundColor;
 
+    /** Regla de asignación automática (null: título manual). */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "auto_metric", length = 20)
+    private TitleMetric autoMetric;
+
+    @Column(name = "auto_threshold")
+    private Integer autoThreshold;
+
     @Builder.Default
     @ManyToMany(mappedBy = "titles")
     private List<CommunityProfile> profiles = new ArrayList<>();

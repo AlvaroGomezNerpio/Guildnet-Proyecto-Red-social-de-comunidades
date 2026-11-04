@@ -24,6 +24,8 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
 
     long countByCommunityIdAndPinnedAtIsNotNull(Long communityId);
 
+    long countByProfileId(Long profileId);
+
     /**
      * Fija o desfija con una actualización directa: así no cambia {@code updatedAt}
      * y la publicación no aparece como "editada".

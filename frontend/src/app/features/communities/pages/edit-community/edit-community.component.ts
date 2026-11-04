@@ -17,6 +17,7 @@ import { ConfirmService } from '../../../../shared/ui/confirm/confirm.service';
 import { QuillEditorComponent } from 'ngx-quill';
 import { CommunityCustomizationComponent } from '../../components/community-customization/community-customization.component';
 import { CategoryManagerComponent } from '../../components/category-manager/category-manager.component';
+import { TitleManagerComponent } from '../../components/title-manager/title-manager.component';
 import { injectCommunityTheme } from '../../../../core/theme/community-theme.service';
 import { paletteOf } from '../../../../core/theme/community-palette';
 
@@ -25,7 +26,7 @@ import { paletteOf } from '../../../../core/theme/community-palette';
     templateUrl: './edit-community.component.html',
     changeDetection: ChangeDetectionStrategy.Eager,
     styleUrl: './edit-community.component.css',
-    imports: [FormsModule, ReactiveFormsModule, QuillEditorComponent, RouterLink, CommunityCustomizationComponent, CategoryManagerComponent]
+    imports: [FormsModule, ReactiveFormsModule, QuillEditorComponent, RouterLink, CommunityCustomizationComponent, CategoryManagerComponent, TitleManagerComponent]
 })
 export class EditCommunityComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
@@ -41,6 +42,8 @@ export class EditCommunityComponent implements OnInit {
   imageFile: File | null = null;
   bannerFile: File | null = null;
   saving = false;
+  /** Gestionar títulos requiere además ASSIGN_TITLES. */
+  canManageTitles = false;
   error: string | null = null;
 
   readonly editForm = this.fb.nonNullable.group({
@@ -74,6 +77,7 @@ export class EditCommunityComponent implements OnInit {
         this.router.navigate(['/communities', id]);
         return;
       }
+      this.canManageTitles = permissions.includes('ASSIGN_TITLES');
       this.communityService.getCommunityById(id).subscribe((c) => {
         this.community = c;
         this.editForm.setValue({

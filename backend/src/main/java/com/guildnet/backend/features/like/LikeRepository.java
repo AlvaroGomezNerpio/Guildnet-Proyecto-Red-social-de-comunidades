@@ -15,6 +15,9 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
 
     int countByPostId(Long postId);
 
+    /** "Me gusta" recibidos por las publicaciones de un perfil. */
+    long countByPostProfileId(Long profileId);
+
     @Query("SELECT l.profile.id FROM Like l WHERE l.post.id = :postId")
     List<Long> findProfileIdsByPostId(@Param("postId") Long postId);
 }

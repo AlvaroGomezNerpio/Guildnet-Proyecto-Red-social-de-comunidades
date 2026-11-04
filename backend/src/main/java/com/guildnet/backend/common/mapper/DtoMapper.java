@@ -80,7 +80,9 @@ public final class DtoMapper {
                 title.getTitle(),
                 title.getTextColor(),
                 title.getBackgroundColor(),
-                title.getCommunity().getId()
+                title.getCommunity().getId(),
+                title.getAutoMetric(),
+                title.getAutoThreshold()
         );
     }
 

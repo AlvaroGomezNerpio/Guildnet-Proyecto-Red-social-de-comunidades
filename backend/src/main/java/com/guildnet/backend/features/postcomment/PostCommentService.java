@@ -3,6 +3,7 @@ package com.guildnet.backend.features.postcomment;
 import com.guildnet.backend.common.exception.NotFoundException;
 import com.guildnet.backend.common.mapper.DtoMapper;
 import com.guildnet.backend.features.profile.CommunityProfile;
+import com.guildnet.backend.features.title.AutoTitleService;
 import com.guildnet.backend.features.notification.NotificationService;
 import com.guildnet.backend.features.notification.NotificationType;
 import com.guildnet.backend.features.permission.PermissionType;
@@ -27,6 +28,7 @@ public class PostCommentService {
     private final PostCommentRepository commentRepository;
     private final PostRepository postRepository;
     private final NotificationService notificationService;
+    private final AutoTitleService autoTitleService;
     private final AccessGuard accessGuard;
 
     /** Comenta como el perfil del usuario en la comunidad de la publicación. */
@@ -42,6 +44,8 @@ public class PostCommentService {
                 .build());
 
         notificationService.notify(post.getProfile(), author, NotificationType.COMMENT_POST, "Ha comentado tu publicación.");
+        commentRepository.flush();
+        autoTitleService.evaluate(author);
         return DtoMapper.toPostCommentDTO(comment);
     }
 

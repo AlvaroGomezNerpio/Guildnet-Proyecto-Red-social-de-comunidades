@@ -80,6 +80,16 @@
       </div>
     </section>
 
+    @if (canManageTitles) {
+      <section class="card mb-4">
+        <div class="gn-form-section">
+          <h2>Títulos</h2>
+          <p class="gn-form-hint">Distinciones para los miembros. Pueden asignarse a mano o conseguirse solos con la actividad. Se guardan al momento.</p>
+          <app-title-manager [communityId]="community.id" [communityColor]="customization().primaryColor" />
+        </div>
+      </section>
+    }
+
     @if (isOwner) {
       <div class="card border-danger-subtle">
         <div class="card-body d-flex flex-column flex-sm-row gap-3 align-items-sm-center">

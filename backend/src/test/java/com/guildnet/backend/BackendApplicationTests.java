@@ -311,6 +311,61 @@ class BackendApplicationTests {
     }
 
     @Test
+    void automaticTitlesAreAwardedByActivityAndRetroactively() throws Exception {
+        String owner = register("Owner", uniqueEmail());
+        String member = register("Member", uniqueEmail());
+        long communityId = createCommunity(owner, "Logros " + UUID.randomUUID());
+        long memberProfile = joinCommunity(member, communityId);
+
+        long writer = createTitle(owner, communityId, "Escritor");
+        mvc.perform(auth(put("/api/v1/titles/" + writer + "/rule"), member)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"metric\":\"POSTS\",\"threshold\":2}"))
+                .andExpect(status().isForbidden());
+        mvc.perform(auth(put("/api/v1/titles/" + writer + "/rule"), owner)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"metric\":\"POSTS\",\"threshold\":2}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.autoMetric").value("POSTS"))
+                .andExpect(jsonPath("$.autoThreshold").value(2));
+
+        // Con una publicación aún no; con la segunda se consigue y llega el aviso
+        createPost(member, communityId, "Uno", "<p>1</p>");
+        mvc.perform(auth(get("/api/v1/profiles/" + memberProfile), member))
+                .andExpect(jsonPath("$.titles.length()").value(0));
+        createPost(member, communityId, "Dos", "<p>2</p>");
+        mvc.perform(auth(get("/api/v1/profiles/" + memberProfile), member))
+                .andExpect(jsonPath("$.titles[0].title").value("Escritor"));
+        mvc.perform(auth(get("/api/v1/notifications/profile/" + memberProfile), member))
+                .andExpect(jsonPath("$[0].message").value("¡Has conseguido el título \"Escritor\"!"));
+
+        // Una regla nueva se aplica también a quien ya la cumplía
+        long prolific = createTitle(owner, communityId, "Prolífico");
+        mvc.perform(auth(put("/api/v1/titles/" + prolific + "/rule"), owner)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"metric\":\"POSTS\",\"threshold\":1}"))
+                .andExpect(status().isOk());
+        mvc.perform(auth(get("/api/v1/profiles/" + memberProfile), member))
+                .andExpect(jsonPath("$.titles.length()").value(2));
+
+        // Quitar la regla no quita el título a quien ya lo tiene
+        mvc.perform(auth(delete("/api/v1/titles/" + writer + "/rule"), owner))
+                .andExpect(jsonPath("$.autoMetric").doesNotExist());
+        mvc.perform(auth(get("/api/v1/profiles/" + memberProfile), member))
+                .andExpect(jsonPath("$.titles.length()").value(2));
+
+        // Cantidades fuera de rango se rechazan
+        mvc.perform(auth(put("/api/v1/titles/" + writer + "/rule"), owner)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"metric\":\"POSTS\",\"threshold\":0}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    private long createTitle(String token, long communityId, String name) throws Exception {
+        String body = mvc.perform(auth(post("/api/v1/titles"), token).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\":\"" + name + "\",\"communityId\":" + communityId + "}"))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        return ((Number) JsonPath.read(body, "$.id")).longValue();
+    }
+
+    @Test
     void myPermissionsReflectOwnershipAndRole() throws Exception {
         String owner = register("Owner", uniqueEmail());
         String member = register("Member", uniqueEmail());

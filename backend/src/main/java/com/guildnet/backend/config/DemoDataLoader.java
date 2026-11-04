@@ -26,7 +26,9 @@ import com.guildnet.backend.features.profilecomment.dto.ProfileCommentCreateUpda
 import com.guildnet.backend.features.role.RoleService;
 import com.guildnet.backend.features.role.dto.RoleDTO;
 import com.guildnet.backend.features.title.TitleService;
+import com.guildnet.backend.features.title.TitleMetric;
 import com.guildnet.backend.features.title.dto.CreateTitleRequest;
+import com.guildnet.backend.features.title.dto.TitleRuleRequest;
 import com.guildnet.backend.features.user.User;
 import com.guildnet.backend.features.user.UserRepository;
 import com.guildnet.backend.storage.FileStorageService;
@@ -140,6 +142,11 @@ public class DemoDataLoader implements ApplicationRunner {
         var veteran = titleService.create(new CreateTitleRequest("Veterano", "#212529", "#ffc107", boardGames), ana);
         profileService.assignTitle(brunoInGames.getId(), veteran.getId(), ana);
 
+        // Títulos automáticos: se consiguen solos al llegar a la actividad indicada
+        autoTitle(boardGames, "Primera partida", "#16a34a", TitleMetric.POSTS, 1, ana);
+        autoTitle(boardGames, "Popular", "#db2777", TitleMetric.LIKES_RECEIVED, 2, ana);
+        autoTitle(programming, "Colaborador", "#0891b2", TitleMetric.COMMENTS, 1, carla);
+
         // ------------------------------------------------------------ Categorías de publicaciones
         long question = category(boardGames, "Pregunta", "#2563eb", ana);
         long event = category(boardGames, "Evento", "#f59e0b", ana);
@@ -243,6 +250,11 @@ public class DemoDataLoader implements ApplicationRunner {
         if (filled > 0) {
             log.info("Imágenes de ejemplo: completados {} elementos sin imagen", filled);
         }
+    }
+
+    private void autoTitle(long communityId, String name, String background, TitleMetric metric, int threshold, User owner) {
+        var title = titleService.create(new CreateTitleRequest(name, null, background, communityId), owner);
+        titleService.setRule(title.getId(), new TitleRuleRequest(metric, threshold), owner);
     }
 
     private long category(long communityId, String name, String background, User owner) {

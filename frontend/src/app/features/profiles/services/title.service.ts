@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
-import { TitleDTO, CreateTitleRequest, UpdateTitleRequest } from '../models/title.models';
+import { TitleDTO, CreateTitleRequest, UpdateTitleRequest, TitleRuleRequest } from '../models/title.models';
 
 @Injectable({ providedIn: 'root' })
 export class TitleService {
@@ -27,5 +27,15 @@ export class TitleService {
 
   getTitlesByCommunity(communityId: number): Observable<TitleDTO[]> {
     return this.http.get<TitleDTO[]>(`${this.baseUrl}/community/${communityId}`);
+  }
+
+  /** Convierte el título en automático; se asigna también a quien ya cumple la regla. */
+  setRule(id: number, rule: TitleRuleRequest): Observable<TitleDTO> {
+    return this.http.put<TitleDTO>(`${this.baseUrl}/${id}/rule`, rule);
+  }
+
+  /** Vuelve a ser manual; quien ya lo tiene lo conserva. */
+  removeRule(id: number): Observable<TitleDTO> {
+    return this.http.delete<TitleDTO>(`${this.baseUrl}/${id}/rule`);
   }
 }

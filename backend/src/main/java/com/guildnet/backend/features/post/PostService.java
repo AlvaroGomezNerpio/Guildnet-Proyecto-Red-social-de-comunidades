@@ -8,6 +8,7 @@ import com.guildnet.backend.common.web.PageResponse;
 import com.guildnet.backend.features.category.PostCategoryDTO;
 import com.guildnet.backend.features.category.PostCategoryService;
 import com.guildnet.backend.features.profile.CommunityProfile;
+import com.guildnet.backend.features.title.AutoTitleService;
 import com.guildnet.backend.features.permission.PermissionType;
 import com.guildnet.backend.features.post.dto.PostCreateDTO;
 import com.guildnet.backend.features.post.dto.PostDTO;
@@ -34,6 +35,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostCategoryService categoryService;
+    private final AutoTitleService autoTitleService;
     private final AccessGuard accessGuard;
 
     /** Publica en la comunidad como el perfil del usuario autenticado (debe ser miembro). */
@@ -48,7 +50,9 @@ public class PostService {
                 .profile(author)
                 .community(author.getCommunity())
                 .build();
-        return DtoMapper.toPostDTO(postRepository.saveAndFlush(post));
+        PostDTO created = DtoMapper.toPostDTO(postRepository.saveAndFlush(post));
+        autoTitleService.evaluate(author);
+        return created;
     }
 
     /** Lo puede editar el autor o quien tenga EDIT_POST en la comunidad. */

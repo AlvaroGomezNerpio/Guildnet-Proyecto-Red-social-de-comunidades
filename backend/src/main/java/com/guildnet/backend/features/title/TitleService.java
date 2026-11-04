@@ -12,6 +12,7 @@ import com.guildnet.backend.features.notification.NotificationService;
 import com.guildnet.backend.features.notification.NotificationType;
 import com.guildnet.backend.features.permission.PermissionType;
 import com.guildnet.backend.features.title.dto.CreateTitleRequest;
+import com.guildnet.backend.features.title.dto.TitleRuleRequest;
 import com.guildnet.backend.features.title.dto.TitleDTO;
 import com.guildnet.backend.features.title.dto.UpdateTitleRequest;
 import com.guildnet.backend.features.user.User;
@@ -29,6 +30,7 @@ import java.util.List;
 public class TitleService {
 
     private final TitleRepository titleRepository;
+    private final AutoTitleService autoTitleService;
     private final CommunityRepository communityRepository;
     private final CommunityProfileRepository profileRepository;
     private final NotificationService notificationService;
@@ -65,6 +67,23 @@ public class TitleService {
         }
         title.setTextColor(CommunityColors.normalize(request.textColor(), title.getTextColor()));
         title.setBackgroundColor(CommunityColors.normalize(request.backgroundColor(), title.getBackgroundColor()));
+        return DtoMapper.toTitleDTO(title);
+    }
+
+    /** Convierte el título en automático (o cambia su regla) y lo asigna a quien ya la cumple. */
+    public TitleDTO setRule(Long id, TitleRuleRequest rule, User user) {
+        Title title = loadManageable(id, user);
+        title.setAutoMetric(rule.metric());
+        title.setAutoThreshold(rule.threshold());
+        autoTitleService.evaluateAll(title);
+        return DtoMapper.toTitleDTO(title);
+    }
+
+    /** Vuelve a ser un título manual; quien ya lo tiene lo conserva. */
+    public TitleDTO removeRule(Long id, User user) {
+        Title title = loadManageable(id, user);
+        title.setAutoMetric(null);
+        title.setAutoThreshold(null);
         return DtoMapper.toTitleDTO(title);
     }
 

@@ -1,0 +1,88 @@
+@if (titles().length) {
+  <div class="list-group mb-3">
+    @for (title of titles(); track title.id) {
+      <div class="list-group-item d-flex align-items-center gap-2" [class.active-row]="editingId() === title.id">
+        <app-tag-badge [label]="title.title" [background]="title.backgroundColor" [color]="title.textColor" />
+        <span class="small text-body-secondary flex-grow-1">
+          @if (title.autoMetric && title.autoThreshold) {
+            <i class="bi bi-lightning-charge-fill text-warning me-1"></i>{{ describe(title.autoMetric, title.autoThreshold) }}
+          } @else {
+            <i class="bi bi-hand-index me-1"></i>Manual
+          }
+        </span>
+        <button type="button" class="btn btn-sm btn-link px-2 text-body-secondary" [attr.aria-label]="'Editar ' + title.title" (click)="edit(title)">
+          <i class="bi bi-pencil"></i>
+        </button>
+        <button type="button" class="btn btn-sm btn-link px-2 text-danger" [attr.aria-label]="'Eliminar ' + title.title" (click)="remove(title)">
+          <i class="bi bi-trash"></i>
+        </button>
+      </div>
+    }
+  </div>
+} @else {
+  <p class="small text-body-secondary">Todavía no hay títulos. Por ejemplo: «Veterano» a los 365 días, o «Popular» al recibir 50 «me gusta».</p>
+}
+
+<div class="border rounded-3 p-3">
+  <div class="row g-2 align-items-end mb-3">
+    <div class="col">
+      <label class="form-label small fw-semibold" for="titleName">{{ editingId() === null ? 'Nuevo título' : 'Editar título' }}</label>
+      <input id="titleName" type="text" class="form-control" maxlength="50" placeholder="Ej. Veterano" [ngModel]="name()" (ngModelChange)="name.set($event)" />
+    </div>
+    <div class="col-auto d-flex gap-2">
+      @if (editingId() !== null) {
+        <button type="button" class="btn btn-outline-secondary" (click)="resetForm()">Cancelar</button>
+      }
+      <button type="button" class="btn btn-primary" [disabled]="!name().trim() || saving() || (automatic() && !validThreshold())" (click)="save()">
+        <i class="bi me-1" [class.bi-plus-lg]="editingId() === null" [class.bi-check-lg]="editingId() !== null"></i>
+        {{ editingId() === null ? 'Crear' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+
+  <app-badge-color-picker
+    [label]="name()"
+    [communityColor]="communityColor()"
+    [text]="text()"
+    (textChange)="text.set($event)"
+    [background]="background()"
+    (backgroundChange)="background.set($event)"
+  />
+
+  <hr />
+  <span class="form-label small fw-semibold d-block">¿Cómo se consigue?</span>
+  <div class="btn-group btn-group-sm mb-3" role="group" aria-label="Tipo de título">
+    <input type="radio" class="btn-check" name="titleMode" id="titleManual" [checked]="!automatic()" (change)="automatic.set(false)" />
+    <label class="btn btn-outline-primary" for="titleManual"><i class="bi bi-hand-index me-1"></i>Lo asigna un moderador</label>
+    <input type="radio" class="btn-check" name="titleMode" id="titleAuto" [checked]="automatic()" (change)="automatic.set(true)" />
+    <label class="btn btn-outline-primary" for="titleAuto"><i class="bi bi-lightning-charge me-1"></i>Automático por actividad</label>
+  </div>
+
+  @if (automatic()) {
+    <div class="row g-2 align-items-center">
+      <div class="col-sm-auto small">Al llegar a</div>
+      <div class="col-sm-3">
+        <input
+          type="number"
+          class="form-control form-control-sm"
+          min="1"
+          max="100000"
+          aria-label="Cantidad necesaria"
+          [class.is-invalid]="!validThreshold()"
+          [ngModel]="threshold()"
+          (ngModelChange)="threshold.set(+$event)"
+        />
+      </div>
+      <div class="col-sm">
+        <select class="form-select form-select-sm" aria-label="Actividad" [ngModel]="metric()" (ngModelChange)="metric.set($event)">
+          @for (m of metrics; track m.id) {
+            <option [value]="m.id">{{ m.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+    <div class="form-text">Se asigna solo y el miembro recibe un aviso. Quien ya cumpla la regla lo recibe al guardar. No se retira aunque la actividad baje.</div>
+  } @else {
+    <div class="form-text">Se asigna desde el perfil de cada miembro, en el botón «Títulos».</div>
+  }
+</div>

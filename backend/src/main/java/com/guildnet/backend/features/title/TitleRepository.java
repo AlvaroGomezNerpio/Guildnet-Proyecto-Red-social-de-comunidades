@@ -11,6 +11,10 @@ import java.util.Optional;
 public interface TitleRepository extends JpaRepository<Title, Long> {
     List<Title> findByCommunityId(Long communityId);
 
+    List<Title> findByCommunityIdAndAutoMetricIsNotNull(Long communityId);
+
+    List<Title> findByAutoMetric(TitleMetric metric);
+
     boolean existsByCommunityIdAndTitleIgnoreCase(Long communityId, String title);
 
     boolean existsByCommunityIdAndTitleIgnoreCaseAndIdNot(Long communityId, String title, Long id);
