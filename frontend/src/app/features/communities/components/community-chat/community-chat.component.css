@@ -1,10 +1,79 @@
+.chat-card {
+  overflow: hidden;
+}
+
+.chat-layout {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  min-height: 460px;
+}
+
+/* Lista de canales */
+.chat-channels {
+  padding: 0.75rem 0.5rem;
+  border-right: 1px solid var(--bs-border-color);
+  background: var(--bs-tertiary-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.chat-channel {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  min-width: 0;
+  padding: 0.35rem 0.6rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: none;
+  color: var(--bs-secondary-color);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.chat-channel:hover {
+  background: var(--bs-secondary-bg);
+  color: var(--bs-body-color);
+}
+
+.chat-channel.active {
+  background: var(--bs-primary-bg-subtle);
+  color: var(--bs-primary-text-emphasis);
+}
+
+/* Conversación */
+.chat-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
 .chat-messages {
+  flex: 1;
   height: 360px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  background: var(--bs-tertiary-bg, #f8f9fa);
+  padding: 1rem;
+  background: var(--bs-tertiary-bg);
+}
+
+.chat-footer {
+  padding: 0.65rem;
+  border-top: 1px solid var(--bs-border-color);
 }
 
 .chat-message {
@@ -20,18 +89,45 @@
 }
 
 .bubble {
-  background: var(--bs-body-bg, #fff);
-  border: 1px solid var(--bs-border-color, #dee2e6);
+  background: var(--bs-body-bg);
+  border: 1px solid var(--bs-border-color);
   border-radius: 0.75rem;
   padding: 0.4rem 0.75rem;
-  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .chat-message.mine .bubble {
-  background: var(--bs-primary-bg-subtle, #cfe2ff);
-  border-color: var(--bs-primary-border-subtle, #9ec5fe);
+  background: var(--bs-primary-bg-subtle);
+  border-color: var(--bs-primary-border-subtle);
 }
 
 .meta {
   font-size: 0.8rem;
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+/* Móvil: los canales pasan a una fila desplazable encima de la conversación */
+@media (max-width: 575.98px) {
+  .chat-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-channels {
+    flex-direction: row;
+    overflow-x: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--bs-border-color);
+  }
+
+  .chat-channels > div {
+    display: none !important;
+  }
+
+  .chat-channel {
+    width: auto;
+    flex-shrink: 0;
+  }
 }

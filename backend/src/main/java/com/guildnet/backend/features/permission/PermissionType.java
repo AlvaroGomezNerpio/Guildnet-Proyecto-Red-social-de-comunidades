@@ -9,6 +9,7 @@ public enum PermissionType {
     ASSIGN_TITLES,     // Poder crear y asignar títulos a usuarios
     BAN_USER,           // Poder eliminar usuarios de la comunidad
     MANAGE_COMMUNITY_SETTINGS,
-    PIN_POSTS          // Poder fijar publicaciones
+    PIN_POSTS,         // Poder fijar publicaciones
+    MANAGE_CHANNELS    // Poder crear, editar y borrar canales de chat
 }
 

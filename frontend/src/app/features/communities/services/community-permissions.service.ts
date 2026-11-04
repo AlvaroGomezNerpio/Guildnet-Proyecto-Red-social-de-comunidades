@@ -12,7 +12,8 @@ export type Permission =
   | 'ASSIGN_TITLES'
   | 'BAN_USER'
   | 'MANAGE_COMMUNITY_SETTINGS'
-  | 'PIN_POSTS';
+  | 'PIN_POSTS'
+  | 'MANAGE_CHANNELS';
 
 /**
  * Permisos del usuario autenticado en una comunidad. Los calcula el backend

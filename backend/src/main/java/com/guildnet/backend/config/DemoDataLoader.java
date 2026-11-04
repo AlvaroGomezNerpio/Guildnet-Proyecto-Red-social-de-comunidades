@@ -5,6 +5,7 @@ import com.guildnet.backend.auth.RegisterRequest;
 import com.guildnet.backend.features.category.PostCategoryDTO;
 import com.guildnet.backend.features.category.PostCategoryService;
 import com.guildnet.backend.features.chat.ChatService;
+import com.guildnet.backend.features.chat.dto.ChatChannelDTO;
 import com.guildnet.backend.features.community.Community;
 import com.guildnet.backend.features.community.CommunityRepository;
 import com.guildnet.backend.features.community.CommunityService;
@@ -194,9 +195,14 @@ public class DemoDataLoader implements ApplicationRunner {
         // ------------------------------------------------------------ Comentarios de perfil y chat
         profileCommentService.create(carlaInGames.getId(), brunoInGames.getId(),
                 new ProfileCommentCreateUpdateDTO("¡Gracias por organizar la última partida!"), carla);
-        chatService.send(boardGames, "¡Hola a todos! ¿Quién se apunta el sábado?", bruno);
-        chatService.send(boardGames, "¡Yo voy! Llevo un par de juegos nuevos.", carla);
-        chatService.send(boardGames, "Genial, nos vemos allí 🙌", ana);
+
+        long general = chatService.createChannel(boardGames, new ChatChannelDTO(null, "general", "Charla sobre juegos de mesa", null), ana).id();
+        long meetups = chatService.createChannel(boardGames, new ChatChannelDTO(null, "quedadas", "Organiza partidas en persona", null), ana).id();
+        chatService.createChannel(programming, new ChatChannelDTO(null, "ayuda", "Pregunta tus dudas de código", null), carla);
+        chatService.send(general, "¡Hola a todos! ¿Quién se apunta el sábado?", bruno);
+        chatService.send(general, "¡Yo voy! Llevo un par de juegos nuevos.", carla);
+        chatService.send(general, "Genial, nos vemos allí 🙌", ana);
+        chatService.send(meetups, "¿Alguien se apunta el domingo por la tarde?", ana);
 
         log.info("Datos de ejemplo creados: 3 usuarios, 3 comunidades y 4 publicaciones");
     }

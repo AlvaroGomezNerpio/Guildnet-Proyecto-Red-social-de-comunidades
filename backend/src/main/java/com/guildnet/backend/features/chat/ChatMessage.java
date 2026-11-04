@@ -29,6 +29,10 @@ public class ChatMessage {
     private Community community;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "channel_id", nullable = false)
+    private ChatChannel channel;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "profile_id", nullable = false)
     private CommunityProfile profile;
 

@@ -14,8 +14,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
  * Chat en tiempo real con STOMP sobre WebSocket.
  * <ul>
  *     <li>Conexión: {@code ws://localhost:8080/ws}, enviando {@code Authorization: Bearer <token>} en el CONNECT.</li>
- *     <li>Recibir: suscribirse a {@code /topic/chat/{communityId}}.</li>
- *     <li>Enviar: {@code /app/chat/{communityId}} con {@code {"content": "..."}}.</li>
+ *     <li>Recibir: suscribirse a {@code /topic/chat/channel/{channelId}}.</li>
+ *     <li>Enviar: {@code /app/chat/channel/{channelId}} con {@code {"content": "..."}}.</li>
  * </ul>
  */
 @Configuration

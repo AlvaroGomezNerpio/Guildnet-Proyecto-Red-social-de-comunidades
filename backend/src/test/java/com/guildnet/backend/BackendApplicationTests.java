@@ -366,6 +366,61 @@ class BackendApplicationTests {
     }
 
     @Test
+    void chatChannelsAreCreatedByTheCommunityWithTheirOwnPermission() throws Exception {
+        String owner = register("Owner", uniqueEmail());
+        String member = register("Member", uniqueEmail());
+        String outsider = register("Outsider", uniqueEmail());
+        long communityId = createCommunity(owner, "Canales " + UUID.randomUUID());
+        joinCommunity(member, communityId);
+        String channels = "/api/v1/communities/" + communityId + "/channels";
+
+        // Sin canales por defecto
+        mvc.perform(auth(get(channels), member)).andExpect(jsonPath("$.length()").value(0));
+
+        // Crear canales requiere MANAGE_CHANNELS (el creador lo tiene; un miembro sin rol, no)
+        mvc.perform(auth(post(channels), member).contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"general\"}"))
+                .andExpect(status().isForbidden());
+        String body = mvc.perform(auth(post(channels), owner).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"eventos\",\"description\":\"Quedadas y partidas\"}"))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        long channelId = ((Number) JsonPath.read(body, "$.id")).longValue();
+        mvc.perform(auth(post(channels), owner).contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"Eventos\"}"))
+                .andExpect(status().isConflict());
+        mvc.perform(auth(post(channels), owner).contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"<script>\"}"))
+                .andExpect(status().isBadRequest());
+
+        // Los miembros ven los canales; quien no es miembro, no
+        mvc.perform(auth(get(channels), member))
+                .andExpect(jsonPath("$[0].name").value("eventos"))
+                .andExpect(jsonPath("$[0].description").value("Quedadas y partidas"));
+        mvc.perform(auth(get(channels), outsider)).andExpect(status().isForbidden());
+        mvc.perform(auth(get("/api/v1/channels/" + channelId + "/messages"), outsider)).andExpect(status().isForbidden());
+
+        // El permiso se puede dar con un rol: con él, el miembro ya puede crear canales
+        long memberProfile = ((Number) JsonPath.read(mvc.perform(auth(get("/api/v1/profiles/me/community/" + communityId), member))
+                .andReturn().getResponse().getContentAsString(), "$.id")).longValue();
+        long roleId = ((Number) JsonPath.read(mvc.perform(auth(post("/api/v1/roles"), owner)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Admin del chat\",\"communityId\":" + communityId + "}"))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString(), "$.id")).longValue();
+        mvc.perform(auth(post("/api/v1/role-permissions"), owner)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"roleId\":" + roleId + ",\"permissionId\":" + permissionId("MANAGE_CHANNELS") + "}"))
+                .andExpect(status().isCreated());
+        mvc.perform(auth(post("/api/v1/profiles/" + memberProfile + "/roles/" + roleId), owner))
+                .andExpect(status().isOk());
+        mvc.perform(auth(post(channels), member).contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"off-topic\"}"))
+                .andExpect(status().isCreated());
+
+        mvc.perform(auth(delete("/api/v1/channels/" + channelId), owner)).andExpect(status().isNoContent());
+        mvc.perform(auth(get(channels), member))
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].name").value("off-topic"));
+    }
+
+    @Test
     void myPermissionsReflectOwnershipAndRole() throws Exception {
         String owner = register("Owner", uniqueEmail());
         String member = register("Member", uniqueEmail());

@@ -46,10 +46,11 @@ class ChatWebSocketTests {
         RestClient rest = RestClient.create("http://localhost:" + port);
         String token = register(rest);
         long communityId = createCommunity(rest, token);
+        long channelId = createChannel(rest, token, communityId, "general");
 
         StompSession session = connect(token);
         BlockingQueue<String> received = new LinkedBlockingQueue<>();
-        session.subscribe("/topic/chat/" + communityId, new StompFrameHandler() {
+        session.subscribe("/topic/chat/channel/" + channelId, new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
                 return byte[].class;
@@ -63,7 +64,7 @@ class ChatWebSocketTests {
         Thread.sleep(300); // da tiempo a que se registre la suscripción
 
         StompHeaders send = new StompHeaders();
-        send.setDestination("/app/chat/" + communityId);
+        send.setDestination("/app/chat/channel/" + channelId);
         send.setContentType(MediaType.APPLICATION_JSON);
         session.send(send, "{\"content\":\"¡Hola a todos!\"}".getBytes(StandardCharsets.UTF_8));
 
@@ -71,8 +72,9 @@ class ChatWebSocketTests {
         assertThat(message).isNotNull();
         assertThat((String) JsonPath.read(message, "$.content")).isEqualTo("¡Hola a todos!");
         assertThat((String) JsonPath.read(message, "$.username")).isEqualTo("Chatter");
+        assertThat(((Number) JsonPath.read(message, "$.channelId")).longValue()).isEqualTo(channelId);
 
-        String history = rest.get().uri("/api/v1/chat/" + communityId + "/messages")
+        String history = rest.get().uri("/api/v1/channels/" + channelId + "/messages")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .retrieve().body(String.class);
         assertThat((String) JsonPath.read(history, "$[0].content")).isEqualTo("¡Hola a todos!");
@@ -122,6 +124,15 @@ class ChatWebSocketTests {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(parts)
+                .retrieve().body(String.class);
+        return ((Number) JsonPath.read(body, "$.id")).longValue();
+    }
+
+    private static long createChannel(RestClient rest, String token, long communityId, String name) {
+        String body = rest.post().uri("/api/v1/communities/" + communityId + "/channels")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{\"name\":\"" + name + "\"}")
                 .retrieve().body(String.class);
         return ((Number) JsonPath.read(body, "$.id")).longValue();
     }

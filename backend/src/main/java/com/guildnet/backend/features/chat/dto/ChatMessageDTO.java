@@ -7,6 +7,7 @@ public record ChatMessageDTO(
         String content,
         LocalDateTime sentAt,
         Long communityId,
+        Long channelId,
         Long profileId,
         String username,
         String profileImage

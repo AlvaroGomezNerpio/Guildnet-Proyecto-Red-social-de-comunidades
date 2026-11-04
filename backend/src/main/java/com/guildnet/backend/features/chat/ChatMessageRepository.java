@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
 
-    @EntityGraph(attributePaths = {"community", "profile"})
-    List<ChatMessage> findByCommunityIdOrderBySentAtDesc(Long communityId, Limit limit);
+    @EntityGraph(attributePaths = {"community", "channel", "profile"})
+    List<ChatMessage> findByChannelIdOrderBySentAtDesc(Long channelId, Limit limit);
 }

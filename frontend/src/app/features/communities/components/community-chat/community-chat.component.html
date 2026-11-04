@@ -1,47 +1,121 @@
-<div class="card chat-card">
-  <div class="card-header d-flex align-items-center justify-content-between">
-    <span><i class="bi bi-chat-dots me-1"></i>Chat de la comunidad</span>
-    <span class="badge" [class.bg-success]="connected()" [class.bg-secondary]="!connected()">
-      {{ connected() ? 'Conectado' : 'Conectando…' }}
-    </span>
+@if (channelsLoaded() && !channels().length) {
+  <!-- La comunidad todavía no ha creado canales -->
+  <div class="card">
+    <div class="card-body text-center py-5">
+      <i class="bi bi-hash fs-1 text-body-secondary"></i>
+      <h3 class="h5 fw-bold mt-2">Esta comunidad aún no tiene canales</h3>
+      @if (canManage()) {
+        <p class="text-body-secondary mb-3">Crea los canales que necesite tu comunidad: #general, #eventos, #ayuda…</p>
+        <button type="button" class="btn btn-primary" (click)="openCreate()"><i class="bi bi-plus-lg me-1"></i>Crear el primer canal</button>
+      } @else {
+        <p class="text-body-secondary mb-0">Cuando los moderadores creen canales, podrás chatear aquí.</p>
+      }
+    </div>
   </div>
-
-  <div class="card-body chat-messages" #messageList>
-    @for (message of messages(); track message.id) {
-      <div class="chat-message" [class.mine]="isMine(message)">
-        <app-avatar [src]="message.profileImage" [size]="32" [alt]="message.username" />
-        <div class="bubble">
-          <div class="meta">
-            <strong>{{ message.username }}</strong>
-            <small class="text-muted ms-2">{{ message.sentAt | relativeTime }}</small>
-          </div>
-          <div class="content">{{ message.content }}</div>
+} @else {
+  <div class="card chat-card">
+    <div class="chat-layout">
+      <!-- Canales -->
+      <nav class="chat-channels" aria-label="Canales">
+        <div class="d-flex align-items-center justify-content-between px-2 mb-2">
+          <span class="small fw-bold text-uppercase text-body-secondary">Canales</span>
+          @if (canManage()) {
+            <button type="button" class="btn btn-sm btn-link p-0 text-body-secondary" title="Nuevo canal" aria-label="Nuevo canal" (click)="openCreate()">
+              <i class="bi bi-plus-lg"></i>
+            </button>
+          }
         </div>
-      </div>
-    } @empty {
-      <p class="text-muted text-center my-4">Todavía no hay mensajes. ¡Escribe el primero!</p>
-    }
+        @for (channel of channels(); track channel.id) {
+          <button type="button" class="chat-channel" [class.active]="channel.id === activeId()" (click)="select(channel)">
+            <i class="bi bi-hash"></i><span class="text-truncate">{{ channel.name }}</span>
+          </button>
+        }
+      </nav>
+
+      <!-- Conversación -->
+      <section class="chat-main">
+        <header class="chat-header">
+          <div class="min-w-0">
+            <div class="fw-bold text-truncate"><i class="bi bi-hash"></i>{{ active()?.name }}</div>
+            @if (active()?.description) {
+              <div class="small text-body-secondary text-truncate">{{ active()!.description }}</div>
+            }
+          </div>
+          <div class="d-flex align-items-center gap-2 flex-shrink-0">
+            <span class="badge" [class.bg-success]="connected()" [class.bg-secondary]="!connected()">
+              {{ connected() ? 'Conectado' : 'Conectando…' }}
+            </span>
+            @if (canManage() && active(); as channel) {
+              <button type="button" class="btn btn-sm btn-outline-secondary" title="Editar canal" aria-label="Editar canal" (click)="openEdit(channel)">
+                <i class="bi bi-gear"></i>
+              </button>
+            }
+          </div>
+        </header>
+
+        <div class="chat-messages" #messageList>
+          @for (message of messages(); track message.id) {
+            <div class="chat-message" [class.mine]="isMine(message)">
+              <app-avatar [src]="message.profileImage" [size]="32" [alt]="message.username" />
+              <div class="bubble">
+                <div class="meta">
+                  <strong>{{ message.username }}</strong>
+                  <small class="text-body-secondary ms-2">{{ message.sentAt | relativeTime }}</small>
+                </div>
+                <div class="content">{{ message.content }}</div>
+              </div>
+            </div>
+          } @empty {
+            <p class="text-body-secondary text-center my-4">Todavía no hay mensajes en #{{ active()?.name }}. ¡Escribe el primero!</p>
+          }
+        </div>
+
+        @if (error()) {
+          <div class="alert alert-warning m-2 py-1 small">{{ error() }}</div>
+        }
+
+        <form class="chat-footer" (ngSubmit)="send()">
+          <div class="input-group">
+            <input
+              type="text"
+              class="form-control"
+              name="draft"
+              aria-label="Mensaje"
+              [(ngModel)]="draft"
+              maxlength="2000"
+              [placeholder]="'Escribe en #' + (active()?.name ?? '') + '…'"
+              autocomplete="off"
+              [disabled]="!connected() || !active()"
+            />
+            <button class="btn btn-primary" type="submit" aria-label="Enviar" [disabled]="!connected() || !draft.trim() || !active()">
+              <i class="bi bi-send"></i>
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
   </div>
+}
 
-  @if (error()) {
-    <div class="alert alert-warning m-2 py-1 small">{{ error() }}</div>
-  }
+<!-- Crear / editar canal -->
+<app-modal [open]="dialogOpen()" [title]="editingChannel() ? 'Editar canal' : 'Nuevo canal'" (closed)="dialogOpen.set(false)">
+  <form (ngSubmit)="saveChannel()">
+    <label class="form-label small fw-semibold" for="channelName">Nombre</label>
+    <div class="input-group mb-1">
+      <span class="input-group-text"><i class="bi bi-hash"></i></span>
+      <input id="channelName" name="channelName" class="form-control" maxlength="40" placeholder="general" [(ngModel)]="channelName" />
+    </div>
+    <div class="form-text mb-3">Letras, números, espacios, guiones y guiones bajos.</div>
 
-  <form class="card-footer" (ngSubmit)="send()">
-    <div class="input-group">
-      <input
-        type="text"
-        class="form-control"
-        name="draft"
-        [(ngModel)]="draft"
-        maxlength="2000"
-        placeholder="Escribe un mensaje…"
-        autocomplete="off"
-        [disabled]="!connected()"
-      />
-      <button class="btn btn-primary" type="submit" [disabled]="!connected() || !draft.trim()">
-        <i class="bi bi-send"></i>
-      </button>
+    <label class="form-label small fw-semibold" for="channelDescription">Descripción (opcional)</label>
+    <input id="channelDescription" name="channelDescription" class="form-control mb-4" maxlength="200" placeholder="¿De qué se habla aquí?" [(ngModel)]="channelDescription" />
+
+    <div class="d-flex gap-2">
+      @if (editingChannel(); as channel) {
+        <button type="button" class="btn btn-outline-danger me-auto" (click)="deleteChannel(channel)"><i class="bi bi-trash me-1"></i>Eliminar</button>
+      }
+      <button type="button" class="btn btn-outline-secondary ms-auto" (click)="dialogOpen.set(false)">Cancelar</button>
+      <button type="submit" class="btn btn-primary" [disabled]="!channelName.trim()">{{ editingChannel() ? 'Guardar' : 'Crear canal' }}</button>
     </div>
   </form>
-</div>
+</app-modal>

@@ -1,5 +1,6 @@
 package com.guildnet.backend.security;
 
+import com.guildnet.backend.features.chat.ChatChannelRepository;
 import com.guildnet.backend.features.user.User;
 import com.guildnet.backend.features.user.UserRepository;
 import com.guildnet.backend.security.AccessGuard;
@@ -20,17 +21,18 @@ import java.util.regex.Pattern;
 
 /**
  * Autentica la conexión STOMP con el JWT (cabecera {@code Authorization} del frame CONNECT)
- * y solo deja suscribirse al chat de una comunidad a sus miembros.
+ * y solo deja suscribirse a un canal de chat a los miembros de su comunidad.
  */
 @Component
 @RequiredArgsConstructor
 public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
-    private static final Pattern CHAT_TOPIC = Pattern.compile("^/topic/chat/(\\d+)$");
+    private static final Pattern CHAT_TOPIC = Pattern.compile("^/topic/chat/channel/(\\d+)$");
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final AccessGuard accessGuard;
+    private final ChatChannelRepository channelRepository;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -57,7 +59,9 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
             if (matcher == null || !matcher.matches()) {
                 throw new MessageDeliveryException("Destino no permitido");
             }
-            if (accessGuard.findMembership(user, Long.parseLong(matcher.group(1))).isEmpty()) {
+            Long communityId = channelRepository.findCommunityIdById(Long.parseLong(matcher.group(1)))
+                    .orElseThrow(() -> new MessageDeliveryException("El canal no existe"));
+            if (accessGuard.findMembership(user, communityId).isEmpty()) {
                 throw new MessageDeliveryException("No perteneces a esta comunidad");
             }
         }

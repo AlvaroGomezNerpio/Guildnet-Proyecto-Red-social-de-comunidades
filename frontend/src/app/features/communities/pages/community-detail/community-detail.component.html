@@ -137,7 +137,7 @@
       }
 
       @if (tab() === 'chat' && me) {
-        <app-community-chat [communityId]="communityId" [myProfileId]="me.id" />
+        <app-community-chat [communityId]="communityId" [myProfileId]="me.id" [canManage]="canManageChannels()" />
       } @else {
         @if (categories().length) {
           <div class="d-flex flex-wrap gap-2 mb-3" role="radiogroup" aria-label="Filtrar por categoría">
