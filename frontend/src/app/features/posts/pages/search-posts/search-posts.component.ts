@@ -51,9 +51,9 @@ export class SearchPostsComponent implements OnInit {
       .map((t: string) => t.trim())
       .filter((t: string) => t.length > 0);
 
-    this.postService.searchPostsInCommunity(this.communityId, title, tags).subscribe({
+    this.postService.searchPostsInCommunity(this.communityId, title, tags, 0, 50).subscribe({
       next: (data) => {
-        this.results = data.map(post => ({
+        this.results = data.content.map(post => ({
           ...post,
           showContent: false
         }));

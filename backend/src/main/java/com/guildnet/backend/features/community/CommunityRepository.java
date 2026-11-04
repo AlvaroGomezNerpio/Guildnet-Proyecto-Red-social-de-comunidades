@@ -9,7 +9,9 @@ import java.util.List;
 
 public interface CommunityRepository extends JpaRepository<Community, Long>, JpaSpecificationExecutor<Community> {
 
-    List<Community> findByOwnerId(Long ownerId);
+    boolean existsByNameIgnoreCase(String name);
+
+    boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
 
     @Query("SELECT cp.community FROM CommunityProfile cp WHERE cp.user.id = :userId")
     List<Community> findCommunitiesByUserId(@Param("userId") Long userId);

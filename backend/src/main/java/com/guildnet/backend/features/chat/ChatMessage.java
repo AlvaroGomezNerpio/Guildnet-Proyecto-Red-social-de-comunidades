@@ -4,6 +4,7 @@ import com.guildnet.backend.features.community.Community;
 import com.guildnet.backend.features.profile.CommunityProfile;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -20,24 +21,18 @@ public class ChatMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, length = 2000)
     private String content;
 
-    @Column(nullable = false)
-    private LocalDateTime sentAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "community_id", nullable = false)
     private Community community;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "profile_id", nullable = false)
     private CommunityProfile profile;
 
-    @PrePersist
-    public void prePersist() {
-        if (this.sentAt == null) {
-            this.sentAt = LocalDateTime.now();
-        }
-    }
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime sentAt;
 }

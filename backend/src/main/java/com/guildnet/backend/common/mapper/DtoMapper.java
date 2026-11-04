@@ -102,6 +102,7 @@ public final class DtoMapper {
         dto.setLikes(post.getLikeCount());
         dto.setComments(post.getCommentCount());
         dto.setCreatedAt(post.getCreatedAt());
+        dto.setUpdatedAt(post.getUpdatedAt());
         dto.setCommunityId(post.getCommunity().getId());
         dto.setCommunityProfile(toProfileDTO(post.getProfile()));
         return dto;
@@ -112,6 +113,7 @@ public final class DtoMapper {
                 comment.getId(),
                 comment.getContent(),
                 comment.getCreatedAt(),
+                comment.getUpdatedAt(),
                 toProfileDTO(comment.getProfile())
         );
     }

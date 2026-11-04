@@ -1,10 +1,11 @@
 package com.guildnet.backend.features.postcomment;
 
-import com.guildnet.backend.features.profile.CommunityProfile;
 import com.guildnet.backend.features.post.Post;
+import com.guildnet.backend.features.profile.CommunityProfile;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -21,20 +22,22 @@ public class PostComment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(nullable = false, length = 2000)
     private String content;
 
-    @CreationTimestamp
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
-
-    // Publicación a la que pertenece este comentario
-    @ManyToOne
-    @JoinColumn(name = "post_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    // Perfil de comunidad que ha hecho el comentario
-    @ManyToOne
-    @JoinColumn(name = "profile_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "profile_id", nullable = false)
     private CommunityProfile profile;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 }

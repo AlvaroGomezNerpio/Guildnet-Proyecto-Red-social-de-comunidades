@@ -1,17 +1,21 @@
 package com.guildnet.backend.features.community;
 
-import com.guildnet.backend.features.chat.ChatMessage;
 import com.guildnet.backend.features.profile.CommunityProfile;
-import com.guildnet.backend.features.post.Post;
-import com.guildnet.backend.features.role.Role;
-import com.guildnet.backend.features.title.Title;
 import com.guildnet.backend.features.user.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.Length;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Comunidad temática. Al borrarla, la base de datos elimina en cascada todo su
+ * contenido (perfiles, publicaciones, roles, títulos, chat...).
+ */
 @Entity
 @Table(name = "communities")
 @Getter
@@ -25,47 +29,44 @@ public class Community {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true, length = 100)
     private String name;
 
     @Lob
-    @Column(columnDefinition = "MEDIUMTEXT")
+    @Column(length = Length.LONG32)
     private String description;
 
     @Lob
-    @Column(columnDefinition = "MEDIUMTEXT")
+    @Column(length = Length.LONG32)
     private String rules;
 
+    @Column(length = 500)
     private String image;
 
+    @Column(length = 500)
     private String banner;
 
     @Builder.Default
     @ElementCollection
+    @CollectionTable(name = "community_tags", joinColumns = @JoinColumn(name = "community_id"))
+    @Column(name = "tag", nullable = false, length = 30)
     private List<String> tags = new ArrayList<>();
 
-    // Relación con el usuario que creó la comunidad (propietario)
-    @ManyToOne(fetch = FetchType.LAZY)
+    /** Usuario que creó la comunidad; tiene todos los permisos en ella. */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
 
-    // Lista de perfiles asociados a esta comunidad (usuarios que forman parte de ella)
-    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CommunityProfile> communityProfiles;
+    /** Miembros (solo lectura: se usa para contar suscriptores). */
+    @Builder.Default
+    @OneToMany(mappedBy = "community")
+    private List<CommunityProfile> communityProfiles = new ArrayList<>();
 
-    // Lista de publicaciones realizadas en esta comunidad
-    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Post> posts;
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    // Lista de roles definidos dentro de esta comunidad
-    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Role> roles;
-
-    // Lista de títulos que se pueden asignar dentro de esta comunidad
-    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Title> titles;
-
-    // Lista de mensajes enviados en el chat de esta comunidad
-    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChatMessage> chatMessages;
-
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 }

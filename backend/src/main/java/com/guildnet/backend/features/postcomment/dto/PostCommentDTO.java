@@ -8,6 +8,7 @@ public record PostCommentDTO(
         Long id,
         String content,
         LocalDateTime createdAt,
+        LocalDateTime updatedAt,
         CommunityProfileDTO communityProfile
 ) {
 }

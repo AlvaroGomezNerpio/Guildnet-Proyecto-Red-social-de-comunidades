@@ -4,6 +4,7 @@ export interface PostCommentDTO {
   id: number;
   content: string;
   createdAt: string | null;
+  updatedAt: string | null;
   communityProfile: CommunityProfileDTO;
 }
 

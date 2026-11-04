@@ -7,4 +7,8 @@ import java.util.List;
 public interface RoleRepository extends JpaRepository<Role, Long> {
 
     List<Role> findByCommunityIdOrderByIdAsc(Long communityId);
+
+    boolean existsByCommunityIdAndNameIgnoreCase(Long communityId, String name);
+
+    boolean existsByCommunityIdAndNameIgnoreCaseAndIdNot(Long communityId, String name, Long id);
 }

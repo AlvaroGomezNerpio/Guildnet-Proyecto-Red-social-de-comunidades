@@ -7,6 +7,7 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Rol de una comunidad: un nombre con colores y un conjunto de permisos. */
 @Entity
 @Table(name = "roles")
 @Getter
@@ -15,22 +16,24 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Role {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 50)
     private String name;
 
+    @Column(nullable = false, length = 7)
     private String textColor;
 
+    @Column(nullable = false, length = 7)
     private String backgroundColor;
 
-    // Comunidad a la que pertenece este rol (relación muchos a uno)
-    @ManyToOne
-    @JoinColumn(name = "community_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "community_id", nullable = false)
     private Community community;
 
-    // Lista de permisos asociados a este rol (relación uno a muchos)
     @Builder.Default
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RolePermission> permissions = new ArrayList<>();

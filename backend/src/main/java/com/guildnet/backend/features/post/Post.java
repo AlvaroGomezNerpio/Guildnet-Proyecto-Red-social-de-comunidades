@@ -1,13 +1,15 @@
 package com.guildnet.backend.features.post;
 
 import com.guildnet.backend.features.community.Community;
-import com.guildnet.backend.features.profile.CommunityProfile;
 import com.guildnet.backend.features.like.Like;
 import com.guildnet.backend.features.postcomment.PostComment;
+import com.guildnet.backend.features.profile.CommunityProfile;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.Length;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Formula;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -26,27 +28,26 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 200)
     private String title;
 
+    /** HTML generado por el editor (saneado antes de guardarlo). */
     @Lob
-    @Column(columnDefinition = "MEDIUMTEXT")
+    @Column(nullable = false, length = Length.LONG32)
     private String content;
 
     @Builder.Default
     @ElementCollection
+    @CollectionTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"))
+    @Column(name = "tag", nullable = false, length = 30)
     private List<String> tags = new ArrayList<>();
 
-    @CreationTimestamp
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
-
-    // Perfil de comunidad que creó la publicación
-    @ManyToOne
-    @JoinColumn(name = "profile_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "profile_id", nullable = false)
     private CommunityProfile profile;
 
-    @ManyToOne
-    @JoinColumn(name = "community_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "community_id", nullable = false)
     private Community community;
 
     @Builder.Default
@@ -60,11 +61,19 @@ public class Post {
 
     /** Número de likes, calculado en la propia consulta (evita cargar la colección). */
     @Setter(AccessLevel.NONE)
-    @Formula("(select count(*) from likes l where l.post_id = id)")
+    @Formula("(select count(*) from post_likes l where l.post_id = id)")
     private int likeCount;
 
     /** Número de comentarios, calculado en la propia consulta. */
     @Setter(AccessLevel.NONE)
     @Formula("(select count(*) from post_comments c where c.post_id = id)")
     private int commentCount;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 }

@@ -8,6 +8,7 @@ public record ProfileCommentDTO(
         Long id,
         String content,
         LocalDateTime createdAt,
+        LocalDateTime updatedAt,
         CommunityProfileDTO authorProfile,
         CommunityProfileDTO targetProfile
 ) {

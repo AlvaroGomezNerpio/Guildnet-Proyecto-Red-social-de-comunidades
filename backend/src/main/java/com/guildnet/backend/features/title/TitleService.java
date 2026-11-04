@@ -1,5 +1,6 @@
 package com.guildnet.backend.features.title;
 
+import com.guildnet.backend.common.exception.ConflictException;
 import com.guildnet.backend.common.exception.NotFoundException;
 import com.guildnet.backend.common.mapper.DtoMapper;
 import com.guildnet.backend.features.community.Community;
@@ -36,9 +37,13 @@ public class TitleService {
         Community community = communityRepository.findById(request.communityId())
                 .orElseThrow(() -> new NotFoundException("Comunidad no encontrada"));
         accessGuard.requirePermission(user, community.getId(), PermissionType.ASSIGN_TITLES);
+        String text = request.title().trim();
+        if (titleRepository.existsByCommunityIdAndTitleIgnoreCase(community.getId(), text)) {
+            throw new ConflictException("Ya existe un título con ese nombre en la comunidad");
+        }
 
         Title title = titleRepository.save(Title.builder()
-                .title(request.title().trim())
+                .title(text)
                 .textColor(request.textColor())
                 .backgroundColor(request.backgroundColor())
                 .community(community)
@@ -48,7 +53,13 @@ public class TitleService {
 
     public TitleDTO update(Long id, UpdateTitleRequest request, User user) {
         Title title = loadManageable(id, user);
-        if (request.title() != null && !request.title().isBlank()) title.setTitle(request.title().trim());
+        if (request.title() != null && !request.title().isBlank()) {
+            String text = request.title().trim();
+            if (titleRepository.existsByCommunityIdAndTitleIgnoreCaseAndIdNot(title.getCommunity().getId(), text, id)) {
+                throw new ConflictException("Ya existe un título con ese nombre en la comunidad");
+            }
+            title.setTitle(text);
+        }
         if (request.textColor() != null) title.setTextColor(request.textColor());
         if (request.backgroundColor() != null) title.setBackgroundColor(request.backgroundColor());
         return DtoMapper.toTitleDTO(title);

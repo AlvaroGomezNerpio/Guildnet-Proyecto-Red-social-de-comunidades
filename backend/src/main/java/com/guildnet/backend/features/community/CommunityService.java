@@ -1,5 +1,6 @@
 package com.guildnet.backend.features.community;
 
+import com.guildnet.backend.common.exception.ConflictException;
 import com.guildnet.backend.common.exception.ForbiddenException;
 import com.guildnet.backend.common.exception.NotFoundException;
 import com.guildnet.backend.common.html.HtmlSanitizer;
@@ -94,8 +95,13 @@ public class CommunityService {
         User owner = userRepository.findById(authUser.getId())
                 .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
 
+        String name = request.name().trim();
+        if (communityRepository.existsByNameIgnoreCase(name)) {
+            throw new ConflictException("Ya existe una comunidad con ese nombre");
+        }
+
         Community community = Community.builder()
-                .name(request.name().trim())
+                .name(name)
                 .description(HtmlSanitizer.sanitize(request.description()))
                 .rules(HtmlSanitizer.sanitize(request.rules()))
                 .tags(cleanTags(request.tags()))
@@ -124,7 +130,11 @@ public class CommunityService {
         Community community = load(id);
         accessGuard.requirePermission(user, id, PermissionType.MANAGE_COMMUNITY_SETTINGS);
 
-        community.setName(request.name().trim());
+        String name = request.name().trim();
+        if (communityRepository.existsByNameIgnoreCaseAndIdNot(name, id)) {
+            throw new ConflictException("Ya existe una comunidad con ese nombre");
+        }
+        community.setName(name);
         community.setDescription(HtmlSanitizer.sanitize(request.description()));
         community.setRules(HtmlSanitizer.sanitize(request.rules()));
         community.getTags().clear();

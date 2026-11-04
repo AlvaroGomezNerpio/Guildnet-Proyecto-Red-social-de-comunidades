@@ -142,6 +142,36 @@ class BackendApplicationTests {
     }
 
     @Test
+    void communityNamesAreUnique() throws Exception {
+        String owner = register("Owner", uniqueEmail());
+        String name = "Única " + UUID.randomUUID();
+        createCommunity(owner, name);
+
+        mvc.perform(auth(multipart("/api/v1/communities/create")
+                        .file(json("community", "{\"name\":\"" + name.toUpperCase() + "\"}")), owner))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void postListsArePaginatedNewestFirst() throws Exception {
+        String owner = register("Owner", uniqueEmail());
+        long communityId = createCommunity(owner, "Paginación " + UUID.randomUUID());
+        for (int i = 1; i <= 3; i++) {
+            createPost(owner, communityId, "Post " + i, "<p>x</p>");
+        }
+
+        mvc.perform(auth(get("/api/v1/posts/community/" + communityId).param("size", "2"), owner))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].title").value("Post 3"))
+                .andExpect(jsonPath("$.totalElements").value(3))
+                .andExpect(jsonPath("$.last").value(false));
+        mvc.perform(auth(get("/api/v1/posts/community/" + communityId).param("size", "2").param("page", "1"), owner))
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.last").value(true));
+    }
+
+    @Test
     void cannotJoinTwice() throws Exception {
         String owner = register("Owner", uniqueEmail());
         long communityId = createCommunity(owner, "Cine");
@@ -232,8 +262,8 @@ class BackendApplicationTests {
 
         mvc.perform(auth(get("/api/v1/posts/community/" + communityId), owner))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].likes").value(1))
-                .andExpect(jsonPath("$[0].comments").value(1));
+                .andExpect(jsonPath("$.content[0].likes").value(1))
+                .andExpect(jsonPath("$.content[0].comments").value(1));
     }
 
     // ------------------------------------------------------------------ Likes, comentarios y notificaciones

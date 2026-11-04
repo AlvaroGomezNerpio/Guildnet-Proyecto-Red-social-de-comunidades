@@ -161,7 +161,17 @@
           </div>
         </div>
       } @empty {
-        <div class="alert alert-secondary">No hay publicaciones en esta comunidad todavía.</div>
+        @if (!loadingPosts) {
+          <div class="alert alert-secondary">No hay publicaciones en esta comunidad todavía.</div>
+        }
+      }
+
+      @if (hasMorePosts) {
+        <div class="text-center mb-4">
+          <button class="btn btn-outline-primary" (click)="loadPosts(true)" [disabled]="loadingPosts">
+            {{ loadingPosts ? 'Cargando…' : 'Cargar más publicaciones' }}
+          </button>
+        </div>
       }
     </div>
   </div>

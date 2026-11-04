@@ -54,6 +54,9 @@ export class CommunityProfileDetailComponent implements OnInit {
   myProfile: CommunityProfileDTO | null = null;
 
   posts: PostWithToggle[] = [];
+  postsPage = 0;
+  postsTotal = 0;
+  hasMorePosts = false;
   comments: ProfileCommentDTO[] = [];
   newComment = '';
 
@@ -119,9 +122,17 @@ export class CommunityProfileDetailComponent implements OnInit {
     this.permissionsService.getMyPermissions(communityId).subscribe((perms) => (this.permissions = perms));
   }
 
-  loadPosts(): void {
-    this.postService.getPostsByProfile(this.profileId).subscribe({
-      next: (data) => (this.posts = data.map((post) => ({ ...post, showContent: false }))),
+  /** Carga la primera página de publicaciones (o la siguiente si {@code more} es true). */
+  loadPosts(more = false): void {
+    const page = more ? this.postsPage + 1 : 0;
+    this.postService.getPostsByProfile(this.profileId, page).subscribe({
+      next: (result) => {
+        const posts = result.content.map((post) => ({ ...post, showContent: false }));
+        this.posts = more ? [...this.posts, ...posts] : posts;
+        this.postsPage = result.page;
+        this.postsTotal = result.totalElements;
+        this.hasMorePosts = !result.last;
+      },
       error: () => this.showError('No se pudieron cargar los posts.'),
     });
   }

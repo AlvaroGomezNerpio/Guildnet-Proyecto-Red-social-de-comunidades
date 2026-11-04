@@ -1,11 +1,13 @@
 package com.guildnet.backend.features.user;
 
-import com.guildnet.backend.features.profile.CommunityProfile;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -24,25 +26,33 @@ public class User implements UserDetails {
     private Long id;
 
     /** Nombre visible del usuario. */
-    @Column(name = "username")
+    @Column(nullable = false, length = 50)
     private String displayName;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Getter(AccessLevel.NONE)
+    @Column(nullable = false)
     private String password;
 
+    @Column(length = 500)
     private String profileImage;
 
+    /** Intereses del usuario, usados para sugerirle comunidades. */
     @Builder.Default
     @ElementCollection
+    @CollectionTable(name = "user_tags", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "tag", nullable = false, length = 30)
     private List<String> tags = new ArrayList<>();
 
-    // Perfiles del usuario en las distintas comunidades
-    @Builder.Default
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CommunityProfile> communityProfiles = new ArrayList<>();
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
     /** Spring Security usa el email como identificador para el login. */
     @Override

@@ -10,7 +10,6 @@ import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +45,6 @@ public class ChatService {
 
         ChatMessage message = chatMessageRepository.save(ChatMessage.builder()
                 .content(text)
-                .sentAt(LocalDateTime.now())
                 .community(profile.getCommunity())
                 .profile(profile)
                 .build());

@@ -1,6 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Page } from '../../../core/http/page.model';
+
+/** Publicaciones por página en los listados. */
+export const PAGE_SIZE = 10;
 import { environment } from '../../../../environments/environment';
 import { PostDTO, PostCreateDTO, PostUpdateDTO, PostDetailDTO } from '../models/post.models';
 
@@ -25,18 +29,18 @@ export class PostService {
     return this.http.get<PostDetailDTO>(`${this.apiUrl}/${id}`);
   }
 
-  getPostsByProfile(profileId: number): Observable<PostDTO[]> {
-    return this.http.get<PostDTO[]>(`${this.apiUrl}/profile/${profileId}`);
+  getPostsByProfile(profileId: number, page = 0, size = PAGE_SIZE): Observable<Page<PostDTO>> {
+    return this.http.get<Page<PostDTO>>(`${this.apiUrl}/profile/${profileId}`, { params: { page, size } });
   }
 
-  getPostsByCommunity(communityId: number): Observable<PostDTO[]> {
-    return this.http.get<PostDTO[]>(`${this.apiUrl}/community/${communityId}`);
+  getPostsByCommunity(communityId: number, page = 0, size = PAGE_SIZE): Observable<Page<PostDTO>> {
+    return this.http.get<Page<PostDTO>>(`${this.apiUrl}/community/${communityId}`, { params: { page, size } });
   }
 
-  searchPostsInCommunity(communityId: number, title?: string, tags?: string[]): Observable<PostDTO[]> {
-    let params = new HttpParams();
+  searchPostsInCommunity(communityId: number, title?: string, tags?: string[], page = 0, size = PAGE_SIZE): Observable<Page<PostDTO>> {
+    let params = new HttpParams().set('page', page).set('size', size);
     if (title) params = params.set('title', title);
     (tags ?? []).forEach((tag) => (params = params.append('tag', tag)));
-    return this.http.get<PostDTO[]>(`${this.apiUrl}/search/${communityId}`, { params });
+    return this.http.get<Page<PostDTO>>(`${this.apiUrl}/search/${communityId}`, { params });
   }
 }

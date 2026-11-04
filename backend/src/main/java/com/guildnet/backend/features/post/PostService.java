@@ -3,6 +3,7 @@ package com.guildnet.backend.features.post;
 import com.guildnet.backend.common.exception.NotFoundException;
 import com.guildnet.backend.common.html.HtmlSanitizer;
 import com.guildnet.backend.common.mapper.DtoMapper;
+import com.guildnet.backend.common.web.PageResponse;
 import com.guildnet.backend.features.profile.CommunityProfile;
 import com.guildnet.backend.features.permission.PermissionType;
 import com.guildnet.backend.features.post.dto.PostCreateDTO;
@@ -69,35 +70,40 @@ public class PostService {
                 post.getContent(),
                 List.copyOf(post.getTags()),
                 post.getCreatedAt(),
+                post.getUpdatedAt(),
                 post.getComments().stream().map(DtoMapper::toPostCommentDTO).toList(),
                 DtoMapper.toProfileDTO(post.getProfile()),
                 post.getCommunity().getId()
         );
     }
 
+    /** Las publicaciones se devuelven de la más reciente a la más antigua. */
+    private static final Sort NEWEST_FIRST = Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"));
+
     @Transactional(readOnly = true)
-    public List<PostDTO> getByProfile(Long profileId) {
-        return toDTOs(postRepository.findByProfileIdOrderByIdDesc(profileId));
+    public PageResponse<PostDTO> getByProfile(Long profileId, int page, int size) {
+        return PageResponse.of(
+                postRepository.findByProfileId(profileId, PageResponse.request(page, size, NEWEST_FIRST)),
+                DtoMapper::toPostDTO);
     }
 
     @Transactional(readOnly = true)
-    public List<PostDTO> getByCommunity(Long communityId) {
-        return toDTOs(postRepository.findByCommunityIdOrderByIdDesc(communityId));
+    public PageResponse<PostDTO> getByCommunity(Long communityId, int page, int size) {
+        return PageResponse.of(
+                postRepository.findByCommunityId(communityId, PageResponse.request(page, size, NEWEST_FIRST)),
+                DtoMapper::toPostDTO);
     }
 
     @Transactional(readOnly = true)
-    public List<PostDTO> search(Long communityId, String title, List<String> tags) {
-        return toDTOs(postRepository.findAll(
-                PostSpecifications.search(communityId, title, tags),
-                Sort.by(Sort.Direction.DESC, "id")));
+    public PageResponse<PostDTO> search(Long communityId, String title, List<String> tags, int page, int size) {
+        return PageResponse.of(
+                postRepository.findAll(PostSpecifications.search(communityId, title, tags),
+                        PageResponse.request(page, size, NEWEST_FIRST)),
+                DtoMapper::toPostDTO);
     }
 
     private Post load(Long id) {
         return postRepository.findById(id).orElseThrow(() -> new NotFoundException("Publicación no encontrada"));
-    }
-
-    private static List<PostDTO> toDTOs(List<Post> posts) {
-        return posts.stream().map(DtoMapper::toPostDTO).toList();
     }
 
     private static List<String> cleanTags(List<String> tags) {

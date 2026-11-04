@@ -9,6 +9,7 @@ export interface PostDTO {
   likes: number;
   comments: number;
   createdAt: string | null;
+  updatedAt: string | null;
   communityProfile: CommunityProfileDTO;
   communityId: number;
 }
@@ -19,6 +20,7 @@ export interface PostDetailDTO {
   content: string;
   tags: string[];
   createdAt: string | null;
+  updatedAt: string | null;
   postComment: PostCommentDTO[];
   communityProfile: CommunityProfileDTO;
   communityId: number;

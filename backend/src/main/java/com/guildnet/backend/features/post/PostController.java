@@ -1,5 +1,6 @@
 package com.guildnet.backend.features.post;
 
+import com.guildnet.backend.common.web.PageResponse;
 import com.guildnet.backend.features.post.dto.PostCreateDTO;
 import com.guildnet.backend.features.post.dto.PostDTO;
 import com.guildnet.backend.features.post.dto.PostDetailDTO;
@@ -43,21 +44,31 @@ public class PostController {
     }
 
     @GetMapping("/profile/{profileId}")
-    public List<PostDTO> getByProfile(@PathVariable Long profileId) {
-        return postService.getByProfile(profileId);
+    public PageResponse<PostDTO> getByProfile(
+            @PathVariable Long profileId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + PageResponse.DEFAULT_SIZE) int size
+    ) {
+        return postService.getByProfile(profileId, page, size);
     }
 
     @GetMapping("/community/{communityId}")
-    public List<PostDTO> getByCommunity(@PathVariable Long communityId) {
-        return postService.getByCommunity(communityId);
+    public PageResponse<PostDTO> getByCommunity(
+            @PathVariable Long communityId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + PageResponse.DEFAULT_SIZE) int size
+    ) {
+        return postService.getByCommunity(communityId, page, size);
     }
 
     @GetMapping("/search/{communityId}")
-    public List<PostDTO> search(
+    public PageResponse<PostDTO> search(
             @PathVariable Long communityId,
             @RequestParam(required = false) String title,
-            @RequestParam(required = false) List<String> tag
+            @RequestParam(required = false) List<String> tag,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + PageResponse.DEFAULT_SIZE) int size
     ) {
-        return postService.search(communityId, title, tag);
+        return postService.search(communityId, title, tag, page, size);
     }
 }

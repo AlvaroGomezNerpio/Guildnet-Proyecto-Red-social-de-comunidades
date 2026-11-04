@@ -1,9 +1,9 @@
 package com.guildnet.backend.features.notification;
 
 import com.guildnet.backend.features.profile.CommunityProfile;
-import com.guildnet.backend.features.user.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -20,23 +20,27 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String message;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
     private NotificationType type;
 
     @Column(name = "is_read", nullable = false)
-    private boolean itIsRead;
+    private boolean read;
 
-    private LocalDateTime createdAt;
-
-    // Perfil que recibe la notificación
-    @ManyToOne
+    /** Perfil que recibe la notificación. */
+    @ManyToOne(optional = false)
     @JoinColumn(name = "receiver_profile_id", nullable = false)
     private CommunityProfile receiver;
 
-    // Perfil que genera la notificación (opcional)
+    /** Perfil que la provoca; null en las notificaciones del sistema o si ese perfil ya no existe. */
     @ManyToOne
     @JoinColumn(name = "sender_profile_id")
     private CommunityProfile sender;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 }

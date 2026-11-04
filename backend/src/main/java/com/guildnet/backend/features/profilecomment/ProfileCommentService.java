@@ -80,6 +80,7 @@ public class ProfileCommentService {
                 comment.getId(),
                 comment.getContent(),
                 comment.getCreatedAt(),
+                comment.getUpdatedAt(),
                 DtoMapper.toProfileDTO(comment.getAuthorProfile()),
                 DtoMapper.toProfileDTO(comment.getTargetProfile())
         );

@@ -3,11 +3,9 @@ package com.guildnet.backend.features.user;
 import com.guildnet.backend.common.exception.ConflictException;
 import com.guildnet.backend.common.exception.NotFoundException;
 import com.guildnet.backend.common.mapper.DtoMapper;
-import com.guildnet.backend.features.community.CommunityRepository;
 import com.guildnet.backend.features.user.dto.UpdateUserRequest;
 import com.guildnet.backend.features.user.dto.UserDTO;
 import com.guildnet.backend.storage.FileStorageService;
-import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +21,7 @@ import java.util.Locale;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final CommunityRepository communityRepository;
     private final FileStorageService fileStorageService;
-    private final EntityManager entityManager;
 
     @Transactional(readOnly = true)
     public UserDTO getUser(Long userId) {
@@ -61,10 +57,7 @@ public class UserService {
 
     /** Elimina la cuenta del usuario, incluidas las comunidades que ha creado. */
     public void deleteAccount(Long userId) {
-        communityRepository.deleteAll(communityRepository.findByOwnerId(userId));
-        // Se limpia el contexto para que el usuario se recargue sin los perfiles ya borrados
-        entityManager.flush();
-        entityManager.clear();
+        // La base de datos borra en cascada sus comunidades, perfiles y todo su contenido
         userRepository.delete(load(userId));
     }
 

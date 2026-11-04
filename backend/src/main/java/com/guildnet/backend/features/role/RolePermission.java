@@ -4,6 +4,7 @@ import com.guildnet.backend.features.permission.Permission;
 import jakarta.persistence.*;
 import lombok.*;
 
+/** Permiso concedido a un rol. */
 @Entity
 @Table(name = "role_permissions")
 @Getter
@@ -12,17 +13,16 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class RolePermission {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Rol al que se le asigna un permiso (relación muchos a uno)
-    @ManyToOne
-    @JoinColumn(name = "role_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
-    // Permiso asignado al rol (relación muchos a uno)
-    @ManyToOne
-    @JoinColumn(name = "permission_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "permission_id", nullable = false)
     private Permission permission;
 }

@@ -12,6 +12,7 @@ public record PostDetailDTO(
         String content,
         List<String> tags,
         LocalDateTime createdAt,
+        LocalDateTime updatedAt,
         List<PostCommentDTO> postComment,
         CommunityProfileDTO communityProfile,
         Long communityId

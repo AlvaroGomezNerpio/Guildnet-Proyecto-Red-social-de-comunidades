@@ -10,5 +10,9 @@ import java.util.Optional;
 @Repository
 public interface TitleRepository extends JpaRepository<Title, Long> {
     List<Title> findByCommunityId(Long communityId);
+
+    boolean existsByCommunityIdAndTitleIgnoreCase(Long communityId, String title);
+
+    boolean existsByCommunityIdAndTitleIgnoreCaseAndIdNot(Long communityId, String title, Long id);
 }
 

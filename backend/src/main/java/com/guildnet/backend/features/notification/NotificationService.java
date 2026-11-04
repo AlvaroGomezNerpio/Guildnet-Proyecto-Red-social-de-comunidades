@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -41,8 +40,7 @@ public class NotificationService {
                 .sender(sender)
                 .type(type)
                 .message(message)
-                .itIsRead(false)
-                .createdAt(LocalDateTime.now())
+                .read(false)
                 .build());
     }
 
@@ -57,11 +55,11 @@ public class NotificationService {
     @Transactional(readOnly = true)
     public int countUnread(Long profileId, User user) {
         accessGuard.requireOwnProfile(user, profileId);
-        return notificationRepository.countByReceiverIdAndItIsReadFalse(profileId);
+        return notificationRepository.countByReceiverIdAndReadFalse(profileId);
     }
 
     public void markAsRead(Long notificationId, User user) {
-        loadOwn(notificationId, user).setItIsRead(true);
+        loadOwn(notificationId, user).setRead(true);
     }
 
     public void delete(Long notificationId, User user) {
@@ -82,7 +80,7 @@ public class NotificationService {
                 .id(notification.getId())
                 .message(notification.getMessage())
                 .type(notification.getType())
-                .read(notification.isItIsRead())
+                .read(notification.isRead())
                 .createdAt(notification.getCreatedAt())
                 .receiver(DtoMapper.toProfileDTO(notification.getReceiver()))
                 .sender(DtoMapper.toProfileDTO(notification.getSender()))

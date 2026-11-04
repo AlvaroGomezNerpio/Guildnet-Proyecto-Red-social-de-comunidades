@@ -19,6 +19,7 @@ public class PostDTO {
     private int likes;
     private int comments;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private CommunityProfileDTO communityProfile;
     private Long communityId;
 }

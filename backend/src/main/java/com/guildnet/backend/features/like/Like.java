@@ -1,15 +1,16 @@
 package com.guildnet.backend.features.like;
 
-import com.guildnet.backend.features.profile.CommunityProfile;
 import com.guildnet.backend.features.post.Post;
+import com.guildnet.backend.features.profile.CommunityProfile;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
+
+/** "Me gusta" de un perfil a una publicación (uno como máximo por perfil y publicación). */
 @Entity
-@Table(
-        name = "likes",
-        uniqueConstraints = @UniqueConstraint(name = "uk_like_post_profile", columnNames = {"post_id", "profile_id"})
-)
+@Table(name = "post_likes")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,13 +22,15 @@ public class Like {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Publicación que ha recibido el "me gusta"
-    @ManyToOne
-    @JoinColumn(name = "post_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    // Perfil que dio el "me gusta"
-    @ManyToOne
-    @JoinColumn(name = "profile_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "profile_id", nullable = false)
     private CommunityProfile profile;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 }

@@ -8,6 +8,7 @@ import lombok.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Título decorativo que se puede asignar a los miembros de una comunidad. */
 @Entity
 @Table(name = "titles")
 @Getter
@@ -16,21 +17,25 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Title {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 50)
     private String title;
 
+    @Column(nullable = false, length = 7)
     private String textColor;
 
+    @Column(nullable = false, length = 7)
     private String backgroundColor;
 
     @Builder.Default
     @ManyToMany(mappedBy = "titles")
     private List<CommunityProfile> profiles = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "community_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "community_id", nullable = false)
     private Community community;
 }

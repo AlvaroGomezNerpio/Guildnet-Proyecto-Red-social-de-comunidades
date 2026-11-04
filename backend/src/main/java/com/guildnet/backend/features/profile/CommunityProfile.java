@@ -1,87 +1,62 @@
 package com.guildnet.backend.features.profile;
 
 import com.guildnet.backend.features.community.Community;
-import com.guildnet.backend.features.chat.ChatMessage;
-import com.guildnet.backend.features.like.Like;
-import com.guildnet.backend.features.notification.Notification;
-import com.guildnet.backend.features.post.Post;
-import com.guildnet.backend.features.postcomment.PostComment;
-import com.guildnet.backend.features.profilecomment.ProfileComment;
 import com.guildnet.backend.features.role.Role;
 import com.guildnet.backend.features.title.Title;
 import com.guildnet.backend.features.user.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.Length;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Perfil de un usuario dentro de una comunidad (nombre, imagen y descripción propios).
+ * Al borrarlo, la base de datos elimina en cascada sus publicaciones, comentarios, likes...
+ */
 @Entity
-@Table(
-        name = "community_profiles",
-        uniqueConstraints = @UniqueConstraint(name = "uk_profile_user_community", columnNames = {"user_id", "community_id"})
-)
+@Table(name = "community_profiles")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CommunityProfile {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, length = 50)
     private String username;
 
     @Lob
-    @Column(columnDefinition = "MEDIUMTEXT")
+    @Column(length = Length.LONG32)
     private String description;
 
+    @Column(length = 500)
     private String profileImage;
 
-    // Usuario al que pertenece este perfil
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Comunidad a la que pertenece este perfil
-    @ManyToOne
-    @JoinColumn(name = "community_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "community_id", nullable = false)
     private Community community;
 
-    // Título destacado que este perfil tiene dentro de la comunidad (opcional)
-    @ManyToOne
-    @JoinColumn(name = "featured_title_id")
-    private Title featuredTitle;
-
-    // Publicaciones creadas por este perfil
-    @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Post> posts;
-
-    // Comentarios en publicaciones escritos por este perfil
-    @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PostComment> postComments;
-
-    // Comentarios que este perfil ha dejado en el perfil de otros usuarios
-    @OneToMany(mappedBy = "authorProfile", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProfileComment> profileCommentsWritten;
-
-    // Comentarios que este perfil ha recibido en su propio perfil
-    @OneToMany(mappedBy = "targetProfile", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProfileComment> profileCommentsReceived;
-
-    // Likes que este perfil ha dado a publicaciones
-    @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Like> likes;
-
-    // Mensajes enviados en el chat de la comunidad
-    @OneToMany(mappedBy = "profile", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ChatMessage> chatMessages;
-
-    // Roles que tiene este perfil en la comunidad (relación muchos a muchos)
+    /** Rol del miembro en la comunidad (opcional). */
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+
+    /** Título que el miembro muestra destacado (debe ser uno de los suyos). */
+    @ManyToOne
+    @JoinColumn(name = "featured_title_id")
+    private Title featuredTitle;
 
     @Builder.Default
     @ManyToMany
@@ -92,13 +67,7 @@ public class CommunityProfile {
     )
     private List<Title> titles = new ArrayList<>();
 
-
-    @Builder.Default
-    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Notification> sentNotifications = new ArrayList<>();
-
-    @Builder.Default
-    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Notification> receivedNotifications = new ArrayList<>();
-
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime joinedAt;
 }

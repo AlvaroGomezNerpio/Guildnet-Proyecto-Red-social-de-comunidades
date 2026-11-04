@@ -1,11 +1,9 @@
 package com.guildnet.backend.features.permission;
 
-import com.guildnet.backend.features.role.RolePermission;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
-
+/** Permiso del catálogo. Los registros se crean con la migración V2__permisos.sql. */
 @Entity
 @Table(name = "permissions")
 @Getter
@@ -14,16 +12,15 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Permission {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true, length = 50)
     private PermissionType name;
 
+    @Column(nullable = false)
     private String description;
-
-    @OneToMany(mappedBy = "permission")
-    private List<RolePermission> roles;
 }

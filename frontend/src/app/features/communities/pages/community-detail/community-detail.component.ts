@@ -45,6 +45,9 @@ export class CommunityDetailComponent implements OnInit {
   profile: CommunityProfileDTO | null = null;
   profileLoaded = false;
   posts: PostWithToggle[] = [];
+  postsPage = 0;
+  hasMorePosts = false;
+  loadingPosts = false;
   permissions: Permission[] = [];
 
   error: string | null = null;
@@ -109,10 +112,22 @@ export class CommunityDetailComponent implements OnInit {
     });
   }
 
-  loadPosts(): void {
-    this.postService.getPostsByCommunity(this.communityId).subscribe({
-      next: (data) => (this.posts = data.map((post) => ({ ...post, showContent: false }))),
-      error: () => (this.error = 'No se pudieron cargar los posts.'),
+  /** Carga la primera página de publicaciones (o la siguiente si {@code more} es true). */
+  loadPosts(more = false): void {
+    const page = more ? this.postsPage + 1 : 0;
+    this.loadingPosts = true;
+    this.postService.getPostsByCommunity(this.communityId, page).subscribe({
+      next: (result) => {
+        const posts = result.content.map((post) => ({ ...post, showContent: false }));
+        this.posts = more ? [...this.posts, ...posts] : posts;
+        this.postsPage = result.page;
+        this.hasMorePosts = !result.last;
+        this.loadingPosts = false;
+      },
+      error: () => {
+        this.loadingPosts = false;
+        this.error = 'No se pudieron cargar los posts.';
+      },
     });
   }
 

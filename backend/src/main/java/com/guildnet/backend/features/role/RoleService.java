@@ -48,9 +48,13 @@ public class RoleService {
         Community community = communityRepository.findById(dto.communityId())
                 .orElseThrow(() -> new NotFoundException("Comunidad no encontrada"));
         accessGuard.requirePermission(user, community.getId(), PermissionType.ASSIGN_ROLES);
+        String name = dto.name().trim();
+        if (roleRepository.existsByCommunityIdAndNameIgnoreCase(community.getId(), name)) {
+            throw new ConflictException("Ya existe un rol con ese nombre en la comunidad");
+        }
 
         Role role = roleRepository.save(Role.builder()
-                .name(dto.name().trim())
+                .name(name)
                 .textColor(dto.textColor())
                 .backgroundColor(dto.backgroundColor())
                 .community(community)
@@ -70,7 +74,11 @@ public class RoleService {
 
     public RoleDTO update(Long id, RoleDTO dto, User user) {
         Role role = loadManageable(id, user);
-        role.setName(dto.name().trim());
+        String name = dto.name().trim();
+        if (roleRepository.existsByCommunityIdAndNameIgnoreCaseAndIdNot(role.getCommunity().getId(), name, id)) {
+            throw new ConflictException("Ya existe un rol con ese nombre en la comunidad");
+        }
+        role.setName(name);
         role.setTextColor(dto.textColor());
         role.setBackgroundColor(dto.backgroundColor());
         return DtoMapper.toRoleDTO(role);
