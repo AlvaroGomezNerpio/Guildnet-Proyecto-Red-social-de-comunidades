@@ -27,6 +27,11 @@ export class ChatService {
     return this.http.delete<void>(`${this.apiUrl}/channels/${channelId}`);
   }
 
+  /** Marca como leídos los mensajes actuales del canal. */
+  markRead(channelId: number): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/channels/${channelId}/read`, null);
+  }
+
   /** Últimos mensajes del canal. */
   getHistory(channelId: number): Observable<ChatMessageDTO[]> {
     return this.http.get<ChatMessageDTO[]>(`${this.apiUrl}/channels/${channelId}/messages`);

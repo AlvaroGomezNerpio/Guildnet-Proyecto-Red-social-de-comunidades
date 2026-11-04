@@ -16,6 +16,9 @@ public record ChatChannelDTO(
         @Size(max = 200, message = "La descripción no puede superar los 200 caracteres")
         String description,
 
-        Long communityId
+        Long communityId,
+
+        /** Mensajes nuevos para quien consulta (solo en las respuestas). */
+        Integer unreadCount
 ) {
 }

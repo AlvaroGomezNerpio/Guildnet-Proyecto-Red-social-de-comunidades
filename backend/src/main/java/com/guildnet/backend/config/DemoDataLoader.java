@@ -196,9 +196,9 @@ public class DemoDataLoader implements ApplicationRunner {
         profileCommentService.create(carlaInGames.getId(), brunoInGames.getId(),
                 new ProfileCommentCreateUpdateDTO("¡Gracias por organizar la última partida!"), carla);
 
-        long general = chatService.createChannel(boardGames, new ChatChannelDTO(null, "general", "Charla sobre juegos de mesa", null), ana).id();
-        long meetups = chatService.createChannel(boardGames, new ChatChannelDTO(null, "quedadas", "Organiza partidas en persona", null), ana).id();
-        chatService.createChannel(programming, new ChatChannelDTO(null, "ayuda", "Pregunta tus dudas de código", null), carla);
+        long general = chatService.createChannel(boardGames, new ChatChannelDTO(null, "general", "Charla sobre juegos de mesa", null, null), ana).id();
+        long meetups = chatService.createChannel(boardGames, new ChatChannelDTO(null, "quedadas", "Organiza partidas en persona", null, null), ana).id();
+        chatService.createChannel(programming, new ChatChannelDTO(null, "ayuda", "Pregunta tus dudas de código", null, null), carla);
         chatService.send(general, "¡Hola a todos! ¿Quién se apunta el sábado?", bruno);
         chatService.send(general, "¡Yo voy! Llevo un par de juegos nuevos.", carla);
         chatService.send(general, "Genial, nos vemos allí 🙌", ana);

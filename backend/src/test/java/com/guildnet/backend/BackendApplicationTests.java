@@ -33,6 +33,12 @@ class BackendApplicationTests {
     @Autowired
     private MockMvc mvc;
 
+    @Autowired
+    private com.guildnet.backend.features.chat.ChatService chatService;
+
+    @Autowired
+    private com.guildnet.backend.features.user.UserRepository userRepository;
+
     // ------------------------------------------------------------------ Autenticación
 
     @Test
@@ -418,6 +424,33 @@ class BackendApplicationTests {
         mvc.perform(auth(get(channels), member))
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].name").value("off-topic"));
+    }
+
+    @Test
+    void chatChannelsCountUnreadMessagesUntilTheyAreRead() throws Exception {
+        String ownerEmail = uniqueEmail();
+        String owner = register("Owner", ownerEmail);
+        String member = register("Member", uniqueEmail());
+        long communityId = createCommunity(owner, "No leídos " + UUID.randomUUID());
+        joinCommunity(member, communityId);
+        String channels = "/api/v1/communities/" + communityId + "/channels";
+        long channelId = ((Number) JsonPath.read(mvc.perform(auth(post(channels), owner)
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"general\"}"))
+                .andReturn().getResponse().getContentAsString(), "$.id")).longValue();
+
+        var ownerUser = userRepository.findByEmail(ownerEmail).orElseThrow();
+        chatService.send(channelId, "Hola", ownerUser);
+        chatService.send(channelId, "¿Hay alguien?", ownerUser);
+
+        // El miembro tiene 2 nuevos; los propios no cuentan para quien los escribe
+        mvc.perform(auth(get(channels), member)).andExpect(jsonPath("$[0].unreadCount").value(2));
+        mvc.perform(auth(get(channels), owner)).andExpect(jsonPath("$[0].unreadCount").value(0));
+
+        // Al leer el canal se ponen a cero, y vuelven a contar los que lleguen después
+        mvc.perform(auth(put("/api/v1/channels/" + channelId + "/read"), member)).andExpect(status().isNoContent());
+        mvc.perform(auth(get(channels), member)).andExpect(jsonPath("$[0].unreadCount").value(0));
+        chatService.send(channelId, "Otro más", ownerUser);
+        mvc.perform(auth(get(channels), member)).andExpect(jsonPath("$[0].unreadCount").value(1));
     }
 
     @Test

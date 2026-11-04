@@ -26,8 +26,19 @@
           }
         </div>
         @for (channel of channels(); track channel.id) {
-          <button type="button" class="chat-channel" [class.active]="channel.id === activeId()" (click)="select(channel)">
+          @let count = unreadOf(channel.id);
+          <button
+            type="button"
+            class="chat-channel"
+            [class.active]="channel.id === activeId()"
+            [class.has-unread]="count > 0"
+            [attr.aria-label]="'#' + channel.name + (count > 0 ? ', ' + count + ' mensajes nuevos' : '')"
+            (click)="select(channel)"
+          >
             <i class="bi bi-hash"></i><span class="text-truncate">{{ channel.name }}</span>
+            @if (count > 0) {
+              <span class="badge rounded-pill bg-danger ms-auto chat-unread">{{ count > 99 ? '99+' : count }}</span>
+            }
           </button>
         }
       </nav>

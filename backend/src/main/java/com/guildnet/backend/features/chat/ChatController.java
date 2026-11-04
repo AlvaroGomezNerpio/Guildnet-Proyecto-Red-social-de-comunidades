@@ -54,6 +54,13 @@ public class ChatController {
         chatService.deleteChannel(channelId, user);
     }
 
+    /** Marca el canal como leído (al abrirlo o al recibir mensajes con él abierto). */
+    @PutMapping("/api/v1/channels/{channelId}/read")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void markRead(@PathVariable Long channelId, @AuthenticationPrincipal User user) {
+        chatService.markRead(channelId, user);
+    }
+
     // ------------------------------------------------------------------ Mensajes
 
     /** Historial del canal (REST). */

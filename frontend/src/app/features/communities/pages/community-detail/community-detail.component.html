@@ -131,14 +131,26 @@
           <li class="nav-item">
             <button class="nav-link" [class.active]="tab() === 'chat'" (click)="tab.set('chat')">
               <i class="bi bi-chat-dots me-1"></i>Chat
+              @if (chatUnread() > 0) {
+                <span class="badge rounded-pill bg-danger ms-1" [attr.aria-label]="chatUnread() + ' mensajes nuevos'">{{ chatUnread() > 99 ? '99+' : chatUnread() }}</span>
+              }
             </button>
           </li>
         </ul>
       }
 
-      @if (tab() === 'chat' && me) {
-        <app-community-chat [communityId]="communityId" [myProfileId]="me.id" [canManage]="canManageChannels()" />
-      } @else {
+      <!-- El chat sigue montado aunque no se vea, para contar los mensajes nuevos -->
+      @if (me) {
+        <app-community-chat
+          [class.d-none]="tab() !== 'chat'"
+          [communityId]="communityId"
+          [myProfileId]="me.id"
+          [canManage]="canManageChannels()"
+          [visible]="tab() === 'chat'"
+          (unreadTotalChange)="chatUnread.set($event)"
+        />
+      }
+      @if (tab() !== 'chat' || !me) {
         @if (categories().length) {
           <div class="d-flex flex-wrap gap-2 mb-3" role="radiogroup" aria-label="Filtrar por categoría">
             <button type="button" class="gn-filter-chip" role="radio" [attr.aria-checked]="categoryFilter() === null" [class.active]="categoryFilter() === null" (click)="filterBy(null)">

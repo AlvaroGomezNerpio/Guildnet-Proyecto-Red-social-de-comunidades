@@ -5,8 +5,10 @@ import {
   OnDestroy,
   OnInit,
   computed,
+  effect,
   inject,
   input,
+  output,
   signal,
   viewChild,
 } from '@angular/core';
@@ -25,8 +27,12 @@ import { errorMessage } from '../../../../core/http/http-error';
 
 /**
  * Chat en tiempo real de una comunidad, organizado en canales (STOMP sobre
- * WebSocket). Una sola conexión; al cambiar de canal se cambia la suscripción.
- * Quien tenga MANAGE_CHANNELS puede crear, renombrar y borrar canales.
+ * WebSocket). Una sola conexión suscrita a todos los canales: el abierto
+ * muestra sus mensajes y el resto cuenta los nuevos. Quien tenga
+ * MANAGE_CHANNELS puede crear, renombrar y borrar canales.
+ *
+ * Puede seguir montado aunque no se vea ({@link visible} = false) para que el
+ * contador de mensajes nuevos siga al día.
  */
 @Component({
   selector: 'app-community-chat',
@@ -45,6 +51,10 @@ export class CommunityChatComponent implements OnInit, OnDestroy {
   readonly myProfileId = input<number | null>(null);
   /** Puede crear y gestionar canales (MANAGE_CHANNELS). */
   readonly canManage = input(false);
+  /** Si el chat está a la vista; si no, los mensajes del canal abierto también cuentan como nuevos. */
+  readonly visible = input(true);
+  /** Total de mensajes nuevos en todos los canales. */
+  readonly unreadTotalChange = output<number>();
 
   private readonly messageList = viewChild<ElementRef<HTMLElement>>('messageList');
 
@@ -63,15 +73,32 @@ export class CommunityChatComponent implements OnInit, OnDestroy {
   channelName = '';
   channelDescription = '';
 
+  /** Mensajes nuevos por canal. */
+  readonly unread = signal<Record<number, number>>({});
+  readonly unreadTotal = computed(() => Object.values(this.unread()).reduce((sum, n) => sum + n, 0));
+
   private client?: Client;
-  private subscription?: StompSubscription;
+  private readonly subscriptions = new Map<number, StompSubscription>();
+  private markReadTimer?: ReturnType<typeof setTimeout>;
+
+  constructor() {
+    effect(() => this.unreadTotalChange.emit(this.unreadTotal()));
+    // Al volver a ver el chat, el canal abierto queda leído
+    effect(() => {
+      const id = this.activeId();
+      if (this.visible() && id !== null && (this.unread()[id] ?? 0) > 0) this.clearUnread(id);
+    });
+  }
 
   ngOnInit(): void {
     this.chatService.getChannels(this.communityId()).subscribe({
       next: (channels) => {
         this.channels.set(channels);
+        this.unread.set(Object.fromEntries(channels.map((c) => [c.id, c.unreadCount ?? 0])));
         this.channelsLoaded.set(true);
-        if (channels.length) this.select(channels[0]);
+        // Se abre el primer canal con mensajes nuevos (o el primero)
+        if (channels.length) this.select(channels.find((c) => c.unreadCount > 0) ?? channels[0]);
+        this.subscribeAll();
       },
       error: () => {
         this.channelsLoaded.set(true);
@@ -82,7 +109,8 @@ export class CommunityChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscription?.unsubscribe();
+    clearTimeout(this.markReadTimer);
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
     this.client?.deactivate();
   }
 
@@ -97,10 +125,22 @@ export class CommunityChatComponent implements OnInit, OnDestroy {
         if (this.activeId() !== channel.id) return;
         this.messages.set(history);
         this.scrollToBottom();
+        if (this.visible()) this.clearUnread(channel.id);
       },
       error: () => this.error.set('No se pudo cargar el historial del canal.'),
     });
-    this.subscribeToActive();
+  }
+
+  unreadOf(channelId: number): number {
+    return this.unread()[channelId] ?? 0;
+  }
+
+  /** Pone el contador del canal a cero y lo guarda en el servidor. */
+  private clearUnread(channelId: number): void {
+    this.unread.update((map) => ({ ...map, [channelId]: 0 }));
+    clearTimeout(this.markReadTimer);
+    // Pequeña espera para no llamar al servidor por cada mensaje si llegan varios seguidos
+    this.markReadTimer = setTimeout(() => this.chatService.markRead(channelId).subscribe({ error: () => undefined }), 400);
   }
 
   send(): void {
@@ -123,7 +163,8 @@ export class CommunityChatComponent implements OnInit, OnDestroy {
       onConnect: () => {
         this.connected.set(true);
         this.error.set(null);
-        this.subscribeToActive();
+        this.subscriptions.clear(); // tras reconectar, las suscripciones anteriores ya no existen
+        this.subscribeAll();
       },
       onWebSocketClose: () => this.connected.set(false),
       onStompError: () => {
@@ -134,18 +175,30 @@ export class CommunityChatComponent implements OnInit, OnDestroy {
     this.client.activate();
   }
 
-  /** Suscribe al canal activo (se llama al conectar, al reconectar y al cambiar de canal). */
-  private subscribeToActive(): void {
-    this.subscription?.unsubscribe();
-    this.subscription = undefined;
-    const channelId = this.activeId();
-    if (channelId === null || !this.client?.connected) return;
-    this.subscription = this.client.subscribe(`/topic/chat/channel/${channelId}`, (frame: IMessage) => {
-      const message = JSON.parse(frame.body) as ChatMessageDTO;
-      if (message.channelId !== this.activeId()) return;
+  /** Se suscribe a los canales que aún no lo estén (al conectar, al cargarlos y al crear uno). */
+  private subscribeAll(): void {
+    if (!this.client?.connected) return;
+    for (const channel of this.channels()) {
+      if (this.subscriptions.has(channel.id)) continue;
+      const sub = this.client.subscribe(`/topic/chat/channel/${channel.id}`, (frame: IMessage) =>
+        this.onMessage(JSON.parse(frame.body) as ChatMessageDTO)
+      );
+      this.subscriptions.set(channel.id, sub);
+    }
+  }
+
+  private onMessage(message: ChatMessageDTO): void {
+    const isActive = message.channelId === this.activeId();
+    if (isActive) {
       this.messages.update((list) => [...list, message]);
       this.scrollToBottom();
-    });
+    }
+    if (this.isMine(message)) return;
+    if (isActive && this.visible()) {
+      this.clearUnread(message.channelId);
+    } else {
+      this.unread.update((map) => ({ ...map, [message.channelId]: (map[message.channelId] ?? 0) + 1 }));
+    }
   }
 
   private scrollToBottom(): void {
@@ -183,7 +236,10 @@ export class CommunityChatComponent implements OnInit, OnDestroy {
       next: (saved) => {
         this.dialogOpen.set(false);
         this.channels.update((list) => (editing ? list.map((c) => (c.id === saved.id ? saved : c)) : [...list, saved]));
-        if (!editing) this.select(saved);
+        if (!editing) {
+          this.subscribeAll();
+          this.select(saved);
+        }
       },
       error: (err) => this.toast.error(errorMessage(err, 'No se pudo guardar el canal.')),
     });
@@ -202,10 +258,12 @@ export class CommunityChatComponent implements OnInit, OnDestroy {
         this.dialogOpen.set(false);
         const remaining = this.channels().filter((c) => c.id !== channel.id);
         this.channels.set(remaining);
+        this.subscriptions.get(channel.id)?.unsubscribe();
+        this.subscriptions.delete(channel.id);
+        this.unread.update(({ [channel.id]: _removed, ...rest }) => rest);
         if (this.activeId() === channel.id) {
           this.activeId.set(null);
           this.messages.set([]);
-          this.subscribeToActive();
           if (remaining.length) this.select(remaining[0]);
         }
       },

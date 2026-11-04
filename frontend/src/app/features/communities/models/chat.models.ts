@@ -15,6 +15,8 @@ export interface ChatChannelDTO {
   name: string;
   description: string | null;
   communityId: number;
+  /** Mensajes nuevos para el usuario (sin contar los suyos). */
+  unreadCount: number;
 }
 
 export interface ChatChannelRequest {

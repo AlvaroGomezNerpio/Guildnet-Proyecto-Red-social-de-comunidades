@@ -81,6 +81,8 @@ export class CommunityDetailComponent implements OnInit {
   readonly canManageRoles = computed(() => this.permissions().includes('ASSIGN_ROLES'));
   readonly canEditCommunity = computed(() => this.permissions().includes('MANAGE_COMMUNITY_SETTINGS'));
   readonly canManageChannels = computed(() => this.permissions().includes('MANAGE_CHANNELS'));
+  /** Mensajes nuevos en el chat (los cuenta el propio componente del chat). */
+  readonly chatUnread = signal(0);
 
   /** Categorías de la comunidad y la elegida para filtrar el muro (null: todas). */
   readonly categories = signal<PostCategoryDTO[]>([]);

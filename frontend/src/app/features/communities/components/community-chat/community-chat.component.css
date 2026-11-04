@@ -39,6 +39,16 @@
   color: var(--bs-body-color);
 }
 
+.chat-channel.has-unread {
+  color: var(--bs-body-color);
+  font-weight: 800;
+}
+
+.chat-unread {
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
 .chat-channel.active {
   background: var(--bs-primary-bg-subtle);
   color: var(--bs-primary-text-emphasis);

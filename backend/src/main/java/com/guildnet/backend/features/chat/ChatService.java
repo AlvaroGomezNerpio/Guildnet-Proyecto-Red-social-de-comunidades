@@ -16,9 +16,12 @@ import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Chat de las comunidades, organizado en canales. Cada comunidad crea los
@@ -36,15 +39,37 @@ public class ChatService {
 
     private final ChatMessageRepository chatMessageRepository;
     private final ChatChannelRepository channelRepository;
+    private final ChatChannelReadRepository readRepository;
     private final CommunityRepository communityRepository;
     private final AccessGuard accessGuard;
 
     // ------------------------------------------------------------------ Canales
 
+    /** Canales de la comunidad con los mensajes nuevos de cada uno para quien consulta. */
     @Transactional(readOnly = true)
     public List<ChatChannelDTO> getChannels(Long communityId, User user) {
-        accessGuard.requireMembership(user, communityId);
-        return channelRepository.findByCommunityIdOrderByIdAsc(communityId).stream().map(ChatService::toDTO).toList();
+        CommunityProfile me = accessGuard.requireMembership(user, communityId);
+        LocalDateTime since = me.getJoinedAt() != null ? me.getJoinedAt() : LocalDateTime.MIN;
+        Map<Long, Integer> unread = new HashMap<>();
+        for (Object[] row : chatMessageRepository.countUnreadByChannel(communityId, me.getId(), since)) {
+            unread.put((Long) row[0], ((Number) row[1]).intValue());
+        }
+        return channelRepository.findByCommunityIdOrderByIdAsc(communityId).stream()
+                .map(channel -> toDTO(channel, unread.getOrDefault(channel.getId(), 0)))
+                .toList();
+    }
+
+    /** Marca como leídos todos los mensajes actuales del canal para el usuario. */
+    public void markRead(Long channelId, User user) {
+        ChatChannel channel = loadChannel(channelId);
+        CommunityProfile me = accessGuard.requireMembership(user, channel.getCommunity().getId());
+        Long last = chatMessageRepository.findLastMessageId(channelId).orElse(0L);
+        ChatChannelRead read = readRepository.findById(new ChatChannelRead.Key(me.getId(), channelId))
+                .orElseGet(() -> new ChatChannelRead(me.getId(), channelId, 0L));
+        if (last > read.getLastReadMessageId()) {
+            read.setLastReadMessageId(last);
+            readRepository.save(read);
+        }
     }
 
     public ChatChannelDTO createChannel(Long communityId, ChatChannelDTO dto, User user) {
@@ -128,7 +153,12 @@ public class ChatService {
     }
 
     private static ChatChannelDTO toDTO(ChatChannel channel) {
-        return new ChatChannelDTO(channel.getId(), channel.getName(), channel.getDescription(), channel.getCommunity().getId());
+        return toDTO(channel, 0);
+    }
+
+    private static ChatChannelDTO toDTO(ChatChannel channel, int unread) {
+        return new ChatChannelDTO(channel.getId(), channel.getName(), channel.getDescription(),
+                channel.getCommunity().getId(), unread);
     }
 
     private static ChatMessageDTO toDTO(ChatMessage message) {
